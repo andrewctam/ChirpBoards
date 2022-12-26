@@ -1,12 +1,15 @@
 import React, {useRef, useState} from "react";
 import Layout from "../Layout";
+import FeedButton from "./FeedButton";
+import Chirp from "./Chirp";
+
+export enum Feed {Following, Popular, MyChirps}
+
 function Home() {
     const [chirps, setChirps] = useState<string[]>([]);
     const [composedChirp, setComposedChirp] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
-    const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
-
-    const [imageURL, setImageURL] = useState("");
+    const [feed, setFeed] = useState<Feed>(Feed.Following)
 
     const createChirp = (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
@@ -16,7 +19,9 @@ function Home() {
             return
         }
 
+
         setChirps([...chirps, composedChirp])
+        setFeed(Feed.MyChirps)
         setComposedChirp("")
         setErrorMsg("");
     }
@@ -33,75 +38,58 @@ function Home() {
         setComposedChirp(text)
     }
 
-    const attachImage = (e: React.SyntheticEvent<HTMLInputElement> ) => {
-        e.preventDefault();
-
-        try {
-            const files = (e.target as HTMLInputElement).files
-            if (!files)
-                return;
-
-            const reader = new FileReader();
-
-            reader.onloadend = () => {
-                setImageURL((reader.result ?? "").toString())
-            }
-            
-            reader.readAsDataURL(files[0]);
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
     return ( <Layout>
-        <div className = "mt-10">
-                <form onSubmit = {createChirp} className = "bg-gray-100 border border-black/10 w-11/12 lg:w-3/4 mx-auto shadow-md relative rounded">
-                        
-                    <div className = "absolute -top-4 left-4 bg-gray-100 border border-black/10 p-2 rounded text-xl select-none text-center"
-                        onClick = {() => {
-                            if (textAreaRef.current)
-                                textAreaRef.current.focus()
-                        }}
-                    >
-                        Compose a Chirp Board
-                    </div>
-                    
-
+        <div className = "mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
+                <form onSubmit = {createChirp} className = "w-full py-2 mb-12 bg-gray-100/20 border border-black/10 shadow-lg relative rounded">
                     <textarea 
                         value = {composedChirp} 
                         onChange = {updateComposedChirp} 
-                        ref = {textAreaRef}
-                        className = "bg-sky-200/90 border border-black/10 shadow rounded-xl resize-none p-2 mt-16 ml-[-2%] w-[104%] h-44 focus:outline-none placeholder:text-xl" 
-                        placeholder=" . . ."/>
+                        className = "bg-sky-200 border border-black/10 shadow rounded-xl resize-none px-6 pt-2 mt-2 ml-[-2%] w-[104%] h-24 focus:outline-none placeholder:text-black/75"
+                        placeholder= "Compose a chirp..."/>
 
-                    <p className = "text-rose-800/75 ml-2">{errorMsg}</p>
-
-                    <img className = "mb-16 mx-auto" src = {imageURL} />
+                    <p className = "text-white mb-4 ml-4">
+                        {errorMsg ? errorMsg 
+                        : `${composedChirp.length}/500 characters`}
+                    </p>
                     
-                    {imageURL ? 
-                        <button onClick = { () => setImageURL("") } className = "w-fit bg-rose-100 border border-black/10 rounded shadow-md absolute -bottom-3 left-4 p-1">
-                            Remove Image
-                        </button>   
-                        :
-                        <>
-                            <label htmlFor = "imageUpload" className = "w-fit bg-gray-100 border border-black/10 rounded shadow-md absolute -bottom-3 left-4 p-1"
-                            >
-                                Attach Image
-                            </label>
-
-                            <input type = "file" onInput={attachImage} id = "imageUpload" className = "hidden" accept=".jpeg, .png"/>
-                        </>
-                    }
-
-                    <button className = "bg-stone-800 text-white border border-black/10 rounded shadow-md absolute -bottom-3 right-4 px-4 py-2" onClick = {createChirp}>Post</button>
+                    <button className = "bg-sky-200 text-black border border-black/10 rounded shadow-md absolute -bottom-3 right-4 px-4 py-2" 
+                        onClick = {createChirp}>
+                        Post
+                    </button>
                 </form>
 
-                <ul>
-                    {chirps.map((chirp => <li><div>{chirp}</div></li>))}
-                </ul>
-
+                    
+                <div className = "grid rows-2">
+                    <div className = "grid grid-cols-3">
+                            <FeedButton 
+                                type = {Feed.Popular}
+                                name = {"Popular"}
+                                setFeed = {setFeed}
+                                isActive = {feed === Feed.Popular} />
+                            <FeedButton 
+                                type = {Feed.Following}
+                                name = {"Following"}
+                                setFeed = {setFeed}
+                                isActive = {feed === Feed.Following} />
+                            <FeedButton 
+                                type = {Feed.MyChirps}
+                                name = {"My Chirps"}
+                                setFeed = {setFeed}
+                                isActive = {feed === Feed.MyChirps} />
+                    </div>
+                    <ul>   
+                        {chirps.map((chirp => 
+                        <Chirp 
+                            author = {"Hello"}
+                            date = {"Dec 26 2022, 9:45 PM"}
+                            text = {chirp}
+                        />))}
+                    </ul>
+                </div>
         </div>
     </Layout>)
 }
+
+
 
 export default Home;

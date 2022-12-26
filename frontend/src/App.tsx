@@ -1,15 +1,13 @@
 import { BrowserRouter, Route, Routes} from "react-router-dom";
+import Board from "./boards/Board";
 import Home from "./home/Home";
-import Layout from "./Layout";
+
 function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/home" element={ <Home /> }/>
-                <Route path="/" element={ <Layout> 
-                    <div></div>
-                    </Layout>}/>
-
+                <Route path="/" element={ <Home /> }/>
+                <Route path="/board" element={ <Board id = "asdasd" /> }/>
             </Routes>
 
         </BrowserRouter>
