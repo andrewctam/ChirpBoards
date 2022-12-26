@@ -1,0 +1,6 @@
+spring.data.mongodb.uri=
+spring.data.mongodb.database=
+
+#uncomment for GraphiQL
+#spring.graphql.graphiql.enabled=true
+#spring.graphql.graphiql.path=/graphiql

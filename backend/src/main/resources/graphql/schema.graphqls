@@ -1,0 +1,37 @@
+type Query {
+    user(username: String!): User
+    #post(id: String!): Post!
+}
+
+type Mutation {
+    createUser(username: String!): User
+    #createUser(username: String!, password: String!): User!
+    #createPost(text: String!, isComment: Boolean!): Post!
+    #upvotePost(id: String!): Post!
+    #downvotePost(id: String!): Post!
+    #followUser(username: String!): User!
+    #unfollowUser(username: String!): User!
+    
+}
+
+
+
+type User {
+    id: ID!
+    username: String!
+    displayName: String!
+    followers(first: Int, offset: Int): [User!]!
+    following(first: Int, offset: Int): [User!]!
+    posts(first: Int, offset: Int): [Post!]!
+}
+
+type Post {
+    id: ID!
+    author: User!
+    text: String!
+    isComment: Boolean!
+    createDate: String!
+    upvotes(first: Int, offset: Int): [User!]!
+    downvotes(first: Int, offset: Int): [User!]!
+    comments(first: Int, offset: Int): [Post!]!
+}
