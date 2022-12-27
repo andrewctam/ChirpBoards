@@ -6,16 +6,16 @@ type Query {
 
 type Mutation {
     #no authentication required
-    register(username: String!, password: String!): String
-    signin(username: String!, password: String!): String
-    signout(username: String!, sessionToken: String!): Boolean
+    register(username: String!, displayName: String!, password: String!): LoginRegisterResponse
+    signin(username: String!, password: String!): LoginRegisterResponse
 
     #requires authentication
     createPost(text: String!, isComment: Boolean!, username: String!, sessionToken: String!): Post
-    upvotePost(postId: String!, username: String!, sessionToken: String!): [User]!
-    downvotePost(postId: String!, username: String!, sessionToken: String!): [User]!
+    upvotePost(postId: String!, username: String!, sessionToken: String!): Boolean
+    downvotePost(postId: String!, username: String!, sessionToken: String!): Boolean
+    signout(username: String!, sessionToken: String!): Boolean
     
-    toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): Boolean!
+    toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): Boolean
 }
 
 
@@ -38,3 +38,9 @@ type Post {
     downvotes(first: Int, offset: Int): [User!]!
     comments(first: Int, offset: Int): [Post!]!
 }
+
+type LoginRegisterResponse {
+    error: String
+    sessionToken: String
+}
+

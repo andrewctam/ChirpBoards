@@ -2,9 +2,10 @@ package org.andrewtam.ChirpBoards.models;
 
 import java.util.Date;
 
+import org.andrewtam.ChirpBoards.repositories.UserRepository;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 @Document("users")
 public class User {
@@ -19,22 +20,22 @@ public class User {
     private String hashedPassword;
 
     private int followers;
-    private ArrayList<User> following;
-    private ArrayList<Post> posts;
+    private LinkedList<User> following;
+    private LinkedList<Post> posts;
 
     private String sessionToken;
     private Date sessionTokenExpiration;
     
 
-    public User(String username, String hashedPassword) {
+    public User(String username, String displayName, String hashedPassword) {
         this.username = username;
         this.hashedPassword = hashedPassword;
-        this.displayName = username;
+        this.displayName = displayName;
         this.createDate = new Date();
 
         this.followers = 0;
-        this.following = new ArrayList<User>();
-        this.posts = new ArrayList<Post>();
+        this.following = new LinkedList<User>();
+        this.posts = new LinkedList<Post>();
 
         this.sessionToken = null;
         this.sessionTokenExpiration = null;
@@ -56,10 +57,10 @@ public class User {
     public int getFollowers() { return followers; }
     public void setFollowers(int followers) { this.followers = followers; }
 
-    public ArrayList<User> getFollowing() { return following; }
+    public LinkedList<User> getFollowing() { return following; }
 
-    public ArrayList<Post> getPosts() { return posts; }
-    public void setPosts(ArrayList<Post> posts) { this.posts = posts; }
+    public LinkedList<Post> getPosts() { return posts; }
+    public void setPosts(LinkedList<Post> posts) { this.posts = posts; }
 
     public String getSessionToken() { return sessionToken; }
     public void setSessionToken(String sessionToken) { this.sessionToken = sessionToken; }
@@ -79,5 +80,25 @@ public class User {
         else
             return false;
     }
+    
+
+    public boolean checkUserSession(UserRepository userRepository, String sessionToken) {
+        User user = userRepository.findByUsername(username);
+        if (user == null || user.getSessionToken() == null || !user.getSessionToken().equals(sessionToken) || user.getSessionTokenExpiration() == null)
+            return false;
+
+        long timeDiff = user.getSessionTokenExpiration().getTime() - System.currentTimeMillis();
+        
+        if (timeDiff < 0) {
+            return false;
+        } else if (timeDiff < 300000 ) { // 5 minutes
+            user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 900000 )); // 15 minutes
+            userRepository.save(user);
+        }        
+
+        return true;
+    }
+    
+    
 
 }

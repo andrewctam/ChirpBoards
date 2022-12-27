@@ -1,5 +1,7 @@
 package org.andrewtam.ChirpBoards;
 
+import java.util.LinkedList;
+
 import org.andrewtam.ChirpBoards.models.Post;
 import org.andrewtam.ChirpBoards.models.User;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
@@ -42,17 +44,15 @@ public class PostController {
             return null;
         }
 
-        if (!user.getSessionToken().equals(sessionToken) || 
-            user.getSessionTokenExpiration().getTime() < System.currentTimeMillis()) {
+        if (!user.checkUserSession(userRepository, sessionToken))
             return null;
-        }
         
         return postRepository.save(new Post(text, user, isComment));
 
     }
 
     @MutationMapping
-    public User[] upvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
+    public Boolean upvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
         if (postId == null || !ObjectId.isValid(postId) || username == "") {
             return null;
         }
@@ -75,40 +75,24 @@ public class PostController {
             return null;
         }
 
-        User[] upvotes = post.getUpvotes();
+        LinkedList<User> upvotes = post.getUpvotes();
+        LinkedList<User> downvotes = post.getDownvotes();
 
-        for (int i = 0; i < upvotes.length; i++) {
-            if (upvotes[i].getId().equals(user.getId())) {
-                // User has already upvoted this post, so remove their upvote
-                User[] newUpvotes = new User[upvotes.length - 1];
-                for (int j = 0; j < i; j++) {
-                    newUpvotes[j] = upvotes[j];
-                }
-                for (int j = i; j < newUpvotes.length; j++) {
-                    newUpvotes[j] = upvotes[j + 1];
-                }
-                post.setUpvotes(newUpvotes);
-                postRepository.save(post);
+        if (upvotes.remove(user)) {
+            postRepository.save(post);
+            return false;
+        } else {
+            downvotes.remove(user); // remove from downvotes if it's there
+            upvotes.add(user);
 
-                return newUpvotes;
-            }
+            postRepository.save(post);
+            return true;
         }
-
-        // User has not upvoted this post, so add their upvote
-
-        User[] newUpvotes = new User[upvotes.length + 1];
-        for (int i = 0; i < upvotes.length; i++) {
-            newUpvotes[i] = upvotes[i];
-        }
-        newUpvotes[newUpvotes.length - 1] = user;
-        post.setUpvotes(newUpvotes);
-        postRepository.save(post);
-        return newUpvotes;
     }
 
 
     @MutationMapping
-    public User[] downvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
+    public Boolean downvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
         if (postId == null || !ObjectId.isValid(postId) || username == "") {
             return null;
         }
@@ -130,36 +114,21 @@ public class PostController {
         if (post == null) {
             return null;
         }
+        LinkedList<User> upvotes = post.getUpvotes();
+        LinkedList<User> downvotes = post.getDownvotes();
 
-        User[] downvotes = post.getDownvotes();
 
-        for (int i = 0; i < downvotes.length; i++) {
-            if (downvotes[i].getId().equals(user.getId())) {
-                // User has already upvoted this post, so remove their upvote
-                User[] newDownvotes = new User[downvotes.length - 1];
-                for (int j = 0; j < i; j++) {
-                    newDownvotes[j] = downvotes[j];
-                }
-                for (int j = i; j < newDownvotes.length; j++) {
-                    newDownvotes[j] = downvotes[j + 1];
-                }
-                post.setUpvotes(newDownvotes);
-                postRepository.save(post);
+        if (downvotes.remove(user)) {
+            postRepository.save(post);
+            return false; //no longer downvoted
+        } else {
+            upvotes.remove(user); // remove from upvotes if it's there
+            downvotes.add(user);
 
-                return newDownvotes;
-            }
+            postRepository.save(post);
+            return true; //downvoted
         }
-
-        // User has not upvoted this post, so add their upvote
-
-        User[] newDownvotes = new User[downvotes.length + 1];
-        for (int i = 0; i < downvotes.length; i++) {
-            newDownvotes[i] = downvotes[i];
-        }
-        newDownvotes[newDownvotes.length - 1] = user;
-        post.setUpvotes(newDownvotes);
-        postRepository.save(post);
-        return newDownvotes;
     }
+    
     
 }

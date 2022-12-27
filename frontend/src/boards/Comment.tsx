@@ -37,8 +37,8 @@ function Comment(props: CommentProps) {
     }, []);
 
     return (
-        <div className = "w-11/12 ml-[8.333%]">
-            <div className = "my-6 px-8 py-4 border border-black rounded-xl bg-white relative break-all">
+        <div className = "w-[95%] ml-[5%]">
+            <div className = "my-6 px-8 py-4 border border-black rounded-lg bg-white relative break-all">
                 <div className = "block mb-3">
                     <a href = "./profile">
                         {author}
@@ -57,7 +57,7 @@ function Comment(props: CommentProps) {
                     id = {props.id}
                 /> : null}
 
-                <div className = "absolute -bottom-3 right-4">
+                <div className = "absolute -bottom-3 right-6">
                     {replies.length > 0 ?
                     <button className = "bg-gray-200 text-black border border-black/20 rounded shadow-md text-xs mr-2 px-2 py-1" 
                         onClick = {() => {setShowReplies(!showReplies)}}>
@@ -67,7 +67,7 @@ function Comment(props: CommentProps) {
 
 
                     {!replying ? 
-                    <button className = "bg-gray-200 text-black border border-black/20 rounded shadow-md text-xs  px-2 py-1" 
+                    <button className = "bg-gray-200 text-black border border-black/20 rounded shadow-md text-xs px-2 py-1" 
                         onClick = {() => {setReplying(true)}}>
                         Reply
                     </button> : null}
@@ -78,7 +78,7 @@ function Comment(props: CommentProps) {
             </div>
 
             {replies.length > 0 && showReplies ? 
-                <div className = "w-full border-l border-l-gray-200">
+                <div className = "w-full border-l border-l-white">
                     {replies}
                 </div>
              : null}

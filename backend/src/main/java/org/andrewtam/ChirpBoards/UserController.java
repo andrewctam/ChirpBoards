@@ -3,6 +3,7 @@ package org.andrewtam.ChirpBoards;
 import java.util.Date;
 import java.util.UUID;
 
+import org.andrewtam.ChirpBoards.models.LoginRegisterResponse;
 import org.andrewtam.ChirpBoards.models.User;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,6 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 public class UserController {
-    final long FIFTEEN_MINS = 1000 * 60 * 15;
-
     @Autowired
     private UserRepository userRepository;
 
@@ -25,58 +24,57 @@ public class UserController {
     }
     
     @MutationMapping
-    public String register(@Argument String username, @Argument String password) {
+    public LoginRegisterResponse register(@Argument String username, @Argument String displayName, @Argument String password) {
         if (userRepository.findByUsername(username) != null) {
-            return null;
+            return new LoginRegisterResponse("Username already taken", "");
         }
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         String hashedPassword = encoder.encode(password);
 
         
-        User user = new User(username, hashedPassword);
+        User user = new User(username, displayName, hashedPassword);
 
         String sessionToken = UUID.randomUUID().toString();
         user.setSessionToken(sessionToken);
-        user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + FIFTEEN_MINS ));
+        user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 900000 ));
         
         userRepository.save(user);
 
-        return sessionToken;
+        return new LoginRegisterResponse(null, sessionToken);
     }
 
     @MutationMapping
-    public String signin(@Argument String username, @Argument String password) {
+    public LoginRegisterResponse signin(@Argument String username, @Argument String password) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            return null;
+            return new LoginRegisterResponse("Username not found", null);
         }
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         if (!encoder.matches(password, user.getHashedPassword())) {
-            return null;
+            return new LoginRegisterResponse("Incorrect password", null);
         }
 
         String sessionToken = UUID.randomUUID().toString();
         user.setSessionToken(sessionToken);
-        user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + FIFTEEN_MINS ));
+        user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 900000 ));
 
         userRepository.save(user);
 
-        return sessionToken;
+        return new LoginRegisterResponse(null, sessionToken);
     }
 
     @MutationMapping
     public Boolean signout(@Argument String username, @Argument String sessionToken) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            return false;
+            return null;
         }
 
-        if (!user.getSessionToken().equals(sessionToken) || 
-            user.getSessionTokenExpiration().getTime() < System.currentTimeMillis()) {
-            return false;
-        }
+        if (!user.checkUserSession(userRepository, sessionToken))
+            return null;
+
 
         user.setSessionToken(null);
         user.setSessionTokenExpiration(null);
@@ -95,10 +93,8 @@ public class UserController {
             return null;
         }
 
-        if (!user.getSessionToken().equals(sessionToken) || 
-            user.getSessionTokenExpiration().getTime() < System.currentTimeMillis()) {
+        if (!user.checkUserSession(userRepository, sessionToken))
             return null;
-        }
 
         boolean nowFollowing;
 

@@ -39,7 +39,7 @@ function Board(props: BoardProps) {
                         id = {props.id}
                     /> 
                     : 
-                    <button className = "bg-gray-200 text-black border border-black/20 rounded shadow-md text-xs absolute -bottom-3 right-4 px-2 py-1" 
+                    <button className = "bg-gray-200 text-black border border-black/20 rounded shadow-md text-xs absolute -bottom-3 right-6 px-2 py-1" 
                     onClick = {() => {setReplying(true)}}>
                             Reply
                         </button>

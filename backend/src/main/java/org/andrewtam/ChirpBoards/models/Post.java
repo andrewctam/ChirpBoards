@@ -1,6 +1,7 @@
 package org.andrewtam.ChirpBoards.models;
 
 import java.sql.Date;
+import java.util.LinkedList;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,10 +15,10 @@ public class Post {
     private String text;
     private User author;
     private String postDate;
-    private User[] upvotes;
-    private User[] downvotes;
+    private LinkedList<User> upvotes;
+    private LinkedList<User> downvotes;
 
-    private Post[] comments;
+    private LinkedList<Post> comments;
 
 
     public Post(String text, User author, boolean isComment) {
@@ -26,10 +27,10 @@ public class Post {
         this.isComment = isComment;
 
         this.postDate = new Date(System.currentTimeMillis()).toString();
-        this.upvotes = new User[0];
-        this.downvotes = new User[0];
+        this.upvotes = new LinkedList<User>();
+        this.downvotes = new LinkedList<User>();
 
-        this.comments = new Post[0];
+        this.comments = new LinkedList<Post>();
     }
 
     public String getId() { return id; }
@@ -42,13 +43,9 @@ public class Post {
 
     public String getPostDate() { return postDate; }
 
-    public User[] getUpvotes() { return upvotes; }
-    public void setUpvotes(User[] upvotes) { this.upvotes = upvotes; }
+    public LinkedList<User> getUpvotes() { return upvotes; }
 
-    public User[] getDownvotes() { return downvotes; }
-    public void setDownvotes(User[] downvotes) { this.downvotes = downvotes; }
-    
+    public LinkedList<User> getDownvotes() { return downvotes; }
 
-    public Post[] getComments() { return comments; }
-    public void setComments(Post[] comments) { this.comments = comments; }
+    public LinkedList<Post> getComments() { return comments; }
 }

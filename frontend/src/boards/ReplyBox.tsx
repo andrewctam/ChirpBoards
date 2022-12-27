@@ -8,7 +8,7 @@ function ReplyBox(props: ReplyBoxProps) {
     const [comment, setComment] = useState("");
 
     return (
-        <form onSubmit = {undefined} className = "w-full h-24 my-6 bg-gray-200 border border-black/10 shadow-lg relative rounded-xl">
+        <form onSubmit = {undefined} className = "w-full h-24 my-6 bg-gray-200 border border-black/25 shadow-lg relative rounded-xl">
             <textarea 
                 value = {comment} 
                 onChange = {(e) => setComment(e.target.value)} 
