@@ -1,29 +1,32 @@
 type Query {
+    #no authentication required
     user(username: String!): User
-    #post(id: String!): Post!
+    post(id: String!): Post
 }
 
 type Mutation {
-    createUser(username: String!): User
-    #createUser(username: String!, password: String!): User!
-    #createPost(text: String!, isComment: Boolean!): Post!
-    #upvotePost(id: String!): Post!
-    #downvotePost(id: String!): Post!
-    #followUser(username: String!): User!
-    #unfollowUser(username: String!): User!
+    #no authentication required
+    register(username: String!, password: String!): String
+    signin(username: String!, password: String!): String
+    signout(username: String!, sessionToken: String!): Boolean
+
+    #requires authentication
+    createPost(text: String!, isComment: Boolean!, username: String!, sessionToken: String!): Post
+    upvotePost(postId: String!, username: String!, sessionToken: String!): [User]!
+    downvotePost(postId: String!, username: String!, sessionToken: String!): [User]!
     
+    toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): Boolean!
 }
 
 
-
 type User {
-    id: ID!
     username: String!
     displayName: String!
     followers(first: Int, offset: Int): [User!]!
     following(first: Int, offset: Int): [User!]!
     posts(first: Int, offset: Int): [Post!]!
 }
+
 
 type Post {
     id: ID!

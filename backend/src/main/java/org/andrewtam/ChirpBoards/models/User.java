@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.util.ArrayList;
 
 @Document("users")
 public class User {
@@ -17,9 +18,12 @@ public class User {
 
     private String hashedPassword;
 
-    private User[] followers;
-    private User[] following;
-    private Post[] posts;
+    private int followers;
+    private ArrayList<User> following;
+    private ArrayList<Post> posts;
+
+    private String sessionToken;
+    private Date sessionTokenExpiration;
     
 
     public User(String username, String hashedPassword) {
@@ -28,11 +32,12 @@ public class User {
         this.displayName = username;
         this.createDate = new Date();
 
-        this.followers = new User[0];
-        this.following = new User[0];
-        this.posts = new Post[0];
+        this.followers = 0;
+        this.following = new ArrayList<User>();
+        this.posts = new ArrayList<Post>();
 
-
+        this.sessionToken = null;
+        this.sessionTokenExpiration = null;
     }
 
     public String getId() { return id; }
@@ -48,13 +53,31 @@ public class User {
     public void setHashedPassword(String hashedPassword) { this.hashedPassword = hashedPassword; }
 
 
-    public User[] getFollowers() { return followers; }
-    public void setFollowers(User[] followers) { this.followers = followers; }
+    public int getFollowers() { return followers; }
+    public void setFollowers(int followers) { this.followers = followers; }
 
-    public User[] getFollowing() { return following; }
-    public void setFollowing(User[] following) { this.following = following; }
+    public ArrayList<User> getFollowing() { return following; }
 
-    public Post[] getPosts() { return posts; }
-    public void setPosts(Post[] posts) { this.posts = posts; }
+    public ArrayList<Post> getPosts() { return posts; }
+    public void setPosts(ArrayList<Post> posts) { this.posts = posts; }
+
+    public String getSessionToken() { return sessionToken; }
+    public void setSessionToken(String sessionToken) { this.sessionToken = sessionToken; }
+
+    public Date getSessionTokenExpiration() { return sessionTokenExpiration; }
+    public void setSessionTokenExpiration(Date sessionTokenExpiration) { this.sessionTokenExpiration = sessionTokenExpiration; }
+
+
+    public String toString() {
+        return username;
+    }
+
+    public boolean equals(Object other) {
+        if (other instanceof User) {
+            return ((User) other).username.equals(username);
+        }
+        else
+            return false;
+    }
 
 }

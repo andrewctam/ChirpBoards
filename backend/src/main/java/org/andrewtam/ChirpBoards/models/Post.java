@@ -13,7 +13,7 @@ public class Post {
     private boolean isComment;
     private String text;
     private User author;
-    private Date postDate;
+    private String postDate;
     private User[] upvotes;
     private User[] downvotes;
 
@@ -25,7 +25,7 @@ public class Post {
         this.author = author;
         this.isComment = isComment;
 
-        this.postDate = new Date(System.currentTimeMillis());
+        this.postDate = new Date(System.currentTimeMillis()).toString();
         this.upvotes = new User[0];
         this.downvotes = new User[0];
 
@@ -40,7 +40,7 @@ public class Post {
     
     public User getAuthor() { return author; }
 
-    public Date getPostDate() { return postDate; }
+    public String getPostDate() { return postDate; }
 
     public User[] getUpvotes() { return upvotes; }
     public void setUpvotes(User[] upvotes) { this.upvotes = upvotes; }
