@@ -14,7 +14,6 @@ type Mutation {
     upvotePost(postId: String!, username: String!, sessionToken: String!): Boolean
     downvotePost(postId: String!, username: String!, sessionToken: String!): Boolean
     signout(username: String!, sessionToken: String!): Boolean
-    
     toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): Boolean
 }
 
@@ -33,10 +32,10 @@ type Post {
     author: User!
     text: String!
     isComment: Boolean!
-    createDate: String!
+    postDate: String!
     upvotes(first: Int, offset: Int): [User!]!
     downvotes(first: Int, offset: Int): [User!]!
-    comments(first: Int, offset: Int): [Post!]!
+    comments(first: Int, offset: Int): [Post!]! 
 }
 
 type LoginRegisterResponse {

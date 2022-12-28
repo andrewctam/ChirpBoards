@@ -1,4 +1,4 @@
-package org.andrewtam.ChirpBoards.models;
+package org.andrewtam.ChirpBoards.GraphQLModels;
 
 public class LoginRegisterResponse {
     private String error;

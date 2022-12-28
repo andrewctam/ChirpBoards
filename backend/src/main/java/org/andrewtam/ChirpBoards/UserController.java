@@ -3,8 +3,10 @@ package org.andrewtam.ChirpBoards;
 import java.util.Date;
 import java.util.UUID;
 
-import org.andrewtam.ChirpBoards.models.LoginRegisterResponse;
-import org.andrewtam.ChirpBoards.models.User;
+import org.andrewtam.ChirpBoards.GraphQLModels.GraphQLUser;
+import org.andrewtam.ChirpBoards.GraphQLModels.LoginRegisterResponse;
+import org.andrewtam.ChirpBoards.MongoDBModels.User;
+import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -18,9 +20,17 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PostRepository postRepository;
+
     @QueryMapping
-    public User user(@Argument String username) {
-        return userRepository.findByUsername(username);
+    public GraphQLUser user(@Argument String username) {
+        User user = userRepository.findByUsername(username);
+        
+        if (user == null)
+            return null;
+
+        return new GraphQLUser(user, userRepository, postRepository, null, null);
     }
     
     @MutationMapping
@@ -98,12 +108,13 @@ public class UserController {
 
         boolean nowFollowing;
 
-        if (user.getFollowing().remove(followUser)) {
-            followUser.setFollowers((followUser.getFollowers() - 1));
+        if (user.getFollowing().remove(followUser.getId())) {
+            followUser.getFollowers().remove(user.getId());
             nowFollowing = false;
+
         } else {
-            user.getFollowing().add(followUser);
-            followUser.setFollowers((followUser.getFollowers() + 1));
+            user.getFollowing().add(followUser.getId());
+            followUser.getFollowers().add(user.getId());
             nowFollowing = true;
         }
         

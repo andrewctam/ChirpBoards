@@ -2,8 +2,9 @@ package org.andrewtam.ChirpBoards;
 
 import java.util.LinkedList;
 
-import org.andrewtam.ChirpBoards.models.Post;
-import org.andrewtam.ChirpBoards.models.User;
+import org.andrewtam.ChirpBoards.GraphQLModels.GraphQLPost;
+import org.andrewtam.ChirpBoards.MongoDBModels.Post;
+import org.andrewtam.ChirpBoards.MongoDBModels.User;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
 import org.bson.types.ObjectId;
@@ -23,31 +24,40 @@ public class PostController {
     private UserRepository userRepository;
 
     @QueryMapping
-    public Post post(@Argument String id) {
+    public GraphQLPost post(@Argument String id) {
         if (id == null || !ObjectId.isValid(id)) {
             return null;
         }
+        Post post = postRepository.findById(new ObjectId(id));
+        if (post == null)
+            return null;
 
-        return postRepository.findById(new ObjectId(id));
+        return new GraphQLPost(post, userRepository, postRepository, null, null);
     }
 
 
     @MutationMapping
-    public Post createPost(@Argument String text, @Argument boolean isComment, @Argument String username, @Argument String sessionToken) {
-        if (text == "" || username == "") {
+    public GraphQLPost createPost(@Argument String text, @Argument boolean isComment, @Argument String username, @Argument String sessionToken) {
+        if (text == "" || username == "" || (!isComment && text.length() > 500)) {
             return null;
         }
 
         User user = userRepository.findByUsername(username);
-
         if (user == null) {
             return null;
         }
 
         if (!user.checkUserSession(userRepository, sessionToken))
             return null;
-        
-        return postRepository.save(new Post(text, user, isComment));
+
+        Post created = postRepository.save(new Post(text, user.getId(), isComment));
+
+        if (!isComment) {
+            user.getPosts().add(created.getId());
+            userRepository.save(user);
+        }
+
+        return new GraphQLPost(created, userRepository, postRepository, null, null);
 
     }
 
@@ -58,7 +68,6 @@ public class PostController {
         }
 
         User user = userRepository.findByUsername(username);
-
         if (user == null) {
             return null;
         }
@@ -75,15 +84,15 @@ public class PostController {
             return null;
         }
 
-        LinkedList<User> upvotes = post.getUpvotes();
-        LinkedList<User> downvotes = post.getDownvotes();
+        LinkedList<ObjectId> upvotes = post.getUpvotes();
+        LinkedList<ObjectId> downvotes = post.getDownvotes();
 
-        if (upvotes.remove(user)) {
+        if (upvotes.remove(user.getId())) {
             postRepository.save(post);
             return false;
         } else {
-            downvotes.remove(user); // remove from downvotes if it's there
-            upvotes.add(user);
+            downvotes.remove(user.getId()); // remove from downvotes if it's there
+            upvotes.add(user.getId());
 
             postRepository.save(post);
             return true;
@@ -114,16 +123,16 @@ public class PostController {
         if (post == null) {
             return null;
         }
-        LinkedList<User> upvotes = post.getUpvotes();
-        LinkedList<User> downvotes = post.getDownvotes();
+        LinkedList<ObjectId> upvotes = post.getUpvotes();
+        LinkedList<ObjectId> downvotes = post.getDownvotes();
 
 
-        if (downvotes.remove(user)) {
+        if (downvotes.remove(user.getId())) {
             postRepository.save(post);
             return false; //no longer downvoted
         } else {
-            upvotes.remove(user); // remove from upvotes if it's there
-            downvotes.add(user);
+            upvotes.remove(user.getId()); // remove from upvotes if it's there
+            downvotes.add(user.getId());
 
             postRepository.save(post);
             return true; //downvoted

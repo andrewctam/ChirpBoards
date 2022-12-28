@@ -1,6 +1,6 @@
 package org.andrewtam.ChirpBoards.repositories;
 
-import org.andrewtam.ChirpBoards.models.User;
+import org.andrewtam.ChirpBoards.MongoDBModels.User;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 

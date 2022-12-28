@@ -1,8 +1,9 @@
-package org.andrewtam.ChirpBoards.models;
+package org.andrewtam.ChirpBoards.MongoDBModels;
 
 import java.util.Date;
 
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.LinkedList;
@@ -11,7 +12,7 @@ import java.util.LinkedList;
 public class User {
     
     @Id
-    private String id;
+    private ObjectId id;
     private Date createDate;
 
     private String username;
@@ -19,9 +20,9 @@ public class User {
 
     private String hashedPassword;
 
-    private int followers;
-    private LinkedList<User> following;
-    private LinkedList<Post> posts;
+    private LinkedList<ObjectId> followers; //references to users
+    private LinkedList<ObjectId> following; //references to users
+    private LinkedList<ObjectId> posts; //references to posts
 
     private String sessionToken;
     private Date sessionTokenExpiration;
@@ -33,15 +34,15 @@ public class User {
         this.displayName = displayName;
         this.createDate = new Date();
 
-        this.followers = 0;
-        this.following = new LinkedList<User>();
-        this.posts = new LinkedList<Post>();
+        this.followers = new LinkedList<ObjectId>();
+        this.following = new LinkedList<ObjectId>();
+        this.posts = new LinkedList<ObjectId>();
 
         this.sessionToken = null;
         this.sessionTokenExpiration = null;
     }
 
-    public String getId() { return id; }
+    public ObjectId getId() { return id; }
 
     public Date getCreateDate() { return createDate; }
 
@@ -53,14 +54,11 @@ public class User {
     public String getHashedPassword() { return hashedPassword; }
     public void setHashedPassword(String hashedPassword) { this.hashedPassword = hashedPassword; }
 
+    public LinkedList<ObjectId> getFollowers() { return followers; }
 
-    public int getFollowers() { return followers; }
-    public void setFollowers(int followers) { this.followers = followers; }
+    public LinkedList<ObjectId> getFollowing() { return following; }
 
-    public LinkedList<User> getFollowing() { return following; }
-
-    public LinkedList<Post> getPosts() { return posts; }
-    public void setPosts(LinkedList<Post> posts) { this.posts = posts; }
+    public LinkedList<ObjectId> getPosts() { return posts; }
 
     public String getSessionToken() { return sessionToken; }
     public void setSessionToken(String sessionToken) { this.sessionToken = sessionToken; }
@@ -100,5 +98,9 @@ public class User {
     }
     
     
+
+    public int hashcode() {
+        return this.username.hashCode();
+    }
 
 }
