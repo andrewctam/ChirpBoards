@@ -1,10 +1,11 @@
-package org.andrewtam.ChirpBoards;
+package org.andrewtam.ChirpBoards.controllers;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
-import org.andrewtam.ChirpBoards.GraphQLModels.GraphQLUser;
 import org.andrewtam.ChirpBoards.GraphQLModels.LoginRegisterResponse;
+import org.andrewtam.ChirpBoards.MongoDBModels.Post;
 import org.andrewtam.ChirpBoards.MongoDBModels.User;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 
@@ -24,14 +26,26 @@ public class UserController {
     private PostRepository postRepository;
 
     @QueryMapping
-    public GraphQLUser user(@Argument String username) {
-        User user = userRepository.findByUsername(username);
-        
-        if (user == null)
-            return null;
-
-        return new GraphQLUser(user, userRepository, postRepository, null, null);
+    public User user(@Argument String username) {
+        return userRepository.findByUsername(username);   
     }
+
+    @SchemaMapping
+    public List<User> following(User user) {
+        return userRepository.findAllById(user.getFollowing());
+    }
+
+    @SchemaMapping
+    public List<User> followers(User user) {
+        return userRepository.findAllById(user.getFollowers());
+    }
+
+    @SchemaMapping
+    public List<Post> posts(User user) {
+        return postRepository.findAllById(user.getPosts());
+    }
+
+    
     
     @MutationMapping
     public LoginRegisterResponse register(@Argument String username, @Argument String displayName, @Argument String password) {
@@ -96,6 +110,9 @@ public class UserController {
 
     @MutationMapping
     public Boolean toggleFollow(@Argument String userToFollow, @Argument String username, @Argument String sessionToken) {
+        if (userToFollow.equals(username))
+            return null;
+            
         User user = userRepository.findByUsername(username);
         User followUser = userRepository.findByUsername(userToFollow);
 
