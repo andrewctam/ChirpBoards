@@ -10,6 +10,8 @@ import org.andrewtam.ChirpBoards.MongoDBModels.User;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -31,18 +33,28 @@ public class UserController {
     }
 
     @SchemaMapping
-    public List<User> following(User user) {
-        return userRepository.findAllById(user.getFollowing());
+    public List<User> following(User user, @Argument int first, @Argument int offset) {
+        PageRequest paging = PageRequest.of(first, offset);
+
+        Page<User> page = userRepository.findAllById(user.getFollowing(), paging);
+        return page.getContent();
     }
 
     @SchemaMapping
-    public List<User> followers(User user) {
-        return userRepository.findAllById(user.getFollowers());
+    public List<User> followers(User user, @Argument int first, @Argument int offset) {
+        PageRequest paging = PageRequest.of(first, offset);
+
+        Page<User> page = userRepository.findAllById(user.getFollowers(), paging);
+        return page.getContent();
     }
+        
 
     @SchemaMapping
-    public List<Post> posts(User user) {
-        return postRepository.findAllById(user.getPosts());
+    public List<Post> posts(User user, @Argument int first, @Argument int offset) {
+        PageRequest paging = PageRequest.of(first, offset);
+
+        Page<Post> page = postRepository.findAllById(user.getPosts(), paging);
+        return page.getContent();
     }
 
     

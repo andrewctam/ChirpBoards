@@ -1,19 +1,31 @@
 type Query {
-    #no authentication required
+    #No authentication required.
     user(username: String!): User
+    #No authentication required.
     post(id: String!): Post
 }
 
 type Mutation {
-    #no authentication required
+    #No authentication required. Registers a user and sends either a session token or an error.
     register(username: String!, displayName: String!, password: String!): LoginRegisterResponse
+    #No authentication required. Signs in and sends either a session token or an error.
     signin(username: String!, password: String!): LoginRegisterResponse
 
-    #requires authentication
+
+
+    #Requires authentication. Creates and returns a post.
     createPost(text: String!, isComment: Boolean!, username: String!, sessionToken: String!): Post
+    
+    #Requires authentication. Adds or removes a user from the upvotes list of a post. Returns the ending upvote status as a boolean, or null if unauthorized.
     upvotePost(postId: String!, username: String!, sessionToken: String!): Boolean
+
+    #Requires authentication. Adds or removes a user from the downvotes list of a post. Returns the ending downvote status as a boolean, or null if unauthorized.
     downvotePost(postId: String!, username: String!, sessionToken: String!): Boolean
+
+    #Requires authentication. Clears the session token from the database. Returns true if successful, or null if unauthorized.
     signout(username: String!, sessionToken: String!): Boolean
+
+    #Requires authentication. Follows or unfollows a user. Returns the ending follow status as a boolean, or null if unauthorized.
     toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): Boolean
 }
 
@@ -21,9 +33,9 @@ type Mutation {
 type User {
     username: String!
     displayName: String!
-    followers(first: Int, offset: Int): [User!]!
-    following(first: Int, offset: Int): [User!]!
-    posts(first: Int, offset: Int): [Post!]!
+    followers(first: Int = 0, offset: Int = 10): [User!]!
+    following(first: Int = 0, offset: Int = 10): [User!]!
+    posts(first: Int = 0, offset: Int = 10): [Post!]!
 }
 
 
@@ -33,9 +45,9 @@ type Post {
     text: String!
     isComment: Boolean!
     postDate: String!
-    upvotes(first: Int, offset: Int): [User!]!
-    downvotes(first: Int, offset: Int): [User!]!
-    comments(first: Int, offset: Int): [Post!]! 
+    upvotes(first: Int = 0, offset: Int = 10): [User!]!
+    downvotes(first: Int = 0, offset: Int = 10): [User!]!
+    comments(first: Int = 0, offset: Int = 10): [Post!]! 
 }
 
 type LoginRegisterResponse {

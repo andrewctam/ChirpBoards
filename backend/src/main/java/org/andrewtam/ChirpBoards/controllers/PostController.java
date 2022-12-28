@@ -9,6 +9,8 @@ import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -38,18 +40,27 @@ public class PostController {
     }
 
     @SchemaMapping
-    public List<User> upvotes(Post post) {
-        return userRepository.findAllById(post.getUpvotes());
+    public List<User> upvotes(Post post, @Argument int first, @Argument int offset) {
+        PageRequest paging = PageRequest.of(first, offset);
+
+        Page<User> page = userRepository.findAllById(post.getUpvotes(), paging);
+        return page.getContent();
     }
 
     @SchemaMapping
-    public List<User> downvotes(Post post) {
-        return userRepository.findAllById(post.getDownvotes());
+    public List<User> downvotes(Post post, @Argument int first, @Argument int offset) {
+        PageRequest paging = PageRequest.of(first, offset);
+
+        Page<User> page = userRepository.findAllById(post.getDownvotes(), paging);
+        return page.getContent();
     }
 
     @SchemaMapping
-    public List<Post> comments(Post post) {
-        return postRepository.findAllById(post.getComments());
+    public List<Post> comments(Post post, @Argument int first, @Argument int offset) {
+        PageRequest paging = PageRequest.of(first, offset);
+
+        Page<Post> page = postRepository.findAllById(post.getComments(), paging);
+        return page.getContent();
     }
     
 
