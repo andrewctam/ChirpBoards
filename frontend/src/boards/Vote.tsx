@@ -4,13 +4,15 @@ import { UserContext } from "../App"
 
 interface VoteProps {
     postId: string
-    score: number
+    initialScore: number
+    initialVoteStatus: number | null
 }
 
 
 function Vote(props: VoteProps) {
     const userInfo = useContext(UserContext);
-    const [localChange, setLocalChange] = useState(0);
+    const [score, setScore] = useState(props.initialScore)
+    const [voteStatus, setVoteStatus] = useState(props.initialVoteStatus)
 
     const vote = async (type: "upvote" | "downvote") => {
         const queryType = type + "Post"
@@ -18,7 +20,7 @@ function Vote(props: VoteProps) {
         const query = 
         `mutation {
             ${queryType}(postId:"${props.postId}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
-                error
+                msg
                 endRes
             }
         }`
@@ -33,36 +35,25 @@ function Vote(props: VoteProps) {
         console.log(response)
         let info = response["data"][queryType]
 
-        if (info.error) {
-            alert(info.error)
-            return;
+        if (info.msg) {
+            setVoteStatus(parseInt(info.msg))
         }
 
-        if (queryType === "upvotePost") {
-            if (info.endRes)
-                setLocalChange(1)
-            else
-                setLocalChange(-1)
-        } else {
-            if (info.endRes)
-                setLocalChange(-1)
-            else
-                setLocalChange(1)
-        }
-
+        
+        setScore(info.endRes)
         console.log(response)
     }
 
 
     return (
-        <div className="absolute -right-2 my-auto h-fit top-0 bottom-0 bg-gray-200 border border-black/20 py-1 px-2 rounded-xl text-center text-xs">
-            <button className="" onClick = {() => {vote("upvote")}}>
+        <div className="absolute -right-2 my-auto h-fit top-0 bottom-0 bg-gray-200 border border-black/20 py-1 px-2 rounded-xl text-center text-sm">
+            <button style = { {color: voteStatus === 1 ? "rgb(100, 200, 100)" : "black"} } className = "font-extrabold" onClick = {() => {vote("upvote")}}>
             ↑
             </button>
 
-            <div> {props.score + localChange} </div>
+            <div> {score} </div>
 
-            <button className="" onClick = {() => {vote("downvote")}}>
+            <button style = { {color: voteStatus === -1 ? "red" : "black"} } className = "font-extrabold" onClick = {() => {vote("downvote")}}>
             ↓
             </button>
         </div>

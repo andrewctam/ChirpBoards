@@ -1,8 +1,6 @@
 package org.andrewtam.ChirpBoards.MongoDBModels;
 
 
-import java.sql.Date;
-import java.text.DateFormat;
 import java.util.LinkedList;
 
 import org.bson.types.ObjectId;
@@ -14,11 +12,11 @@ public class Post implements Comparable<Post> {
 
     @Id
     private ObjectId id;
-
+    
     private boolean isComment;
     private String text;
     private ObjectId author; //reference to user
-    private String postDate; //string of date created
+    private long postDate; //milliseconds since epoch
     private int score;
     private LinkedList<ObjectId> upvotes; //references to users
     private LinkedList<ObjectId> downvotes; //references to users
@@ -34,7 +32,7 @@ public class Post implements Comparable<Post> {
 
         
         //MM/dd/yy HH:mm:ss
-        this.postDate = DateFormat.getDateTimeInstance().format(new java.util.Date());
+        this.postDate = System.currentTimeMillis();
 
         this.upvotes = new LinkedList<ObjectId>();
         this.downvotes = new LinkedList<ObjectId>();
@@ -60,7 +58,7 @@ public class Post implements Comparable<Post> {
     
     public ObjectId getAuthor() { return author; }
 
-    public String getPostDate() { return postDate; }
+    public long getPostDate() { return postDate; }
 
     public LinkedList<ObjectId> getUpvotes() { return upvotes; }
 
@@ -78,8 +76,15 @@ public class Post implements Comparable<Post> {
         return this.id.hashCode();
     }
 
-    public int compareTo(Post other) {
+    public boolean equals(Object other) {
+        if (other instanceof Post) {
+            return this.id.equals(((Post) other).id);
+        }
 
+        return false;
+    }
+
+    public int compareTo(Post other) {
         return this.score - other.score;
     }
 }

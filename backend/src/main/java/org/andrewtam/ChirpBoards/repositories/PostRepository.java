@@ -3,6 +3,7 @@ package org.andrewtam.ChirpBoards.repositories;
 import java.util.List;
 
 import org.andrewtam.ChirpBoards.MongoDBModels.Post;
+import org.andrewtam.ChirpBoards.MongoDBModels.User;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,4 +19,10 @@ public interface PostRepository extends MongoRepository<Post, String> {
     
     @Query("{ 'id': { $in: ?0 } }")
     Page<Post> findAllById(List<ObjectId> ids, PageRequest pageable);
+
+    @Query("{ _id: ?0, upvotes: ?1 }")
+    User userUpvoted(ObjectId postId, ObjectId userId);
+
+    @Query("{ _id: ?0, downvotes: ?1 }")
+    User userDownvoted(ObjectId postId, ObjectId userId);
 }

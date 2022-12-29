@@ -27,7 +27,7 @@ function Signin() {
         const query = 
         `mutation {
             signin(username: "${usernameInput}", password: "${passwordInput}") {
-                error
+                msg
                 sessionToken
             }
         }`
@@ -40,8 +40,8 @@ function Signin() {
             body: JSON.stringify({query})
         }).then(res => res.json())
 
-        if (response.data.signin.error) {
-            setError(response.data.signin.error);
+        if (response.data.signin.msg) {
+            setError(response.data.signin.msg);
             return;
         }
 

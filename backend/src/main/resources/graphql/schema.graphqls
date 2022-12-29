@@ -6,9 +6,11 @@ type Query {
     
     #No authentication required. Retrieves the 20 most recent posts
     recentPosts: [Post!]!
-
     #No authentication required. Retrieves the 20 most popular posts
     popularPosts: [Post!]!
+    #No authentication required. Retrieves the 20 most recent posts from a user's following list
+    followingPosts(username: String): [Post!]!
+
 }
 
 type Mutation {
@@ -25,10 +27,10 @@ type Mutation {
     comment(text: String!, parentPostId: String!, username: String!, sessionToken: String!): PostResponse
     
     #Requires authentication. Adds or removes a user from the upvotes list of a post. Returns the ending upvote status as a boolean, or null if unauthorized.
-    upvotePost(postId: String!, username: String!, sessionToken: String!): BooleanResponse
+    upvotePost(postId: String!, username: String!, sessionToken: String!): IntResponse
 
     #Requires authentication. Adds or removes a user from the downvotes list of a post. Returns the ending downvote status as a boolean, or null if unauthorized.
-    downvotePost(postId: String!, username: String!, sessionToken: String!): BooleanResponse
+    downvotePost(postId: String!, username: String!, sessionToken: String!): IntResponse
 
     #Requires authentication. Clears the session token from the database. Returns true if successful, or null if unauthorized.
     signout(username: String!, sessionToken: String!): BooleanResponse
@@ -56,28 +58,32 @@ type Post {
     text: String!
     isComment: Boolean!
     commentCount: Int!
-    postDate: String!
+    postDate(timezone: Int!): String!
     score: Int!
     upvotes(first: Int = 0, offset: Int = 10): [User!]!
     downvotes(first: Int = 0, offset: Int = 10): [User!]!
+    voteStatus(username: String!): Int!
     comments(first: Int = 0, offset: Int = 10): [Post!]! 
 }
 
 type LoginRegisterResponse {
-    error: String
+    msg: String
     sessionToken: String
 }
 
 type PostResponse {
-    error: String
+    msg: String
     post: Post
 }
 
 
 type BooleanResponse {
-    error: String
+    msg: String
     endRes: Boolean
 }
 
-
+type IntResponse {
+    msg: String
+    endRes: Int
+}
 

@@ -43,7 +43,7 @@ function Register() {
         const query = 
         `mutation {
             register(username: "${usernameInput}", displayName:"${displayNameInput ? displayNameInput : usernameInput}" password: "${passwordInput}") {
-                error
+                msg
                 sessionToken
             }
         }`
@@ -58,8 +58,8 @@ function Register() {
 
         console.log(response)
 
-        if (response.data.register.error) {
-            setError(response.data.register.error);
+        if (response.data.register.msg) {
+            setError(response.data.register.msg);
             return;
         }
 

@@ -1,16 +1,15 @@
 package org.andrewtam.ChirpBoards.GraphQLModels;
 
-public class BooleanResponse {
+public class IntResponse {
     private String msg;
-    private Boolean endRes;
+    private Integer endRes;
 
-    public BooleanResponse(String msg, Boolean endRes) {
+    public IntResponse(String msg, Integer endRes) {
         this.msg = msg;
         this.endRes = endRes;
     }
 
     public String getMsg() { return msg; }
-    public Boolean getEndRes() { return endRes; }
-
-
+    public Integer getEndRes() { return endRes; }
+    
 }

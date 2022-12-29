@@ -13,18 +13,18 @@ function ReplyBox(props: ReplyBoxProps) {
     const userInfo = useContext(UserContext);
 
     const addComment = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
+        e.preventDefault()
+        const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
+
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `mutation {
             comment(text: "${comment}", parentPostId: "${props.postId}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
-                error
+                msg
                 post {
                     id
                     text
-                    commentCount
-                    postDate
-                    score
+                    postDate(timezone: ${timezone})
                     author {
                         username
                         displayName
@@ -54,8 +54,9 @@ function ReplyBox(props: ReplyBoxProps) {
                 postDate = {info.postDate}
                 authorUsername = {info.author.username}
                 authorDisplayName = {info.author.displayName}
-                commentCount = {info.commentCount}
-                score = {info.score}
+                commentCount = {0}
+                score = {0}
+                voteStatus = {0}
             />
         
         )

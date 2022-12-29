@@ -1,12 +1,12 @@
 package org.andrewtam.ChirpBoards.controllers;
 
-import java.util.Comparator;
+import java.text.DateFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-import org.andrewtam.ChirpBoards.GraphQLModels.BooleanResponse;
+import org.andrewtam.ChirpBoards.GraphQLModels.IntResponse;
 import org.andrewtam.ChirpBoards.GraphQLModels.PostResponse;
 
 import org.andrewtam.ChirpBoards.MongoDBModels.Post;
@@ -31,7 +31,7 @@ import org.springframework.stereotype.Controller;
 public class PostController {
 
     Queue<Post> recentPosts = new LinkedList<Post>();
-    PriorityQueue<Post> popularPosts = new PriorityQueue<Post>(Comparator.reverseOrder());
+    PriorityQueue<Post> popularPosts = new PriorityQueue<Post>();
 
     @Autowired
     private PostRepository postRepository;
@@ -41,14 +41,20 @@ public class PostController {
     
 
     private void insertIntoFeeds(Post post) {
+        if (recentPosts.contains(post)) {
+            recentPosts.remove(post);
+        }
         if (recentPosts.size() > 20) {
             recentPosts.poll();
         }
-
         recentPosts.add(post);
 
-        popularPosts.offer(post);
 
+        if (popularPosts.contains(post)) {
+            popularPosts.remove(post);
+        }
+
+        popularPosts.offer(post);
         if (popularPosts.size() > 20) {
             popularPosts.poll();
         }
@@ -76,19 +82,43 @@ public class PostController {
 
     @QueryMapping
     public Post[] popularPosts() {
-        return popularPosts.toArray(new Post[popularPosts.size()]);
+        Post[] reversed = popularPosts.toArray(new Post[popularPosts.size()]);
+        for (int i = 0; i < reversed.length / 2; i++) {
+            Post temp = reversed[i];
+            reversed[i] = reversed[reversed.length - i - 1];
+            reversed[reversed.length - i - 1] = temp;
+        }
+
+        for (Post a : reversed) {
+            System.out.print(a.getScore() + " ");
+        }
+        System.out.println();
+
+        return reversed;
     }
     
+    @QueryMapping
+    public Post[] followingPosts(@Argument String username) {
+        //TO DO
+        return null;
+    }
 
     @SchemaMapping
     public User author(Post post) {
         return userRepository.findById(post.getAuthor());
     }
+    @SchemaMapping
+    public String postDate(Post post, @Argument int timezone) {
+        long adjustedTime = post.getPostDate() + timezone * 3600000;
+        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+        df.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));
+
+        return df.format(adjustedTime);
+    }
 
     @SchemaMapping
     public List<User> upvotes(Post post, @Argument int first, @Argument int offset) {
         PageRequest paging = PageRequest.of(first, offset);
-
         Page<User> page = userRepository.findAllById(post.getUpvotes(), paging);
         return page.getContent();
     }
@@ -99,6 +129,22 @@ public class PostController {
 
         Page<User> page = userRepository.findAllById(post.getDownvotes(), paging);
         return page.getContent();
+    }
+
+    @SchemaMapping
+    public Integer voteStatus(Post post, @Argument String username) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return null;
+        }
+
+        if (postRepository.userUpvoted(post.getId(), user.getId()) != null) {
+            return 1;
+        } else if (postRepository.userDownvoted(post.getId(), user.getId()) != null) {
+            return -1;
+        } else {
+            return 0;
+        }
     }
 
     @SchemaMapping
@@ -129,7 +175,7 @@ public class PostController {
 
         Post created = postRepository.save(new Post(text, user.getId(), false));
             
-        user.getPosts().add(created.getId());
+        user.getPosts().addFirst(created.getId());
         userRepository.save(user);
         
         insertIntoFeeds(created);
@@ -164,23 +210,23 @@ public class PostController {
     }
 
     @MutationMapping
-    public BooleanResponse upvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
+    public IntResponse upvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
         if (postId == null || !ObjectId.isValid(postId) || username == "") {
-            return new BooleanResponse("Invalid inputs", null);
+            return new IntResponse("Invalid inputs", null);
         }
 
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            return new BooleanResponse("User not found", null);
+            return new IntResponse("User not found", null);
         }
 
         if (!user.checkUserSession(userRepository, sessionToken))
-            return new BooleanResponse("User not authenticated", null);
+            return new IntResponse("User not authenticated", null);
 
         Post post = postRepository.findById(new ObjectId(postId));
 
         if (post == null) {
-            return new BooleanResponse("Post not found", null);
+            return new IntResponse("Post not found", null);
         }
 
         LinkedList<ObjectId> upvotes = post.getUpvotes();
@@ -192,7 +238,7 @@ public class PostController {
             insertIntoFeeds(post);
             postRepository.save(post);
 
-            return new BooleanResponse("", false);
+            return new IntResponse("0", post.getScore());
         } else {
             if (downvotes.remove(user.getId())) // remove from downvotes if it's there)
                 post.adjustScore(1);
@@ -204,31 +250,31 @@ public class PostController {
             insertIntoFeeds(post);
             postRepository.save(post);
 
-            return new BooleanResponse("", true);
+            return new IntResponse("1", post.getScore());
         }
     }
 
 
     @MutationMapping
-    public BooleanResponse downvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
+    public IntResponse downvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
         if (postId == null || !ObjectId.isValid(postId) || username == "") {
-            return new BooleanResponse("Invalid inputs", null);
+            return new IntResponse("Invalid inputs", null);
         }
 
         User user = userRepository.findByUsername(username);
 
         if (user == null) {
-            return new BooleanResponse("User not found", null);
+            return new IntResponse("User not found", null);
         }
 
         if (!user.checkUserSession(userRepository, sessionToken))
-            return new BooleanResponse("User not authenticated", null);
+            return new IntResponse("User not authenticated", null);
         
 
         Post post = postRepository.findById(new ObjectId(postId));
 
         if (post == null) {
-            return new BooleanResponse("Post not found", null);
+            return new IntResponse("Post not found", null);
         }
         LinkedList<ObjectId> upvotes = post.getUpvotes();
         LinkedList<ObjectId> downvotes = post.getDownvotes();
@@ -239,7 +285,7 @@ public class PostController {
             postRepository.save(post);
 
             insertIntoFeeds(post);
-            return new BooleanResponse("", false); //no longer downvoted
+            return new IntResponse("0", post.getScore()); //no longer downvoted
         } else {
             if (upvotes.remove(user.getId()))
                 post.adjustScore(-1);// remove from upvotes if it's there
@@ -249,7 +295,7 @@ public class PostController {
 
             insertIntoFeeds(post);
             postRepository.save(post);
-            return new BooleanResponse("", true); //downvoted
+            return new IntResponse("-1", post.getScore()); //downvoted
         }
     }
     

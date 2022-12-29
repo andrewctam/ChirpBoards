@@ -3,7 +3,7 @@ import Layout from "../Layout";
 import FeedButton from "./FeedButton";
 import Chirp from "./Chirp";
 import { PostChirp, UserContext } from "../App";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 
 export enum Feed {Following, Recent, Popular}
 
@@ -17,6 +17,8 @@ function Home() {
 
     const userInfo = useContext(UserContext);
     const navigate = useNavigate();
+
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const createChirp = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
@@ -70,6 +72,7 @@ function Home() {
     
     const getRecentPopularChirps = async (type: "recent" | "popular") => {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const query = 
         `query {
             ${type}Posts {
@@ -79,7 +82,9 @@ function Home() {
                     username
                     displayName
                 }
-                postDate
+                postDate(timezone: ${timezone})
+                score
+                ${userInfo.state.username ? `voteStatus(username: "${userInfo.state.username}")` : ""}
             }
         }`
 
@@ -97,20 +102,26 @@ function Home() {
             setPopularFeed(response.data.popularPosts.map((post: any) => {
                 return <Chirp
                         authorUsername={post.author.username}
+                        authorDisplayName={post.author.displayName}
                         id = {post.id}
                         postDate = {post.postDate}
                         text = {post.text}
                         key = {post.id}
+                        score = {post.score}
+                        voteStatus = {userInfo.state.username ? post.voteStatus : null}
                     />
             }))
         } else {
             setRecentFeed(response.data.recentPosts.map((post: any) => {
                 return <Chirp
                         authorUsername={post.author.username}
+                        authorDisplayName={post.author.displayName}
                         id = {post.id}
                         postDate = {post.postDate}
                         text = {post.text}
                         key = {post.id}
+                        score = {post.score}
+                        voteStatus = {userInfo.state.username ? post.voteStatus : null}
                     />
             }))
         }
@@ -120,20 +131,38 @@ function Home() {
     useEffect(() => {
         switch(feedSelected) {
             case Feed.Recent:
-                if (recentFeed.length === 0) {
-                    getRecentPopularChirps("recent");
-                }
+                getRecentPopularChirps("recent");
+                setSearchParams({feed: "recent"})
                 return;
             case Feed.Popular:
-                if (popularFeed.length === 0) {
-                    getRecentPopularChirps("popular");
-                }
+                getRecentPopularChirps("popular");
+                setSearchParams({feed: "popular"})
+                return;
+            case Feed.Following:
+                setSearchParams({feed: "following"})
                 return;
             
             default: 
             return;
         }
     }, [feedSelected])
+
+    useEffect(() => {
+        switch(searchParams.get("feed")) {
+            case "recent":
+                setFeedSelected(Feed.Recent)
+                return;
+            case "popular":
+                setFeedSelected(Feed.Popular)
+                return;
+            case "following":
+                setFeedSelected(Feed.Following)
+                return;
+            default:
+                return;
+        }
+    
+    }, []) 
 
 
     let feed = null;
@@ -144,6 +173,9 @@ function Home() {
             break;
         case Feed.Popular:
             feed = popularFeed;
+            break;
+        case Feed.Following:
+            feed =  null
             break;
         default:
             break;
@@ -195,7 +227,7 @@ function Home() {
                         {feed}
                         
                         {feed && feed.length > 0 ? 
-                        <li className = "text-center text-white mb-5">
+                        <li className = "text-center text-white my-5">
                             End of Feed
                         </li>
                         : 

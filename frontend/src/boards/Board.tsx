@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { PostChirp } from "../App"
+import { PostChirp, UserContext } from "../App"
 import Layout from "../Layout"
 import Comment from "./Comment"
 import ReplyBox from "./ReplyBox"
@@ -8,7 +8,6 @@ import Vote from "./Vote"
 
 export interface Post extends PostChirp {
     commentCount: number
-    score: number
 }
 
 function Board() {
@@ -20,6 +19,8 @@ function Board() {
 
     const params = useParams();
     const navigate = useNavigate();
+
+    const userInfo = useContext(UserContext);
     
     useEffect( () => {
         if (params && params.id) {
@@ -29,6 +30,8 @@ function Board() {
 
     const fetchPost = async (postId: string) => {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
+
         const query =
         `query {    
             post(id: "${postId}") {
@@ -38,15 +41,17 @@ function Board() {
                 }
                 text
                 isComment
-                postDate
+                postDate(timezone: ${timezone})
                 score
                 commentCount
+                ${userInfo.state.username ? `voteStatus(username: "${userInfo.state.username}")` : ""}
                 comments(first:0, offset:5) {
                     id
                     text
                     commentCount
-                    postDate
+                    postDate(timezone: ${timezone})
                     score
+                    ${userInfo.state.username ? `voteStatus(username: "${userInfo.state.username}")` : ""}
                     author {
                         username
                         displayName
@@ -71,6 +76,7 @@ function Board() {
         setMainPost({
             id: postId,
             text: info.text,
+            voteStatus: userInfo.state.username ? info.voteStatus : null,
             postDate: info.postDate,
             authorUsername: info.author.username,
             authorDisplayName: info.author.displayName,
@@ -88,6 +94,7 @@ function Board() {
                 authorUsername = {info.author.username}
                 authorDisplayName = {info.author.displayName}
                 commentCount = {comment.commentCount}
+                voteStatus = {userInfo.state.username ? info.voteStatus : null}
                 score = {info.score}
             />
         }))
@@ -97,6 +104,7 @@ function Board() {
         if (!mainPost)
             return;
 
+        const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
@@ -105,8 +113,9 @@ function Board() {
                     id
                     text
                     commentCount
-                    postDate
+                    postDate(timezone: ${timezone})
                     score
+                    ${userInfo.state.username ? `voteStatus(username: "${userInfo.state.username}")` : ""}
                     author {
                         username
                         displayName
@@ -141,6 +150,7 @@ function Board() {
                     authorDisplayName = {comment.author.displayName}
                     commentCount = {comment.commentCount}
                     score = {comment.score}
+                    voteStatus = {userInfo.state.username ? info.voteStatus : null}
                 />
             }))
         )
@@ -161,7 +171,7 @@ function Board() {
                     </a>
 
                     {mainPost.text}
-                    <Vote postId = {mainPost.id} score = {mainPost.score}/>
+                    <Vote postId = {mainPost.id} initialScore = {mainPost.score} initialVoteStatus = {mainPost.voteStatus}/>
 
                     {replying ?
                     <ReplyBox postId = {mainPost.id} close = {() => {setReplying(false)}} addReply = {(reply) => setComments([reply, ...comments]) } /> 

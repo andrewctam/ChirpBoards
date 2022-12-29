@@ -16,6 +16,8 @@ export interface PostChirp {
     postDate: string
     authorUsername: string
     authorDisplayName: string
+    score: number
+    voteStatus: number | null
 }
 
 type UserAction =  

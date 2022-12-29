@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
+import { UserContext } from "../App"
 import { Post } from "./Board"
 import ReplyBox from "./ReplyBox"
 import Vote from "./Vote"
@@ -10,7 +11,10 @@ function Comment(props: Post) {
     const [showReplies, setShowReplies] = useState(true)
     const [replying, setReplying] = useState(false)    
 
+    const userInfo = useContext(UserContext);
+
     const loadMoreReplies = async () => {
+        const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
@@ -19,8 +23,9 @@ function Comment(props: Post) {
                     id
                     text
                     commentCount
-                    postDate
+                    postDate(timezone: ${timezone})
                     score
+                    ${userInfo.state.username ? `voteStatus(username: "${userInfo.state.username}")` : ""}
                     author {
                         username
                         displayName
@@ -52,6 +57,7 @@ function Comment(props: Post) {
                     authorDisplayName = {comment.author.displayName}
                     commentCount = {comment.commentCount}
                     score = {comment.score}
+                    voteStatus = {userInfo.state.username ? info.voteStatus : null}
                 />
             }))
         )
@@ -97,7 +103,7 @@ function Comment(props: Post) {
                    
                 </div>
 
-                <Vote postId = {props.id} score = {props.score}/>
+                <Vote postId = {props.id} initialScore = {props.score} initialVoteStatus = {props.voteStatus}/>
             </div>
 
             {showReplies ? 
