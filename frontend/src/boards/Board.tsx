@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { Chirp } from "../App"
+import { PostChirp } from "../App"
 import Layout from "../Layout"
 import Comment from "./Comment"
 import ReplyBox from "./ReplyBox"
 import Vote from "./Vote"
 
-export interface Post extends Chirp {
+export interface Post extends PostChirp {
     commentCount: number
     score: number
 }

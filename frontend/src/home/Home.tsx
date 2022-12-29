@@ -1,18 +1,19 @@
-import React, {useContext, useRef, useState} from "react";
+import React, {useContext, useEffect, useRef, useState} from "react";
 import Layout from "../Layout";
 import FeedButton from "./FeedButton";
 import Chirp from "./Chirp";
-import { Chirp as ChirpType, UserContext } from "../App";
+import { PostChirp, UserContext } from "../App";
 import { Navigate, useNavigate } from "react-router-dom";
 
-export enum Feed {Following, Popular, MyChirps}
+export enum Feed {Following, Recent, Popular}
 
 function Home() {
-    const [chirps, setChirps] = useState<ChirpType[]>([]);
     const [composedChirp, setComposedChirp] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
 
-    const [feed, setFeed] = useState<Feed>(Feed.Following)
+    const [feedSelected, setFeedSelected] = useState<Feed>(Feed.Recent)
+    const [recentFeed, setRecentFeed] = useState<JSX.Element[]>([]);
+    const [popularFeed, setPopularFeed] = useState<JSX.Element[]>([]);
 
     const userInfo = useContext(UserContext);
     const navigate = useNavigate();
@@ -66,6 +67,87 @@ function Home() {
         setErrorMsg("")
         setComposedChirp(text)
     }
+    
+    const getRecentPopularChirps = async (type: "recent" | "popular") => {
+        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const query = 
+        `query {
+            ${type}Posts {
+                id
+                text
+                author {
+                    username
+                    displayName
+                }
+                postDate
+            }
+        }`
+
+        
+        const response = await fetch(url ?? '', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({query})
+        }).then(res => res.json())
+        console.log(response)
+
+        if (type === "popular") {
+            setPopularFeed(response.data.popularPosts.map((post: any) => {
+                return <Chirp
+                        authorUsername={post.author.username}
+                        id = {post.id}
+                        postDate = {post.postDate}
+                        text = {post.text}
+                        key = {post.id}
+                    />
+            }))
+        } else {
+            setRecentFeed(response.data.recentPosts.map((post: any) => {
+                return <Chirp
+                        authorUsername={post.author.username}
+                        id = {post.id}
+                        postDate = {post.postDate}
+                        text = {post.text}
+                        key = {post.id}
+                    />
+            }))
+        }
+
+    }
+
+    useEffect(() => {
+        switch(feedSelected) {
+            case Feed.Recent:
+                if (recentFeed.length === 0) {
+                    getRecentPopularChirps("recent");
+                }
+                return;
+            case Feed.Popular:
+                if (popularFeed.length === 0) {
+                    getRecentPopularChirps("popular");
+                }
+                return;
+            
+            default: 
+            return;
+        }
+    }, [feedSelected])
+
+
+    let feed = null;
+
+    switch(feedSelected) {
+        case Feed.Recent:
+            feed = recentFeed;
+            break;
+        case Feed.Popular:
+            feed = popularFeed;
+            break;
+        default:
+            break;
+    }
 
     return ( <Layout>
         <div className = "mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
@@ -93,30 +175,31 @@ function Home() {
                 <div className = "grid rows-2">
                     <div className = "grid grid-cols-3">
                             <FeedButton 
+                                type = {Feed.Recent}
+                                name = {"Recent"}
+                                setFeed = {setFeedSelected}
+                                isActive = {feedSelected === Feed.Recent} />
+                            <FeedButton 
                                 type = {Feed.Popular}
                                 name = {"Popular"}
-                                setFeed = {setFeed}
-                                isActive = {feed === Feed.Popular} />
+                                setFeed = {setFeedSelected}
+                                isActive = {feedSelected === Feed.Popular} />
                             <FeedButton 
                                 type = {Feed.Following}
                                 name = {"Following"}
-                                setFeed = {setFeed}
-                                isActive = {feed === Feed.Following} />
-                            <FeedButton 
-                                type = {Feed.MyChirps}
-                                name = {"My Chirps"}
-                                setFeed = {setFeed}
-                                isActive = {feed === Feed.MyChirps} />
+                                setFeed = {setFeedSelected}
+                                isActive = {feedSelected === Feed.Following} />
                     </div>
-                    <ul>   
-                        {chirps.map((chirp => 
-                        <Chirp 
-                            key = {chirp.id}
-                            id = {chirp.id}
-                            text = {chirp.text}
-                            authorUsername = {chirp.authorUsername}
-                            postDate = {chirp.postDate}
-                        />))}
+                    
+                    <ul>
+                        {feed}
+                        
+                        {feed && feed.length > 0 ? 
+                        <li className = "text-center text-white mb-5">
+                            End of Feed
+                        </li>
+                        : 
+                        null}
                     </ul>
                 </div>
         </div>

@@ -84,7 +84,14 @@ function Register() {
     return (
     <Layout>
         <div className = "text-white mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
-
+            {userInfo.state.username ?
+            <div className = "mx-auto w-fit">
+                <p>Already signed in.</p>
+                <button onClick = {() => { userInfo.dispatch({type: "SIGNOUT"}) }} className = "py-2 px-4 my-2 w-full border border-black/10 bg-black rounded block">
+                    Sign Out
+                </button>
+            </div>
+            :
             <form onSubmit={register} className = "mx-auto border border-black/10 w-fit px-12 py-4 rounded-xl bg-slate-100/10 shadow-md">
                 <h1 className = "text-3xl">Register</h1>
 
@@ -125,12 +132,10 @@ function Register() {
                 <button onClick = {register} className = "py-2 px-4 my-2 border border-black/10 bg-black rounded block">
                     Register
                 </button>
-
-
-
             </form>
-
+        }
         </div>
+
     </Layout>)
 }
 

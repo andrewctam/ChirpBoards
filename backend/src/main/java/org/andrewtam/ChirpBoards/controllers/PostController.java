@@ -1,33 +1,60 @@
 package org.andrewtam.ChirpBoards.controllers;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 import org.andrewtam.ChirpBoards.GraphQLModels.BooleanResponse;
 import org.andrewtam.ChirpBoards.GraphQLModels.PostResponse;
+
 import org.andrewtam.ChirpBoards.MongoDBModels.Post;
 import org.andrewtam.ChirpBoards.MongoDBModels.User;
+
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
+
+
 @Controller
 public class PostController {
-    
+
+    Queue<Post> recentPosts = new LinkedList<Post>();
+    PriorityQueue<Post> popularPosts = new PriorityQueue<Post>(Comparator.reverseOrder());
+
     @Autowired
     private PostRepository postRepository;
 
     @Autowired
     private UserRepository userRepository;
+    
 
+    private void insertIntoFeeds(Post post) {
+        if (recentPosts.size() > 20) {
+            recentPosts.poll();
+        }
+
+        recentPosts.add(post);
+
+        popularPosts.offer(post);
+
+        if (popularPosts.size() > 20) {
+            popularPosts.poll();
+        }
+
+    }
+    
     @QueryMapping
     public Post post(@Argument String id) {
         if (id == null || !ObjectId.isValid(id)) {
@@ -35,6 +62,23 @@ public class PostController {
         }
         return postRepository.findById(new ObjectId(id));
     }
+
+    @QueryMapping
+    public Post[] recentPosts() {
+        Post[] reversed = new Post[recentPosts.size()];
+        int i = reversed.length - 1;
+        for (Post post : recentPosts) {
+            reversed[i] = post;
+            i--;
+        }
+        return reversed;
+    }
+
+    @QueryMapping
+    public Post[] popularPosts() {
+        return popularPosts.toArray(new Post[popularPosts.size()]);
+    }
+    
 
     @SchemaMapping
     public User author(Post post) {
@@ -88,7 +132,7 @@ public class PostController {
         user.getPosts().add(created.getId());
         userRepository.save(user);
         
-
+        insertIntoFeeds(created);
         return new PostResponse("", created);
     }
 
@@ -113,6 +157,7 @@ public class PostController {
         parentPost.getComments().add(created.getId());
         parentPost.adjustCommentCount(1);
         
+        insertIntoFeeds(created);
         postRepository.save(parentPost);
 
         return new PostResponse("", created);
@@ -143,6 +188,8 @@ public class PostController {
 
         if (upvotes.remove(user.getId())) {
             post.adjustScore(-1);
+
+            insertIntoFeeds(post);
             postRepository.save(post);
 
             return new BooleanResponse("", false);
@@ -153,6 +200,8 @@ public class PostController {
             upvotes.add(user.getId());
             post.adjustScore(1);
 
+
+            insertIntoFeeds(post);
             postRepository.save(post);
 
             return new BooleanResponse("", true);
@@ -188,6 +237,8 @@ public class PostController {
         if (downvotes.remove(user.getId())) {
             post.adjustScore(1);
             postRepository.save(post);
+
+            insertIntoFeeds(post);
             return new BooleanResponse("", false); //no longer downvoted
         } else {
             if (upvotes.remove(user.getId()))
@@ -196,6 +247,7 @@ public class PostController {
             downvotes.add(user.getId());
             post.adjustScore(-1);
 
+            insertIntoFeeds(post);
             postRepository.save(post);
             return new BooleanResponse("", true); //downvoted
         }

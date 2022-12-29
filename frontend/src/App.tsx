@@ -10,7 +10,7 @@ type UserInfo = {
     sessionToken: string;
 }
 
-export interface Chirp {
+export interface PostChirp {
     id: string
     text: string
     postDate: string

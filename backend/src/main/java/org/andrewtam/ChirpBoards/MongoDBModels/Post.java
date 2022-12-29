@@ -1,6 +1,8 @@
 package org.andrewtam.ChirpBoards.MongoDBModels;
 
+
 import java.sql.Date;
+import java.text.DateFormat;
 import java.util.LinkedList;
 
 import org.bson.types.ObjectId;
@@ -8,14 +10,15 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("posts")
-public class Post {
+public class Post implements Comparable<Post> {
 
     @Id
     private ObjectId id;
+
     private boolean isComment;
     private String text;
     private ObjectId author; //reference to user
-    private String postDate;
+    private String postDate; //string of date created
     private int score;
     private LinkedList<ObjectId> upvotes; //references to users
     private LinkedList<ObjectId> downvotes; //references to users
@@ -29,7 +32,10 @@ public class Post {
         this.author = author;
         this.isComment = isComment;
 
-        this.postDate = new Date(System.currentTimeMillis()).toString();
+        
+        //MM/dd/yy HH:mm:ss
+        this.postDate = DateFormat.getDateTimeInstance().format(new java.util.Date());
+
         this.upvotes = new LinkedList<ObjectId>();
         this.downvotes = new LinkedList<ObjectId>();
         this.score = 0;
@@ -70,5 +76,10 @@ public class Post {
 
     public int hashcode() {
         return this.id.hashCode();
+    }
+
+    public int compareTo(Post other) {
+
+        return this.score - other.score;
     }
 }

@@ -58,8 +58,7 @@ public class UserController {
         return page.getContent();
     }
 
-    
-    
+        
     @MutationMapping
     public LoginRegisterResponse register(@Argument String username, @Argument String displayName, @Argument String password) {
         if (userRepository.findByUsername(username) != null) {
@@ -79,6 +78,16 @@ public class UserController {
         userRepository.save(user);
 
         return new LoginRegisterResponse(null, sessionToken);
+    }
+
+    @MutationMapping
+    public Boolean verifySession(@Argument String username, @Argument String sessionToken) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return false;
+        }
+
+        return user.checkUserSession(userRepository, sessionToken);
     }
 
     @MutationMapping

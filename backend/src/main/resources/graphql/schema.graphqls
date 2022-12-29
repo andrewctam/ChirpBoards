@@ -3,6 +3,12 @@ type Query {
     user(username: String!): User
     #No authentication required.
     post(id: String!): Post
+    
+    #No authentication required. Retrieves the 20 most recent posts
+    recentPosts: [Post!]!
+
+    #No authentication required. Retrieves the 20 most popular posts
+    popularPosts: [Post!]!
 }
 
 type Mutation {
@@ -10,7 +16,6 @@ type Mutation {
     register(username: String!, displayName: String!, password: String!): LoginRegisterResponse
     #No authentication required. Signs in and returns a session token, or an error.
     signin(username: String!, password: String!): LoginRegisterResponse
-
 
 
     #Requires authentication. Creates and returns a post.
@@ -30,6 +35,9 @@ type Mutation {
 
     #Requires authentication. Follows or unfollows a user. Returns the ending follow status as a boolean, or null if unauthorized.
     toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): BooleanResponse
+
+    #Requires authentication. Checks if session is still valid
+    verifySession(username: String!, sessionToken: String!): Boolean!
 }
 
 

@@ -66,7 +66,7 @@ function Comment(props: Post) {
                         {props.authorDisplayName}
                     </a>
                     
-                    <div className = "text-xs inline">
+                    <div className = "text-xs ml-1 inline">
                         {` ${props.postDate}`} 
                     </div>
                 </div>
