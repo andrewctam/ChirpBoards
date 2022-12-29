@@ -20,7 +20,10 @@ public class User {
 
     private String hashedPassword;
 
+    private int followerCount;
     private LinkedList<ObjectId> followers; //references to users
+
+    private int followingCount;
     private LinkedList<ObjectId> following; //references to users
     private LinkedList<ObjectId> posts; //references to posts
 
@@ -57,6 +60,13 @@ public class User {
     public LinkedList<ObjectId> getFollowers() { return followers; }
 
     public LinkedList<ObjectId> getFollowing() { return following; }
+
+    public int getFollowerCount() { return followerCount; }
+    public void setFollowerCount(int followerCount) { this.followerCount = followerCount; }
+
+    public int getFollowingCount() { return followingCount; }
+    public void setFollowingCount(int followingCount) { this.followingCount = followingCount; }
+    
 
     public LinkedList<ObjectId> getPosts() { return posts; }
 

@@ -4,12 +4,19 @@ import { Post } from "./Board"
 import ReplyBox from "./ReplyBox"
 import Vote from "./Vote"
 
+interface CommentProps extends Post {
+    local: boolean
+}
 
-function Comment(props: Post) {
+function Comment(props: CommentProps) {
     const [replies, setReplies] = useState<JSX.Element[]>([])
+    //local replies are sent to the server, but also store them here to avoid a 2nd fetch
+    const [localReplies, setLocalReplies] = useState<JSX.Element[]>([])
+
     const [pageNum, setPageNum] = useState(0);
     const [showReplies, setShowReplies] = useState(true)
-    const [replying, setReplying] = useState(false)    
+    const [replying, setReplying] = useState(false)  
+
 
     const userInfo = useContext(UserContext);
 
@@ -58,6 +65,7 @@ function Comment(props: Post) {
                     commentCount = {comment.commentCount}
                     score = {comment.score}
                     voteStatus = {userInfo.state.username ? info.voteStatus : null}
+                    local = {false}
                 />
             }))
         )
@@ -66,14 +74,15 @@ function Comment(props: Post) {
 
     return (
         <div className = "w-[95%] ml-[5%]">
-            <div className = "my-6 px-8 py-4 border border-black rounded-lg bg-white/50 relative break-all" >
+            <div className = {`my-6 px-8 py-4 border border-black rounded-lg relative break-all bg-gray-100 ${props.local ? "animate-fadeColor": ""} `} >
                 <div className = "block mb-3">
-                    <a href = "./profile">
+                    <a href={`/profile/${props.authorUsername}`}>
                         {props.authorDisplayName}
+                        <div className="text-xs inline ml-1"> {`@${props.authorUsername}`} </div>
                     </a>
                     
-                    <div className = "text-xs ml-1 inline">
-                        {` ${props.postDate}`} 
+                    <div className = "text-xs inline">
+                        {` • ${props.postDate}`}
                     </div>
                 </div>
                 
@@ -83,10 +92,12 @@ function Comment(props: Post) {
                 <ReplyBox 
                     close = {() => {setReplying(false)}}
                     postId = {props.id}
-                    addReply = {(reply) => setReplies([reply, ...replies])}
+                    addReply = {(reply) => {
+                        setLocalReplies([reply, ...localReplies]); 
+                    }}
                 /> : null}
 
-                <div className = "absolute -bottom-3 right-6">
+                <div className = "absolute -bottom-3 right-12">
                     {props.commentCount > 0 ?
                     <button className = {`bg-${showReplies ? "rose-100" : "gray-200"} text-black border border-black/20 rounded shadow-md text-xs mr-2 px-2 py-1`} 
                         onClick = {() => {setShowReplies(!showReplies)}}>
@@ -108,7 +119,7 @@ function Comment(props: Post) {
 
             {showReplies ? 
                 <div className = "w-full border-l border-l-white">
-                    {replies}
+                    {localReplies.length > 0 ? localReplies.concat(replies) : replies}
 
                     {replies.length < props.commentCount ?
                         <p onClick = {loadMoreReplies} className = "cursor-pointer ml-[5%] text-sky-100">{`Load ${pageNum === 0 ? "" : "more"} replies`}</p>

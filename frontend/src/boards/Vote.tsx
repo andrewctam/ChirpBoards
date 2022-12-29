@@ -1,4 +1,5 @@
 import { useContext, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { UserContext } from "../App"
 
 
@@ -14,7 +15,14 @@ function Vote(props: VoteProps) {
     const [score, setScore] = useState(props.initialScore)
     const [voteStatus, setVoteStatus] = useState(props.initialVoteStatus)
 
+    const navigate = useNavigate();
+
     const vote = async (type: "upvote" | "downvote") => {
+        if (!userInfo.state.username) {
+            navigate("/signin?return=true")
+            return;
+        }
+
         const queryType = type + "Post"
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query = 
@@ -46,12 +54,12 @@ function Vote(props: VoteProps) {
 
 
     return (
-        <div className="absolute -right-2 my-auto h-fit top-0 bottom-0 bg-gray-200 border border-black/20 py-1 px-2 rounded-xl text-center text-sm">
-            <button style = { {color: voteStatus === 1 ? "rgb(100, 200, 100)" : "black"} } className = "font-extrabold" onClick = {() => {vote("upvote")}}>
+        <div className="absolute -right-5 my-auto h-fit top-0 bottom-0 bg-white border border-black/20 py-1 px-1 w-12 rounded-xl text-center text-sm">
+            <button style = { {color: voteStatus === 1 ? "rgb(0, 200, 0)" : "black"} } className = "font-extrabold" onClick = {() => {vote("upvote")}}>
             ↑
             </button>
 
-            <div> {score} </div>
+            <div> {formatScore(score)} </div>
 
             <button style = { {color: voteStatus === -1 ? "red" : "black"} } className = "font-extrabold" onClick = {() => {vote("downvote")}}>
             ↓
@@ -61,4 +69,14 @@ function Vote(props: VoteProps) {
 
 }
 
+const formatScore = (num: number): string => { 
+    if (num < 1000)
+        return num.toString();
+    else if (num < 1000000)
+        return Math.floor(num / 1000) + "k";
+    else if (num < 1000000000)
+        return Math.floor(num / 1000000) + "m";
+    else 
+        return ":)"
+}
 export default Vote

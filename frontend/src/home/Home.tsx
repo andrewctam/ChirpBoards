@@ -4,14 +4,15 @@ import FeedButton from "./FeedButton";
 import Chirp from "./Chirp";
 import { PostChirp, UserContext } from "../App";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import SpinningCircle from "../SpinningCircle";
 
-export enum Feed {Following, Recent, Popular}
+export enum Feed {None, Following, Recent, Popular}
 
 function Home() {
     const [composedChirp, setComposedChirp] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
 
-    const [feedSelected, setFeedSelected] = useState<Feed>(Feed.Recent)
+    const [feedSelected, setFeedSelected] = useState<Feed>(Feed.None)
     const [recentFeed, setRecentFeed] = useState<JSX.Element[]>([]);
     const [popularFeed, setPopularFeed] = useState<JSX.Element[]>([]);
 
@@ -20,8 +21,25 @@ function Home() {
 
     const [searchParams, setSearchParams] = useSearchParams();
 
+    const updateComposedChirp = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const text = (e.target as HTMLTextAreaElement).value
+
+        if (text.length > 500)  {
+            setComposedChirp(text.substring(0, 500))
+            setErrorMsg("Character limit reached!")
+            return
+        }
+        setErrorMsg("")
+        setComposedChirp(text)
+    }
+
     const createChirp = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
+
+        if (!userInfo.state.username) {
+            navigate("/signin?return=true")
+            return;
+        }
 
         if (!composedChirp) {
             setErrorMsg("Text can not be blank!")
@@ -57,18 +75,6 @@ function Home() {
 
         navigate(`/board/${response.data.createPost.post.id}`)
     }
-
-    const updateComposedChirp = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const text = (e.target as HTMLTextAreaElement).value
-
-        if (text.length > 500)  {
-            setComposedChirp(text.substring(0, 500))
-            setErrorMsg("Character limit reached!")
-            return
-        }
-        setErrorMsg("")
-        setComposedChirp(text)
-    }
     
     const getRecentPopularChirps = async (type: "recent" | "popular") => {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
@@ -88,7 +94,6 @@ function Home() {
             }
         }`
 
-        
         const response = await fetch(url ?? '', {
             method: "POST",
             headers: {
@@ -128,6 +133,8 @@ function Home() {
 
     }
 
+
+
     useEffect(() => {
         switch(feedSelected) {
             case Feed.Recent:
@@ -139,7 +146,10 @@ function Home() {
                 setSearchParams({feed: "popular"})
                 return;
             case Feed.Following:
-                setSearchParams({feed: "following"})
+                if (!userInfo.state.username) {
+                    navigate("/signin?return=true")
+                } else
+                    setSearchParams({feed: "following"})
                 return;
             
             default: 
@@ -148,6 +158,7 @@ function Home() {
     }, [feedSelected])
 
     useEffect(() => {
+        //on load
         switch(searchParams.get("feed")) {
             case "recent":
                 setFeedSelected(Feed.Recent)
@@ -159,7 +170,7 @@ function Home() {
                 setFeedSelected(Feed.Following)
                 return;
             default:
-                return;
+                setFeedSelected(Feed.Recent);
         }
     
     }, []) 
@@ -182,7 +193,7 @@ function Home() {
     }
 
     return ( <Layout>
-        <div className = "mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
+            <div className = "mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
                 {userInfo.state.username ?
                 <form onSubmit = {createChirp} className = "w-full py-2 mb-12 bg-gray-100/20 border border-black/10 shadow-lg relative rounded">
                     <textarea 
@@ -203,7 +214,7 @@ function Home() {
                 </form>
                 : null}
 
-                    
+
                 <div className = "grid rows-2">
                     <div className = "grid grid-cols-3">
                             <FeedButton 
@@ -231,10 +242,11 @@ function Home() {
                             End of Feed
                         </li>
                         : 
-                        null}
+                        <SpinningCircle/>}
                     </ul>
+                    
                 </div>
-        </div>
+            </div>
     </Layout>)
 }
 

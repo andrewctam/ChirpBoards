@@ -2,7 +2,7 @@ import Layout from "../Layout";
 import React, { useContext, useEffect, useState } from "react";
 import FormInput from "./FormInput";
 import { UserContext } from "../App";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 function Signin() {
     const [usernameInput, setUsernameInput] = useState("");
@@ -11,6 +11,7 @@ function Signin() {
 
     const userInfo = useContext(UserContext);
     const navigate = useNavigate()
+    const [searchParams, setSearchParams] = useSearchParams();
 
 
     const signin = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
@@ -58,9 +59,12 @@ function Signin() {
 
         localStorage.setItem("username", usernameInput);
         localStorage.setItem("sessionToken", sessionToken);
-        navigate("/");
-    }
 
+        if (searchParams && searchParams.get("return") === "true") {
+            navigate(-1);
+        } else
+            navigate("/");
+    }
 
     return (
     <Layout>
@@ -75,7 +79,7 @@ function Signin() {
             :
             <form onSubmit = {signin} className = "mx-auto border border-black/10 w-fit px-12 py-4 rounded-xl bg-slate-100/10 shadow-md">
                 <h1 className = "text-3xl">Sign In</h1>
-                <a href = "./register" className = "text-sm text-sky-200 underline">or register here</a>
+                <a href = "/register" className = "text-sm text-sky-200 underline">or register here</a>
 
                 <FormInput
                     name = "Username"

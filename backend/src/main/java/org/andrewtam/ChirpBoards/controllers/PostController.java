@@ -1,10 +1,10 @@
 package org.andrewtam.ChirpBoards.controllers;
 
 import java.text.DateFormat;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.Queue;
 
 import org.andrewtam.ChirpBoards.GraphQLModels.IntResponse;
 import org.andrewtam.ChirpBoards.GraphQLModels.PostResponse;
@@ -30,7 +30,7 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class PostController {
 
-    Queue<Post> recentPosts = new LinkedList<Post>();
+    LinkedList<Post> recentPosts = new LinkedList<Post>();
     PriorityQueue<Post> popularPosts = new PriorityQueue<Post>();
 
     @Autowired
@@ -41,13 +41,21 @@ public class PostController {
     
 
     private void insertIntoFeeds(Post post) {
-        if (recentPosts.contains(post)) {
-            recentPosts.remove(post);
+        boolean adjustedRecent = false;
+        for (Post p : recentPosts) {
+            if (p.equals(post)) {
+                p.setScore(post.getScore());
+                adjustedRecent = true;
+                break;
+            }
         }
-        if (recentPosts.size() > 20) {
-            recentPosts.poll();
+
+        if (!adjustedRecent) {
+            if (recentPosts.size() > 20) {
+                recentPosts.poll();
+            }
+            recentPosts.add(post);
         }
-        recentPosts.add(post);
 
 
         if (popularPosts.contains(post)) {
@@ -82,19 +90,19 @@ public class PostController {
 
     @QueryMapping
     public Post[] popularPosts() {
-        Post[] reversed = popularPosts.toArray(new Post[popularPosts.size()]);
-        for (int i = 0; i < reversed.length / 2; i++) {
-            Post temp = reversed[i];
-            reversed[i] = reversed[reversed.length - i - 1];
-            reversed[reversed.length - i - 1] = temp;
+        Post[] posts = new Post[popularPosts.size()];
+
+        PriorityQueue<Post> temp = new PriorityQueue<Post>();
+
+        int i = posts.length - 1;
+        while (!popularPosts.isEmpty()) {
+            posts[i] = popularPosts.poll();
+            temp.offer(posts[i]);
+            i--;
         }
 
-        for (Post a : reversed) {
-            System.out.print(a.getScore() + " ");
-        }
-        System.out.println();
-
-        return reversed;
+        popularPosts = temp;
+        return posts;
     }
     
     @QueryMapping
@@ -203,7 +211,6 @@ public class PostController {
         parentPost.getComments().add(created.getId());
         parentPost.adjustCommentCount(1);
         
-        insertIntoFeeds(created);
         postRepository.save(parentPost);
 
         return new PostResponse("", created);

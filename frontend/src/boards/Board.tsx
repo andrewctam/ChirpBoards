@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { PostChirp, UserContext } from "../App"
 import Layout from "../Layout"
+import SpinningCircle from "../SpinningCircle"
 import Comment from "./Comment"
 import ReplyBox from "./ReplyBox"
 import Vote from "./Vote"
@@ -14,7 +15,10 @@ function Board() {
     const [mainPost, setMainPost] = useState<Post | null>(null)
 
     const [comments, setComments] = useState<JSX.Element[]>([])
-    const [pageNum, setPageNum] = useState(0);
+    //local comments are sent to the server, but also store them here to avoid a 2nd fetch
+    const [localComments, setLocalComments] = useState<JSX.Element[]>([])
+
+    const [pageNum, setPageNum] = useState(1); //start at 1 because the first page is already loaded
     const [replying, setReplying] = useState(false)
 
     const params = useParams();
@@ -71,8 +75,6 @@ function Board() {
         if (!info || info.isComment)
             navigate("/")
 
-        setPageNum(1);
-
         setMainPost({
             id: postId,
             text: info.text,
@@ -91,11 +93,12 @@ function Board() {
                 id = {comment.id}
                 text = {comment.text}
                 postDate = {comment.postDate}
-                authorUsername = {info.author.username}
-                authorDisplayName = {info.author.displayName}
+                authorUsername = {comment.author.username}
+                authorDisplayName = {comment.author.displayName}
                 commentCount = {comment.commentCount}
-                voteStatus = {userInfo.state.username ? info.voteStatus : null}
-                score = {info.score}
+                voteStatus = {userInfo.state.username ? comment.voteStatus : null}
+                score = {comment.score}
+                local = {false}
             />
         }))
     }
@@ -151,6 +154,7 @@ function Board() {
                     commentCount = {comment.commentCount}
                     score = {comment.score}
                     voteStatus = {userInfo.state.username ? info.voteStatus : null}
+                    local = {false}
                 />
             }))
         )
@@ -165,8 +169,9 @@ function Board() {
 
                 <div className = "w-full mt-12 mb-6 p-8 border border-black rounded-xl bg-sky-100 relative break-all">
 
-                    <a href = "./profile" className = "absolute -top-8 left-2 bg-white text-black rounded-xl p-2 border border-black">
-                        {mainPost.authorUsername}
+                    <a href={`/profile/${mainPost.authorUsername}`} className = "absolute -top-8 left-2 bg-white text-black rounded-xl p-2 border border-black">
+                        {mainPost.authorDisplayName}
+                        <div className="text-xs inline"> {`@${mainPost.authorUsername}`} </div>
                         <div className = "text-xs"> {mainPost.postDate} </div>
                     </a>
 
@@ -174,9 +179,12 @@ function Board() {
                     <Vote postId = {mainPost.id} initialScore = {mainPost.score} initialVoteStatus = {mainPost.voteStatus}/>
 
                     {replying ?
-                    <ReplyBox postId = {mainPost.id} close = {() => {setReplying(false)}} addReply = {(reply) => setComments([reply, ...comments]) } /> 
+                    <ReplyBox postId = {mainPost.id} close = {() => {setReplying(false)}} 
+                        addReply = {(reply) => {
+                            setLocalComments([reply, ...localComments])
+                        }}/> 
                     : 
-                    <button className = "bg-gray-200 text-black border border-black/20 rounded shadow-md text-xs absolute -bottom-3 right-6 px-2 py-1" 
+                    <button className = "px-2 py-1 absolute -bottom-3 right-12 bg-gray-200 text-black border border-black/20 rounded shadow-md text-xs" 
                         onClick = {() => {setReplying(true)}}>
                             Reply
                     </button>
@@ -185,14 +193,17 @@ function Board() {
                 
                 
                 <div className = "w-full border-l mb-10 border-l-gray-200">
-                    {comments}
+                    {localComments.length > 0 ? localComments.concat(comments) : comments}
 
                     {comments.length < mainPost.commentCount ?
                         <p onClick = {loadMoreComments} className = "cursor-pointer ml-[5%] text-sky-100">Load more comments</p>
                     : null}
                 </div>                
 
-            </div> : null}
+            </div> 
+
+            :
+            <SpinningCircle />}
         </Layout>
     )
 

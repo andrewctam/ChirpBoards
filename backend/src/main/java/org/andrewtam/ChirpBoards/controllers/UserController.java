@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.andrewtam.ChirpBoards.GraphQLModels.BooleanResponse;
-import org.andrewtam.ChirpBoards.GraphQLModels.LoginRegisterResponse;
+import org.andrewtam.ChirpBoards.GraphQLModels.SigninRegisterResponse;
 import org.andrewtam.ChirpBoards.MongoDBModels.Post;
 import org.andrewtam.ChirpBoards.MongoDBModels.User;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
@@ -60,9 +60,9 @@ public class UserController {
 
         
     @MutationMapping
-    public LoginRegisterResponse register(@Argument String username, @Argument String displayName, @Argument String password) {
+    public SigninRegisterResponse register(@Argument String username, @Argument String displayName, @Argument String password) {
         if (userRepository.findByUsername(username) != null) {
-            return new LoginRegisterResponse("Username already taken", "");
+            return new SigninRegisterResponse("Username already taken", "");
         }
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -77,7 +77,7 @@ public class UserController {
         
         userRepository.save(user);
 
-        return new LoginRegisterResponse(null, sessionToken);
+        return new SigninRegisterResponse(null, sessionToken);
     }
 
     @MutationMapping
@@ -91,15 +91,15 @@ public class UserController {
     }
 
     @MutationMapping
-    public LoginRegisterResponse signin(@Argument String username, @Argument String password) {
+    public SigninRegisterResponse signin(@Argument String username, @Argument String password) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            return new LoginRegisterResponse("Username not found", null);
+            return new SigninRegisterResponse("Username not found", null);
         }
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         if (!encoder.matches(password, user.getHashedPassword())) {
-            return new LoginRegisterResponse("Incorrect password", null);
+            return new SigninRegisterResponse("Incorrect password", null);
         }
 
         String sessionToken = UUID.randomUUID().toString();
@@ -108,7 +108,7 @@ public class UserController {
 
         userRepository.save(user);
 
-        return new LoginRegisterResponse(null, sessionToken);
+        return new SigninRegisterResponse(null, sessionToken);
     }
 
     @MutationMapping
@@ -149,11 +149,19 @@ public class UserController {
 
         if (user.getFollowing().remove(followUser.getId())) {
             followUser.getFollowers().remove(user.getId());
+
+            user.setFollowingCount(user.getFollowingCount() - 1);
+            followUser.setFollowerCount(followUser.getFollowerCount() - 1);
+
             nowFollowing = false;
 
         } else {
             user.getFollowing().add(followUser.getId());
             followUser.getFollowers().add(user.getId());
+
+            user.setFollowingCount(user.getFollowingCount() + 1);
+            followUser.setFollowerCount(followUser.getFollowerCount() + 1);
+            
             nowFollowing = true;
         }
         

@@ -15,9 +15,9 @@ type Query {
 
 type Mutation {
     #No authentication required. Registers a user and returns a session token, or an error.
-    register(username: String!, displayName: String!, password: String!): LoginRegisterResponse
+    register(username: String!, displayName: String!, password: String!): SigninRegisterResponse
     #No authentication required. Signs in and returns a session token, or an error.
-    signin(username: String!, password: String!): LoginRegisterResponse
+    signin(username: String!, password: String!): SigninRegisterResponse
 
 
     #Requires authentication. Creates and returns a post.
@@ -39,13 +39,15 @@ type Mutation {
     toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): BooleanResponse
 
     #Requires authentication. Checks if session is still valid
-    verifySession(username: String!, sessionToken: String!): Boolean!
+    verifySession(username: String!, sessionToken: String!): Boolean
 }
 
 
 type User {
     username: String!
     displayName: String!
+    followerCount: Int!
+    followingCount: Int!
     followers(first: Int = 0, offset: Int = 10): [User!]!
     following(first: Int = 0, offset: Int = 10): [User!]!
     posts(first: Int = 0, offset: Int = 10): [Post!]!
@@ -66,7 +68,7 @@ type Post {
     comments(first: Int = 0, offset: Int = 10): [Post!]! 
 }
 
-type LoginRegisterResponse {
+type SigninRegisterResponse {
     msg: String
     sessionToken: String
 }

@@ -1,4 +1,5 @@
 import React, { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { UserContext } from "../App";
 import Comment from "./Comment";
 interface ReplyBoxProps {
@@ -10,10 +11,17 @@ interface ReplyBoxProps {
 function ReplyBox(props: ReplyBoxProps) {
     const [comment, setComment] = useState("");
     
+    const navigate = useNavigate();
     const userInfo = useContext(UserContext);
 
     const addComment = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
+
+        if (!userInfo.state.username) {
+            navigate("/signin?return=true")
+            return;
+        }
+
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
 
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
@@ -57,6 +65,7 @@ function ReplyBox(props: ReplyBoxProps) {
                 commentCount = {0}
                 score = {0}
                 voteStatus = {0}
+                local = {true}
             />
         
         )
@@ -65,7 +74,7 @@ function ReplyBox(props: ReplyBoxProps) {
     }
 
     return (
-        <form onSubmit = {addComment} className = "w-full h-24 my-6 bg-gray-200 border border-black/25 shadow-lg relative rounded-xl">
+        <form onSubmit = {addComment} className = "w-[95%] mx-auto h-24 my-6 bg-gray-200/25 border border-black/25 shadow-lg relative rounded-xl">
             <textarea 
                 value = {comment} 
                 onChange = {(e) => setComment(e.target.value)} 

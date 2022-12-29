@@ -49,6 +49,8 @@ public class Post implements Comparable<Post> {
     public String getText() { return text; }
 
     public int getScore() { return score; }
+
+    public void setScore(int score) { this.score = score; }
     
     public int adjustScore(int change) {
         this.score += change;
@@ -85,6 +87,18 @@ public class Post implements Comparable<Post> {
     }
 
     public int compareTo(Post other) {
-        return this.score - other.score;
+        if (this.score == other.score) {
+            if (this.postDate > other.postDate) //earlier has higher priority
+                return 1;
+            else if (this.postDate == other.postDate) //almost impossible?
+                return 0;
+            else
+                return -1;
+
+        } else if (this.score > other.score)
+            return 1;
+        else
+            return -1;
+
     }
 }
