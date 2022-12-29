@@ -16,7 +16,7 @@ function Register() {
 
     useEffect(() => {
         if (userInfo.state.username)
-            navigate("/")
+            setError("Already logged in")
     }, [])
     
     const register = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {

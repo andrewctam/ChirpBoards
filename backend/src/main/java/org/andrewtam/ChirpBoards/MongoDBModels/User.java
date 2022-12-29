@@ -88,6 +88,9 @@ public class User {
         long timeDiff = user.getSessionTokenExpiration().getTime() - System.currentTimeMillis();
         
         if (timeDiff < 0) {
+            user.setSessionToken(null);
+            user.setSessionTokenExpiration(null);
+            userRepository.save(user);
             return false;
         } else if (timeDiff < 300000 ) { // 5 minutes
             user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 900000 )); // 15 minutes

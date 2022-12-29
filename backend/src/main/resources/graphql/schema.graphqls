@@ -6,27 +6,30 @@ type Query {
 }
 
 type Mutation {
-    #No authentication required. Registers a user and sends either a session token or an error.
+    #No authentication required. Registers a user and returns a session token, or an error.
     register(username: String!, displayName: String!, password: String!): LoginRegisterResponse
-    #No authentication required. Signs in and sends either a session token or an error.
+    #No authentication required. Signs in and returns a session token, or an error.
     signin(username: String!, password: String!): LoginRegisterResponse
 
 
 
     #Requires authentication. Creates and returns a post.
-    createPost(text: String!, isComment: Boolean!, username: String!, sessionToken: String!): Post
+    createPost(text: String!, username: String!, sessionToken: String!): PostResponse
+
+    #Requires authentication. Creates and returns a post (comment).
+    comment(text: String!, parentPostId: String!, username: String!, sessionToken: String!): PostResponse
     
     #Requires authentication. Adds or removes a user from the upvotes list of a post. Returns the ending upvote status as a boolean, or null if unauthorized.
-    upvotePost(postId: String!, username: String!, sessionToken: String!): Boolean
+    upvotePost(postId: String!, username: String!, sessionToken: String!): BooleanResponse
 
     #Requires authentication. Adds or removes a user from the downvotes list of a post. Returns the ending downvote status as a boolean, or null if unauthorized.
-    downvotePost(postId: String!, username: String!, sessionToken: String!): Boolean
+    downvotePost(postId: String!, username: String!, sessionToken: String!): BooleanResponse
 
     #Requires authentication. Clears the session token from the database. Returns true if successful, or null if unauthorized.
-    signout(username: String!, sessionToken: String!): Boolean
+    signout(username: String!, sessionToken: String!): BooleanResponse
 
     #Requires authentication. Follows or unfollows a user. Returns the ending follow status as a boolean, or null if unauthorized.
-    toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): Boolean
+    toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): BooleanResponse
 }
 
 
@@ -44,7 +47,9 @@ type Post {
     author: User!
     text: String!
     isComment: Boolean!
+    commentCount: Int!
     postDate: String!
+    score: Int!
     upvotes(first: Int = 0, offset: Int = 10): [User!]!
     downvotes(first: Int = 0, offset: Int = 10): [User!]!
     comments(first: Int = 0, offset: Int = 10): [Post!]! 
@@ -54,4 +59,17 @@ type LoginRegisterResponse {
     error: String
     sessionToken: String
 }
+
+type PostResponse {
+    error: String
+    post: Post
+}
+
+
+type BooleanResponse {
+    error: String
+    endRes: Boolean
+}
+
+
 

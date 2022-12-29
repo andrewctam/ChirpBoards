@@ -24,9 +24,9 @@ const NavBar = () => {
 
     }
 
-    return <div className = 'w-full bg-stone-800 shadow-lg p-4  text-white flex justify-between items-center'>
+    return <div className = 'w-full bg-stone-800 shadow-lg p-4 text-white flex justify-between items-center'>
                 <h1 className = "font-semibold text-2xl">
-                    <a href = "./">Chirp Boards</a>
+                    <a href = "/">Chirp Boards</a>
                 </h1>
 
 
@@ -37,8 +37,8 @@ const NavBar = () => {
                         </p>
                         :
                         <>
-                            <a className = "text-gray-100" href = "./signin">Sign In</a>
-                            <a className = "ml-6 text-sky-300" href = "./register">Register</a>
+                            <a className = "text-gray-100" href = "/signin">Sign In</a>
+                            <a className = "ml-6 text-sky-300" href = "/register">Register</a>
                         </>
 
                     }

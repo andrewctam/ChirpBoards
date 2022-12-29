@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.andrewtam.ChirpBoards.GraphQLModels.BooleanResponse;
 import org.andrewtam.ChirpBoards.GraphQLModels.LoginRegisterResponse;
 import org.andrewtam.ChirpBoards.MongoDBModels.Post;
 import org.andrewtam.ChirpBoards.MongoDBModels.User;
@@ -102,14 +103,14 @@ public class UserController {
     }
 
     @MutationMapping
-    public Boolean signout(@Argument String username, @Argument String sessionToken) {
+    public BooleanResponse signout(@Argument String username, @Argument String sessionToken) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            return null;
+            return new BooleanResponse("Username not found", null);
         }
 
         if (!user.checkUserSession(userRepository, sessionToken))
-            return null;
+            return new BooleanResponse("User not authenticated", null);
 
 
         user.setSessionToken(null);
@@ -117,23 +118,23 @@ public class UserController {
 
         userRepository.save(user);
 
-        return true;
+        return new BooleanResponse("", true);
     }
 
     @MutationMapping
-    public Boolean toggleFollow(@Argument String userToFollow, @Argument String username, @Argument String sessionToken) {
+    public BooleanResponse toggleFollow(@Argument String userToFollow, @Argument String username, @Argument String sessionToken) {
         if (userToFollow.equals(username))
-            return null;
+            return new BooleanResponse("Can not follow youeself", null);
             
         User user = userRepository.findByUsername(username);
         User followUser = userRepository.findByUsername(userToFollow);
 
         if (user == null || followUser == null) {
-            return null;
+            return new BooleanResponse("User not found", null);
         }
 
         if (!user.checkUserSession(userRepository, sessionToken))
-            return null;
+            return new BooleanResponse("User not authenticated", null);
 
         boolean nowFollowing;
 
@@ -150,7 +151,7 @@ public class UserController {
 
         userRepository.save(user);
         userRepository.save(followUser);
-        return nowFollowing;
+        return new BooleanResponse("", nowFollowing);
     }
 
 }

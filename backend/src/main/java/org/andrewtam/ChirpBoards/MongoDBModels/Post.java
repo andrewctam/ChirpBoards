@@ -16,9 +16,11 @@ public class Post {
     private String text;
     private ObjectId author; //reference to user
     private String postDate;
+    private int score;
     private LinkedList<ObjectId> upvotes; //references to users
     private LinkedList<ObjectId> downvotes; //references to users
 
+    private int commentCount;
     private LinkedList<ObjectId> comments; //references to posts
 
 
@@ -30,7 +32,9 @@ public class Post {
         this.postDate = new Date(System.currentTimeMillis()).toString();
         this.upvotes = new LinkedList<ObjectId>();
         this.downvotes = new LinkedList<ObjectId>();
+        this.score = 0;
 
+        this.commentCount = 0;
         this.comments = new LinkedList<ObjectId>();
     }
 
@@ -39,6 +43,14 @@ public class Post {
     public boolean isComment() { return isComment; }
 
     public String getText() { return text; }
+
+    public int getScore() { return score; }
+    
+    public int adjustScore(int change) {
+        this.score += change;
+        return this.score;
+     }
+
     
     public ObjectId getAuthor() { return author; }
 
@@ -49,6 +61,12 @@ public class Post {
     public LinkedList<ObjectId> getDownvotes() { return downvotes; }
 
     public LinkedList<ObjectId> getComments() { return comments; }
+
+    public int getCommentCount() { return commentCount; }
+    public int adjustCommentCount(int change) {
+        this.commentCount += change;
+        return this.commentCount;
+    }
 
     public int hashcode() {
         return this.id.hashCode();

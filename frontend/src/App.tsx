@@ -10,6 +10,14 @@ type UserInfo = {
     sessionToken: string;
 }
 
+export interface Chirp {
+    id: string
+    text: string
+    postDate: string
+    authorUsername: string
+    authorDisplayName: string
+}
+
 type UserAction =  
     {type: "UPDATE", payload: {username: string, sessionToken: string}} |
     {type: "REFRESH", payload: {sessionToken: string}} |
@@ -58,7 +66,8 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={ <Home /> }/>
-                    <Route path="/board" element={ <Board id = "asdasd" /> }/>
+                    <Route path="/board" element={ <Board /> }/>
+                    <Route path="/board/:id" element={ <Board /> }/>
                     <Route path="/signin" element={  <Signin /> }/>
                     <Route path="/register" element={  <Register /> }/>
                 </Routes>

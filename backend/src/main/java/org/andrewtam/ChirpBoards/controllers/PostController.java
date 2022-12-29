@@ -3,6 +3,8 @@ package org.andrewtam.ChirpBoards.controllers;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.andrewtam.ChirpBoards.GraphQLModels.BooleanResponse;
+import org.andrewtam.ChirpBoards.GraphQLModels.PostResponse;
 import org.andrewtam.ChirpBoards.MongoDBModels.Post;
 import org.andrewtam.ChirpBoards.MongoDBModels.User;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
@@ -68,105 +70,134 @@ public class PostController {
 
 
     @MutationMapping
-    public Post createPost(@Argument String text, @Argument boolean isComment, @Argument String username, @Argument String sessionToken) {
-        if (text == "" || username == "" || (!isComment && text.length() > 500)) {
-            return null;
+    public PostResponse createPost(@Argument String text, @Argument String username, @Argument String sessionToken) {
+        if (text == "" || username == "" || text.length() > 500) {
+            return new PostResponse("Invalid inputs", null);
         }
 
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            return null;
+            return new PostResponse("User not found", null);
         }
 
         if (!user.checkUserSession(userRepository, sessionToken))
-            return null;
+            return new PostResponse("User not authenticated", null);
 
-        Post created = postRepository.save(new Post(text, user.getId(), isComment));
+        Post created = postRepository.save(new Post(text, user.getId(), false));
+            
+        user.getPosts().add(created.getId());
+        userRepository.save(user);
+        
 
-        if (!isComment) {
-            user.getPosts().add(created.getId());
-            userRepository.save(user);
-        }
-
-        return created;
-
+        return new PostResponse("", created);
     }
 
     @MutationMapping
-    public Boolean upvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
-        if (postId == null || !ObjectId.isValid(postId) || username == "") {
-            return null;
+    public PostResponse comment(@Argument String text, @Argument String parentPostId, @Argument String username, @Argument String sessionToken) {
+        if (text == "" || parentPostId == null || !ObjectId.isValid(parentPostId) || username == "") {
+            return new PostResponse("Invalid inputs", null);
         }
 
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            return null;
+            return new PostResponse("User not found", null);
+        }
+        if (!user.checkUserSession(userRepository, sessionToken))
+            return new PostResponse("User not authenticated", null);
+
+        Post parentPost = postRepository.findById(new ObjectId(parentPostId));
+        if (parentPost == null)
+            return new PostResponse("Post not found", null);
+            
+        Post created = postRepository.save(new Post(text, user.getId(), true));
+        parentPost.getComments().add(created.getId());
+        parentPost.adjustCommentCount(1);
+        
+        postRepository.save(parentPost);
+
+        return new PostResponse("", created);
+    }
+
+    @MutationMapping
+    public BooleanResponse upvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
+        if (postId == null || !ObjectId.isValid(postId) || username == "") {
+            return new BooleanResponse("Invalid inputs", null);
         }
 
-        if (!user.getSessionToken().equals(sessionToken) || 
-            user.getSessionTokenExpiration().getTime() < System.currentTimeMillis()) {
-            return null;
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return new BooleanResponse("User not found", null);
         }
-        
+
+        if (!user.checkUserSession(userRepository, sessionToken))
+            return new BooleanResponse("User not authenticated", null);
 
         Post post = postRepository.findById(new ObjectId(postId));
 
         if (post == null) {
-            return null;
+            return new BooleanResponse("Post not found", null);
         }
 
         LinkedList<ObjectId> upvotes = post.getUpvotes();
         LinkedList<ObjectId> downvotes = post.getDownvotes();
 
         if (upvotes.remove(user.getId())) {
+            post.adjustScore(-1);
             postRepository.save(post);
-            return false;
+
+            return new BooleanResponse("", false);
         } else {
-            downvotes.remove(user.getId()); // remove from downvotes if it's there
+            if (downvotes.remove(user.getId())) // remove from downvotes if it's there)
+                post.adjustScore(1);
+
             upvotes.add(user.getId());
+            post.adjustScore(1);
 
             postRepository.save(post);
-            return true;
+
+            return new BooleanResponse("", true);
         }
     }
 
 
     @MutationMapping
-    public Boolean downvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
+    public BooleanResponse downvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
         if (postId == null || !ObjectId.isValid(postId) || username == "") {
-            return null;
+            return new BooleanResponse("Invalid inputs", null);
         }
 
         User user = userRepository.findByUsername(username);
 
         if (user == null) {
-            return null;
+            return new BooleanResponse("User not found", null);
         }
 
-        if (!user.getSessionToken().equals(sessionToken) || 
-            user.getSessionTokenExpiration().getTime() < System.currentTimeMillis()) {
-            return null;
-        }
+        if (!user.checkUserSession(userRepository, sessionToken))
+            return new BooleanResponse("User not authenticated", null);
         
 
         Post post = postRepository.findById(new ObjectId(postId));
 
         if (post == null) {
-            return null;
+            return new BooleanResponse("Post not found", null);
         }
         LinkedList<ObjectId> upvotes = post.getUpvotes();
         LinkedList<ObjectId> downvotes = post.getDownvotes();
 
 
         if (downvotes.remove(user.getId())) {
+            post.adjustScore(1);
             postRepository.save(post);
-            return false; //no longer downvoted
+            return new BooleanResponse("", false); //no longer downvoted
         } else {
-            upvotes.remove(user.getId()); // remove from upvotes if it's there
+            if (upvotes.remove(user.getId()))
+                post.adjustScore(-1);// remove from upvotes if it's there
+
             downvotes.add(user.getId());
+            post.adjustScore(-1);
 
             postRepository.save(post);
-            return true; //downvoted
+            return new BooleanResponse("", true); //downvoted
         }
     }
     

@@ -1,17 +1,23 @@
-import React, {useRef, useState} from "react";
+import React, {useContext, useRef, useState} from "react";
 import Layout from "../Layout";
 import FeedButton from "./FeedButton";
 import Chirp from "./Chirp";
+import { Chirp as ChirpType, UserContext } from "../App";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export enum Feed {Following, Popular, MyChirps}
 
 function Home() {
-    const [chirps, setChirps] = useState<string[]>([]);
+    const [chirps, setChirps] = useState<ChirpType[]>([]);
     const [composedChirp, setComposedChirp] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
+
     const [feed, setFeed] = useState<Feed>(Feed.Following)
 
-    const createChirp = (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
+    const userInfo = useContext(UserContext);
+    const navigate = useNavigate();
+
+    const createChirp = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
 
         if (!composedChirp) {
@@ -19,11 +25,34 @@ function Home() {
             return
         }
 
+        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const query = 
+        `mutation {
+            createPost(text: "${composedChirp}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
+                post {
+                    id
+                }
+            }
+        }`
 
-        setChirps([...chirps, composedChirp])
-        setFeed(Feed.MyChirps)
-        setComposedChirp("")
-        setErrorMsg("");
+        console.log(JSON.stringify({query}))
+
+        const response = await fetch(url ?? '', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({query})
+        }).then(res => res.json())
+
+        console.log(response)
+
+        if (!response.data.createPost) {
+            alert("Error!")
+            return
+        }
+
+        navigate(`/board/${response.data.createPost.post.id}`)
     }
 
     const updateComposedChirp = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -40,6 +69,7 @@ function Home() {
 
     return ( <Layout>
         <div className = "mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
+                {userInfo.state.username ?
                 <form onSubmit = {createChirp} className = "w-full py-2 mb-12 bg-gray-100/20 border border-black/10 shadow-lg relative rounded">
                     <textarea 
                         value = {composedChirp} 
@@ -57,6 +87,7 @@ function Home() {
                         Post
                     </button>
                 </form>
+                : null}
 
                     
                 <div className = "grid rows-2">
@@ -80,9 +111,11 @@ function Home() {
                     <ul>   
                         {chirps.map((chirp => 
                         <Chirp 
-                            author = {"Hello"}
-                            date = {"Dec 26 2022, 9:45 PM"}
-                            text = {chirp}
+                            key = {chirp.id}
+                            id = {chirp.id}
+                            text = {chirp.text}
+                            authorUsername = {chirp.authorUsername}
+                            postDate = {chirp.postDate}
                         />))}
                     </ul>
                 </div>

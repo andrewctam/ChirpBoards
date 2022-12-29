@@ -14,7 +14,7 @@ function Signin() {
 
     useEffect(() => {
         if (userInfo.state.username)
-            navigate("/")
+            setError("Already logged in")
     }, [])
 
 
@@ -44,7 +44,6 @@ function Signin() {
             },
             body: JSON.stringify({query})
         }).then(res => res.json())
-
 
         if (response.data.signin.error) {
             setError(response.data.signin.error);
