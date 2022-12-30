@@ -74,8 +74,8 @@ public class Post implements Comparable<Post> {
         return this.commentCount;
     }
 
-    public int hashcode() {
-        return this.id.hashCode();
+    public int hashCode() {
+        return id.hashCode();
     }
 
     public boolean equals(Object other) {
@@ -87,6 +87,9 @@ public class Post implements Comparable<Post> {
     }
 
     public int compareTo(Post other) {
+        if (this.equals(other))
+            return 0;
+            
         if (this.score == other.score) {
             if (this.postDate > other.postDate) //earlier has higher priority
                 return 1;
@@ -99,6 +102,9 @@ public class Post implements Comparable<Post> {
             return 1;
         else
             return -1;
+    }
 
+    public String toString() {
+        return id.toString();
     }
 }

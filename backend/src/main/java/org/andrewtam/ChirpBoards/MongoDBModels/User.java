@@ -83,8 +83,28 @@ public class User {
 
     public Date getSessionTokenExpiration() { return sessionTokenExpiration; }
     public void setSessionTokenExpiration(Date sessionTokenExpiration) { this.sessionTokenExpiration = sessionTokenExpiration; }
+    
 
+    public boolean checkUserSession(UserRepository userRepository, String sessionToken) {
+        if(this.sessionToken == null || !this.sessionToken.equals(sessionToken) || this.sessionTokenExpiration == null)
+            return false;
 
+        long timeDiff = this.sessionTokenExpiration.getTime() - System.currentTimeMillis();
+        
+        if (timeDiff < 0) {
+            this.setSessionToken(null);
+            this.setSessionTokenExpiration(null);
+            userRepository.save(this);
+            return false;
+        } else if (timeDiff < 300000 ) { // 5 minutes
+            this.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 900000 )); // 15 minutes
+            userRepository.save(this);
+        }        
+
+        return true;
+    }
+    
+    
     public String toString() {
         return username;
     }
@@ -96,31 +116,8 @@ public class User {
         else
             return false;
     }
-    
 
-    public boolean checkUserSession(UserRepository userRepository, String sessionToken) {
-        User user = userRepository.findByUsername(username);
-        if (user == null || user.getSessionToken() == null || !user.getSessionToken().equals(sessionToken) || user.getSessionTokenExpiration() == null)
-            return false;
-
-        long timeDiff = user.getSessionTokenExpiration().getTime() - System.currentTimeMillis();
-        
-        if (timeDiff < 0) {
-            user.setSessionToken(null);
-            user.setSessionTokenExpiration(null);
-            userRepository.save(user);
-            return false;
-        } else if (timeDiff < 300000 ) { // 5 minutes
-            user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 900000 )); // 15 minutes
-            userRepository.save(user);
-        }        
-
-        return true;
-    }
-    
-    
-
-    public int hashcode() {
+    public int hashCode() {
         return this.username.hashCode();
     }
 

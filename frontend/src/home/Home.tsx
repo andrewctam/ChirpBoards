@@ -14,6 +14,7 @@ function Home() {
     const [recentFeed, setRecentFeed] = useState<JSX.Element[]>([]);
     const [popularFeed, setPopularFeed] = useState<JSX.Element[]>([]);
 
+    const [doneFetching, setDoneFetching] = useState(false);
     const userInfo = useContext(UserContext);
     const navigate = useNavigate();
 
@@ -22,10 +23,13 @@ function Home() {
     useEffect(() => {
         switch (feedSelected) {
             case Feed.Recent:
+                setDoneFetching(false);
                 getRecentPopularChirps("recent");
                 setSearchParams({ feed: "recent" })
+
                 return;
             case Feed.Popular:
+                setDoneFetching(false);
                 getRecentPopularChirps("popular");
                 setSearchParams({ feed: "popular" })
                 return;
@@ -65,7 +69,7 @@ function Home() {
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const query =
             `query {
-            ${type}Posts {
+            ${type}Posts${userInfo.state.username ? `(relatedUsername: "${userInfo.state.username}")` : ""} {
                 id
                 text
                 author {
@@ -74,7 +78,7 @@ function Home() {
                 }
                 postDate(timezone: ${timezone})
                 score
-                ${userInfo.state.username ? `voteStatus(username: "${userInfo.state.username}")` : ""}
+                ${userInfo.state.username ? "voteStatus" : ""}
             }
         }`
 
@@ -114,6 +118,8 @@ function Home() {
                 />
             }))
         }
+
+        setDoneFetching(true);
 
     }
 
@@ -168,7 +174,9 @@ function Home() {
                             End of Feed
                         </li>
                         :
-                        <SpinningCircle />}
+                        !doneFetching ?
+                            <SpinningCircle /> 
+                        : null}
                 </ul>
 
             </div>

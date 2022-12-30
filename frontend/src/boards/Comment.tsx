@@ -25,14 +25,14 @@ function Comment(props: CommentProps) {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
-            post(id: "${props.id}") {
+            post(id: "${props.id}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
                 comments(first:${pageNum}, offset:3) {
                     id
                     text
                     commentCount
                     postDate(timezone: ${timezone})
                     score
-                    ${userInfo.state.username ? `voteStatus(username: "${userInfo.state.username}")` : ""}
+                    ${userInfo.state.username ? "voteStatus" : ""}
                     author {
                         username
                         displayName

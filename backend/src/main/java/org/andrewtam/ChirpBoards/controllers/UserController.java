@@ -22,6 +22,8 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 
+import graphql.GraphQLContext;
+
 @Controller
 public class UserController {
     @Autowired
@@ -31,8 +33,13 @@ public class UserController {
     private PostRepository postRepository;
 
     @QueryMapping
-    public User user(@Argument String username) {
+    public User user(@Argument String username, @Argument String relatedUsername, GraphQLContext context) {
+        if (relatedUsername != null)
+            context.put("relatedUsername", relatedUsername);
+
         username = username.toLowerCase();
+        
+        context.put("username", username);
         return userRepository.findByUsername(username);   
     }
 
@@ -75,14 +82,9 @@ public class UserController {
     @MutationMapping
     public SigninRegisterResponse register(@Argument String username, @Argument String displayName, @Argument String password) {
         username = username.toLowerCase();
-        
-        if (userRepository.findByUsername(username) != null) {
-            return new SigninRegisterResponse("Username already taken", "");
-        }
 
-        if (username.length() > 16 || username.length() < 3) {
+        if (username.length() > 16 || username.length() < 3) 
             return new SigninRegisterResponse("Username must be between 3 and 20 characters", "");
-        }
 
         if (password.length() < 8)
             return new SigninRegisterResponse("Password must be at least 8 characters", "");
@@ -90,9 +92,11 @@ public class UserController {
         Pattern pattern = Pattern.compile("^[a-zA-Z0-9]+$");
         Matcher matcher = pattern.matcher(username);
 
-        if (!matcher.find()) {
+        if (!matcher.find())
             return new SigninRegisterResponse("Username must only contain letters and numbers", "");
-        }
+
+        if (userRepository.findByUsername(username) != null)
+            return new SigninRegisterResponse("Username already taken", "");
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         String hashedPassword = encoder.encode(password);
@@ -106,17 +110,6 @@ public class UserController {
         userRepository.save(user);
 
         return new SigninRegisterResponse(null, sessionToken);
-    }
-
-    @MutationMapping
-    public Boolean verifySession(@Argument String username, @Argument String sessionToken) {
-        username = username.toLowerCase();
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            return false;
-        }
-
-        return user.checkUserSession(userRepository, sessionToken);
     }
 
     @MutationMapping
@@ -142,6 +135,18 @@ public class UserController {
         return new SigninRegisterResponse(null, sessionToken);
     }
 
+
+    @MutationMapping
+    public Boolean verifySession(@Argument String username, @Argument String sessionToken) {
+        username = username.toLowerCase();
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return false;
+        }
+
+        return user.checkUserSession(userRepository, sessionToken);
+    }
+
     @MutationMapping
     public BooleanResponse signout(@Argument String username, @Argument String sessionToken) {
         username = username.toLowerCase();
@@ -162,6 +167,8 @@ public class UserController {
 
         return new BooleanResponse("", true);
     }
+
+
 
     @MutationMapping
     public BooleanResponse toggleFollow(@Argument String userToFollow, @Argument String username, @Argument String sessionToken) {
@@ -206,5 +213,6 @@ public class UserController {
         userRepository.save(followUser);
         return new BooleanResponse(followUser.getFollowerCount() + "", nowFollowing);
     }
+    
 
 }

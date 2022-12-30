@@ -1,10 +1,13 @@
 package org.andrewtam.ChirpBoards.controllers;
 
 import java.text.DateFormat;
-
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.andrewtam.ChirpBoards.GraphQLModels.IntResponse;
 import org.andrewtam.ChirpBoards.GraphQLModels.PostResponse;
@@ -20,11 +23,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.BatchMapping;
+import org.springframework.graphql.data.method.annotation.ContextValue;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
+import graphql.GraphQLContext;
 
 
 @Controller
@@ -38,7 +44,6 @@ public class PostController {
 
     @Autowired
     private UserRepository userRepository;
-    
 
     private void insertIntoFeeds(Post post) {
         boolean adjustedRecent = false;
@@ -70,15 +75,26 @@ public class PostController {
     }
     
     @QueryMapping
-    public Post post(@Argument String id) {
+    public Post post(@Argument String id, @Argument String username, @Argument String relatedUsername, GraphQLContext context) {
+        if (relatedUsername != null)
+            context.put("relatedUsername", relatedUsername.toLowerCase());
+
         if (id == null || !ObjectId.isValid(id)) {
             return null;
         }
+
+        if (username != null) {
+            context.put("username", username);
+        }
+
         return postRepository.findById(new ObjectId(id));
     }
 
     @QueryMapping
-    public Post[] recentPosts() {
+    public Post[] recentPosts(@Argument String relatedUsername, GraphQLContext context) {
+        if (relatedUsername != null)
+            context.put("relatedUsername", relatedUsername.toLowerCase());
+
         Post[] reversed = new Post[recentPosts.size()];
         int i = reversed.length - 1;
         for (Post post : recentPosts) {
@@ -89,7 +105,10 @@ public class PostController {
     }
 
     @QueryMapping
-    public Post[] popularPosts() {
+    public Post[] popularPosts(@Argument String relatedUsername, GraphQLContext context) {
+        if (relatedUsername != null)
+            context.put("relatedUsername", relatedUsername.toLowerCase());
+            
         Post[] posts = new Post[popularPosts.size()];
 
         PriorityQueue<Post> temp = new PriorityQueue<Post>();
@@ -107,13 +126,22 @@ public class PostController {
     
     @QueryMapping
     public Post[] followingPosts(@Argument String username) {
-        //TO DO
-        return null;
-    }
+        username = username.toLowerCase();
+        
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return null;
+        }
 
-    @SchemaMapping
-    public User author(Post post) {
-        return userRepository.findById(post.getAuthor());
+        //List<ObjectId> following = user.getFollowing();
+        //List<User> usersFollowed = userRepository.findAllById(following);
+
+
+        //LinkedList<List<Post>> headsOfLinkedLists = new LinkedList<List<Post>>();
+        return null;
+
+        //with k followers 20k log k = k log k
+
     }
 
     @SchemaMapping
@@ -125,6 +153,56 @@ public class PostController {
         return df.format(adjustedTime);
     }
 
+
+    @BatchMapping
+    public Map<Post, User> author(List<Post> posts) {
+        List<ObjectId> authorIds = posts.stream().map(post -> post.getAuthor()).collect(Collectors.toList());
+
+        List<User> authors = userRepository.findAllById(authorIds);
+        HashMap<ObjectId, User> idToAuthor = new HashMap<>();
+        for (User author : authors) {
+            idToAuthor.put(author.getId(), author);
+        }
+
+        return posts
+                .stream()
+                .collect(Collectors.toMap( 
+                    post -> post,
+                    post -> idToAuthor.get(post.getAuthor())
+                ));
+    }
+    
+    @BatchMapping
+    public Map<Post, Integer> voteStatus(List<Post> posts, @ContextValue String relatedUsername) {
+        if (relatedUsername == null)
+            return null;
+
+        User user = userRepository.findByUsername(relatedUsername);
+        if (user == null) {
+            return null;
+        }
+
+        List<ObjectId> postIds = posts.stream().map(post -> post.getId()).collect(Collectors.toList());
+
+        Set<Post> upvoted = postRepository.filterUpvoted(user.getId(), postIds);
+        Set<Post> downvoted = postRepository.filterDownvoted(user.getId(), postIds);       
+
+        Map<Post, Integer> statuses = new HashMap<>();
+
+        for (Post post : posts) {
+
+            if (upvoted.contains(post))
+                statuses.put(post, 1);
+            else if (downvoted.contains(post))
+                statuses.put(post, -1);
+            else
+                statuses.put(post, 0);
+        }
+
+        return statuses;
+    }
+
+    /*
     @SchemaMapping
     public List<User> upvotes(Post post, @Argument int first, @Argument int offset) {
         PageRequest paging = PageRequest.of(first, offset);
@@ -138,24 +216,9 @@ public class PostController {
 
         Page<User> page = userRepository.findAllById(post.getDownvotes(), paging);
         return page.getContent();
-    }
+    } 
+    */
 
-    @SchemaMapping
-    public Integer voteStatus(Post post, @Argument String username) {
-        username = username.toLowerCase();
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            return null;
-        }
-
-        if (postRepository.userUpvoted(post.getId(), user.getId()) != null) {
-            return 1;
-        } else if (postRepository.userDownvoted(post.getId(), user.getId()) != null) {
-            return -1;
-        } else {
-            return 0;
-        }
-    }
 
     @SchemaMapping
     public List<Post> comments(Post post, @Argument int first, @Argument int offset) {
@@ -165,8 +228,6 @@ public class PostController {
         return page.getContent();
     }
     
-
-
 
 
     @MutationMapping
@@ -247,33 +308,37 @@ public class PostController {
         LinkedList<ObjectId> upvotes = post.getUpvotes();
         LinkedList<ObjectId> downvotes = post.getDownvotes();
 
-        if (upvotes.remove(user.getId())) {
+
+        IntResponse response;
+        if (upvotes.remove(user.getId())) { // check if user already upvoted, remove it
             post.adjustScore(-1);
 
-            insertIntoFeeds(post);
-            postRepository.save(post);
-
-            return new IntResponse("0", post.getScore());
+            response = new IntResponse("0", post.getScore());
         } else {
-            if (downvotes.remove(user.getId())) // remove from downvotes if it's there)
+            if (downvotes.remove(user.getId())) { // remove from downvotes if it's there)
                 post.adjustScore(1);
+            }
 
             upvotes.add(user.getId());
+
             post.adjustScore(1);
 
-
-            insertIntoFeeds(post);
-            postRepository.save(post);
-
-            return new IntResponse("1", post.getScore());
+           response = new IntResponse("1", post.getScore());
         }
+        
+        insertIntoFeeds(post);
+        userRepository.save(user);
+        postRepository.save(post);
+
+        return response;
+
     }
 
 
     @MutationMapping
     public IntResponse downvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
         username = username.toLowerCase();
-        
+
         if (postId == null || !ObjectId.isValid(postId) || username == "") {
             return new IntResponse("Invalid inputs", null);
         }
@@ -297,24 +362,26 @@ public class PostController {
         LinkedList<ObjectId> downvotes = post.getDownvotes();
 
 
-        if (downvotes.remove(user.getId())) {
+        IntResponse response;
+        if (downvotes.remove(user.getId())) { // check if user already downvoted, remove it
             post.adjustScore(1);
-            postRepository.save(post);
-
-            insertIntoFeeds(post);
-            return new IntResponse("0", post.getScore()); //no longer downvoted
+            response = new IntResponse("0", post.getScore()); //no longer downvoted
         } else {
-            if (upvotes.remove(user.getId()))
+            if (upvotes.remove(user.getId())) {
                 post.adjustScore(-1);// remove from upvotes if it's there
+            }
 
             downvotes.add(user.getId());
             post.adjustScore(-1);
-
-            insertIntoFeeds(post);
-            postRepository.save(post);
-            return new IntResponse("-1", post.getScore()); //downvoted
+            response =  new IntResponse("-1", post.getScore()); //downvoted
         }
+
+        insertIntoFeeds(post);
+        
+        userRepository.save(user);
+        postRepository.save(post);
+
+        return response;
     }
-    
     
 }

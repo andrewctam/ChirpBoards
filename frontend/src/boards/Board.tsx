@@ -38,7 +38,7 @@ function Board() {
 
         const query =
         `query {    
-            post(id: "${postId}") {
+            post(id: "${postId}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
                 author {
                     username
                     displayName
@@ -48,14 +48,14 @@ function Board() {
                 postDate(timezone: ${timezone})
                 score
                 commentCount
-                ${userInfo.state.username ? `voteStatus(username: "${userInfo.state.username}")` : ""}
+                ${userInfo.state.username ? "voteStatus" : ""}
                 comments(first:0, offset:5) {
                     id
                     text
                     commentCount
                     postDate(timezone: ${timezone})
                     score
-                    ${userInfo.state.username ? `voteStatus(username: "${userInfo.state.username}")` : ""}
+                    ${userInfo.state.username ? "voteStatus" : ""}
                     author {
                         username
                         displayName
