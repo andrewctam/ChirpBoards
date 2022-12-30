@@ -77,9 +77,14 @@ function Signin() {
                 </button>
             </div>
             :
-            <form onSubmit = {signin} className = "mx-auto border border-black/10 w-fit px-12 py-4 rounded-xl bg-slate-100/10 shadow-md">
-                <h1 className = "text-3xl">Sign In</h1>
-                <a href = "/register" className = "text-sm text-sky-200 underline">or register here</a>
+            <form onSubmit = {signin} className = "mx-auto border border-black/10 w-1/2 px-12 py-4 rounded-xl bg-slate-100/10 shadow-md">
+                <h1 className = "text-3xl text-center">Sign In</h1>
+
+                <a href = "/register">
+                    <p className = "text-sm text-sky-300 underline text-center">
+                        or register here
+                    </p>
+                </a>
 
                 <FormInput
                     name = "Username"
@@ -96,7 +101,7 @@ function Signin() {
                 />
 
                 <p className = "text-rose-200">{error}</p>
-                <button onClick = {signin} className = "py-2 px-4 my-2 border border-black/10 bg-black rounded block">
+                <button onClick = {signin} className = "mx-auto py-2 px-4 mb-2 mt-4 border border-black/10 bg-black rounded block">
                     Sign In
                 </button>
 

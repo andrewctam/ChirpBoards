@@ -2,7 +2,7 @@ import Layout from "../Layout";
 import React, { useContext, useEffect, useState } from "react";
 import FormInput from "./FormInput";
 import { UserContext } from "../App";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 function Register() {
     const [usernameInput, setUsernameInput] = useState("");
@@ -11,8 +11,9 @@ function Register() {
     const [displayNameInput, setDisplayNameInput] = useState("");
     const [error, setError] = useState("");
     const userInfo = useContext(UserContext);
-    const navigate = useNavigate()
 
+    const navigate = useNavigate()
+    const [searchParams, setSearchParams] = useSearchParams();
 
     useEffect(() => {
         if (userInfo.state.username)
@@ -25,6 +26,22 @@ function Register() {
 
         if (usernameInput === "" || passwordInput === "") {
             setError("Please fill in all fields");
+            return;
+        }
+
+        if (usernameInput.length < 3 || usernameInput.length > 16) {
+            setError("Username must be between 3 and 16 characters");
+            return;
+        }
+
+        if (passwordInput.length < 8) {
+            setError("Password must be at least 8 characters");
+            return;
+        }
+        
+        //regex for only letters and numbers
+        if (! (/^[a-zA-Z0-9]+$/.test(usernameInput)) ) {
+            setError("Username can only contain letters and numbers");
             return;
         }
 
@@ -77,7 +94,10 @@ function Register() {
 
         localStorage.setItem("username", usernameInput);
         localStorage.setItem("sessionToken", sessionToken);
-        navigate("/");
+        if (searchParams && searchParams.get("return") === "true") {
+            navigate(-1);
+        } else
+            navigate("/");
     }
 
 
@@ -92,8 +112,13 @@ function Register() {
                 </button>
             </div>
             :
-            <form onSubmit={register} className = "mx-auto border border-black/10 w-fit px-12 py-4 rounded-xl bg-slate-100/10 shadow-md">
-                <h1 className = "text-3xl">Register</h1>
+            <form onSubmit={register} className = "mx-auto border border-black/10 w-1/2 px-12 py-4 rounded-xl bg-slate-100/10 shadow-md">
+                <h1 className = "text-3xl text-center">Register</h1>
+                <a href = "/signin">
+                    <p className = "text-sm text-sky-300 underline text-center">
+                        or sign in here
+                    </p>
+                </a>
 
                 <FormInput
                     name = "Username"
@@ -126,13 +151,13 @@ function Register() {
                     password = {true}
                 />
 
-                
-                <p className = "text-rose-200">{error}</p>
+                <p className = "text-rose-200 break-words">{error}</p>
 
-                <button onClick = {register} className = "py-2 px-4 my-2 border border-black/10 bg-black rounded block">
+                <button onClick = {register} className = "py-2 px-4 mb-2 mt-8 mx-auto border border-black/10 bg-black rounded block">
                     Register
                 </button>
             </form>
+
         }
         </div>
 

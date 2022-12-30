@@ -115,6 +115,7 @@ public class PostController {
     public User author(Post post) {
         return userRepository.findById(post.getAuthor());
     }
+
     @SchemaMapping
     public String postDate(Post post, @Argument int timezone) {
         long adjustedTime = post.getPostDate() + timezone * 3600000;
@@ -141,6 +142,7 @@ public class PostController {
 
     @SchemaMapping
     public Integer voteStatus(Post post, @Argument String username) {
+        username = username.toLowerCase();
         User user = userRepository.findByUsername(username);
         if (user == null) {
             return null;
@@ -169,6 +171,7 @@ public class PostController {
 
     @MutationMapping
     public PostResponse createPost(@Argument String text, @Argument String username, @Argument String sessionToken) {
+        username = username.toLowerCase();
         if (text == "" || username == "" || text.length() > 500) {
             return new PostResponse("Invalid inputs", null);
         }
@@ -184,6 +187,7 @@ public class PostController {
         Post created = postRepository.save(new Post(text, user.getId(), false));
             
         user.getPosts().addFirst(created.getId());
+        user.setPostCount(user.getPostCount() + 1);
         userRepository.save(user);
         
         insertIntoFeeds(created);
@@ -192,6 +196,8 @@ public class PostController {
 
     @MutationMapping
     public PostResponse comment(@Argument String text, @Argument String parentPostId, @Argument String username, @Argument String sessionToken) {
+        username = username.toLowerCase();
+
         if (text == "" || parentPostId == null || !ObjectId.isValid(parentPostId) || username == "") {
             return new PostResponse("Invalid inputs", null);
         }
@@ -218,6 +224,8 @@ public class PostController {
 
     @MutationMapping
     public IntResponse upvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
+        username = username.toLowerCase();
+
         if (postId == null || !ObjectId.isValid(postId) || username == "") {
             return new IntResponse("Invalid inputs", null);
         }
@@ -264,6 +272,8 @@ public class PostController {
 
     @MutationMapping
     public IntResponse downvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
+        username = username.toLowerCase();
+        
         if (postId == null || !ObjectId.isValid(postId) || username == "") {
             return new IntResponse("Invalid inputs", null);
         }

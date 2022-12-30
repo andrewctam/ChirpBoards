@@ -3,6 +3,8 @@ package org.andrewtam.ChirpBoards.controllers;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.andrewtam.ChirpBoards.GraphQLModels.BooleanResponse;
 import org.andrewtam.ChirpBoards.GraphQLModels.SigninRegisterResponse;
@@ -30,6 +32,7 @@ public class UserController {
 
     @QueryMapping
     public User user(@Argument String username) {
+        username = username.toLowerCase();
         return userRepository.findByUsername(username);   
     }
 
@@ -58,17 +61,42 @@ public class UserController {
         return page.getContent();
     }
 
+    @SchemaMapping
+    public Boolean isFollowing(User user, @Argument String followeeUsername) {
+        User followee = userRepository.findByUsername(followeeUsername);
+        if (followee == null) {
+            return false;
+        }
+
+        return userRepository.userFollowing(user.getId(), followee.getId()) != null;
+    }
+
         
     @MutationMapping
     public SigninRegisterResponse register(@Argument String username, @Argument String displayName, @Argument String password) {
+        username = username.toLowerCase();
+        
         if (userRepository.findByUsername(username) != null) {
             return new SigninRegisterResponse("Username already taken", "");
+        }
+
+        if (username.length() > 16 || username.length() < 3) {
+            return new SigninRegisterResponse("Username must be between 3 and 20 characters", "");
+        }
+
+        if (password.length() < 8)
+            return new SigninRegisterResponse("Password must be at least 8 characters", "");
+
+        Pattern pattern = Pattern.compile("^[a-zA-Z0-9]+$");
+        Matcher matcher = pattern.matcher(username);
+
+        if (!matcher.find()) {
+            return new SigninRegisterResponse("Username must only contain letters and numbers", "");
         }
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         String hashedPassword = encoder.encode(password);
 
-        
         User user = new User(username, displayName, hashedPassword);
 
         String sessionToken = UUID.randomUUID().toString();
@@ -82,6 +110,7 @@ public class UserController {
 
     @MutationMapping
     public Boolean verifySession(@Argument String username, @Argument String sessionToken) {
+        username = username.toLowerCase();
         User user = userRepository.findByUsername(username);
         if (user == null) {
             return false;
@@ -92,6 +121,8 @@ public class UserController {
 
     @MutationMapping
     public SigninRegisterResponse signin(@Argument String username, @Argument String password) {
+        username = username.toLowerCase();
+
         User user = userRepository.findByUsername(username);
         if (user == null) {
             return new SigninRegisterResponse("Username not found", null);
@@ -113,6 +144,8 @@ public class UserController {
 
     @MutationMapping
     public BooleanResponse signout(@Argument String username, @Argument String sessionToken) {
+        username = username.toLowerCase();
+
         User user = userRepository.findByUsername(username);
         if (user == null) {
             return new BooleanResponse("Username not found", null);
@@ -132,8 +165,11 @@ public class UserController {
 
     @MutationMapping
     public BooleanResponse toggleFollow(@Argument String userToFollow, @Argument String username, @Argument String sessionToken) {
+        userToFollow = userToFollow.toLowerCase();
+        username = username.toLowerCase();
+
         if (userToFollow.equals(username))
-            return new BooleanResponse("Can not follow youeself", null);
+            return new BooleanResponse("Can not follow yourself!", null);
             
         User user = userRepository.findByUsername(username);
         User followUser = userRepository.findByUsername(userToFollow);
@@ -168,7 +204,7 @@ public class UserController {
 
         userRepository.save(user);
         userRepository.save(followUser);
-        return new BooleanResponse("", nowFollowing);
+        return new BooleanResponse(followUser.getFollowerCount() + "", nowFollowing);
     }
 
 }

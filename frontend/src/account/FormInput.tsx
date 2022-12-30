@@ -23,7 +23,7 @@ function FormInput(props: FormInputProps) {
 
             onFocus = {() => setHighlightLabel(true)}
             onBlur = {() => setHighlightLabel(false)}
-            className = "text-white bg-transparent rounded-t block p-1 w-64 border-b border-b-white focus:outline-none"/>
+            className = "text-white bg-transparent rounded-t block p-1 w-full border-b border-b-white focus:outline-none"/>
 
 
         <label className = "text-xs ml-1 text-white/50" style = {highlightLabel ? {color: "white"} : undefined}>{props.name}</label>

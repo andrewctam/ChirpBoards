@@ -50,7 +50,9 @@ type User {
     followingCount: Int!
     followers(first: Int = 0, offset: Int = 10): [User!]!
     following(first: Int = 0, offset: Int = 10): [User!]!
+    isFollowing(followeeUsername: String!): Boolean
     posts(first: Int = 0, offset: Int = 10): [Post!]!
+    postCount: Int!
 }
 
 

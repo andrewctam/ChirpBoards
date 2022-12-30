@@ -73,8 +73,8 @@ const NavBar = () => {
                         </div>
                         :
                         <>
-                            <a className = "text-gray-100" href = "/signin">Sign In</a>
-                            <a className = "ml-6 text-sky-300" href = "/register">Register</a>
+                            <a className = "text-gray-100" href = "/signin?return=true">Sign In</a>
+                            <a className = "ml-6 text-sky-300" href = "/register?return=true">Register</a>
                         </>
 
                     }

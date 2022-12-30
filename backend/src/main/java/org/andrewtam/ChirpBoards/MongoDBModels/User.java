@@ -25,6 +25,8 @@ public class User {
 
     private int followingCount;
     private LinkedList<ObjectId> following; //references to users
+
+    private int postCount;
     private LinkedList<ObjectId> posts; //references to posts
 
     private String sessionToken;
@@ -40,6 +42,10 @@ public class User {
         this.followers = new LinkedList<ObjectId>();
         this.following = new LinkedList<ObjectId>();
         this.posts = new LinkedList<ObjectId>();
+
+        this.followerCount = 0;
+        this.followingCount = 0;
+        this.postCount = 0;
 
         this.sessionToken = null;
         this.sessionTokenExpiration = null;
@@ -67,6 +73,8 @@ public class User {
     public int getFollowingCount() { return followingCount; }
     public void setFollowingCount(int followingCount) { this.followingCount = followingCount; }
     
+    public int getPostCount() {return this.postCount; }
+    public void setPostCount(int postCount) { this.postCount = postCount; }
 
     public LinkedList<ObjectId> getPosts() { return posts; }
 

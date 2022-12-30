@@ -9,7 +9,7 @@ function Chirp(props: PostChirp) {
             <div className="text-xs"> {props.postDate} </div>
         </a>
         <a href={`/board/${props.id}`}>
-            <div className="w-full relative p-10 pb-4 border border-black rounded-xl bg-slate-300 break-all">
+            <div className="w-full relative p-10 pb-8 border border-black rounded-xl bg-slate-300 break-all">
 
                 {props.text}
             </div>
