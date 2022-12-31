@@ -6,6 +6,7 @@ import Settings from "./account/Settings";
 import Signin from "./account/Signin";
 import Board from "./boards/Board";
 import Home from "./home/Home";
+import Search from "./search/Search";
 
 type UserInfo = {
     username: string;
@@ -104,6 +105,8 @@ function App() {
                     <Route path="/register" element={  <Register /> }/>
                     <Route path="/profile/:username" element={  <Profile /> }/>
                     <Route path="/settings" element={  <Settings /> }/>
+                    <Route path="/search" element={  <Search /> }/>
+
                 </Routes>
 
             </BrowserRouter>

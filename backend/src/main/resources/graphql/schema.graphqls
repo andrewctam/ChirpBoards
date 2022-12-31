@@ -5,11 +5,14 @@ type Query {
     post(id: String!, relatedUsername: String = null): Post
     
     #No authentication required. Retrieves recent posts. Include relatedUsername to get information for certain queries.
-    recentPosts(first: Int!, offset: Int!, relatedUsername: String = null): [Post!]!
+    recentPosts(first: Int! = 0, offset: Int! = 10, relatedUsername: String = null): [Post!]!
     #No authentication required. Retrieves popular posts by score. Include relatedUsername to get information for certain queries.
-    popularPosts(first: Int!, offset: Int!, relatedUsername: String = null): [Post!]!
+    popularPosts(first: Int! = 0, offset: Int! = 10, relatedUsername: String = null): [Post!]!
     #No authentication required. Retrieves the most recent posts from a user's following list. username is also relatedUsername.
-    followingPosts(first: Int!, offset: Int!, username: String!): [Post!]
+    followingPosts(first: Int! = 0, offset: Int! = 10, username: String!): [Post!]
+
+    searchUsers(query: String!, first: Int! = 0, offset: Int! = 10): [User!]!
+    searchPosts(query: String!, first: Int! = 0, offset: Int! = 10): [Post!]!
 
 }
 

@@ -13,6 +13,9 @@ public interface UserRepository extends MongoRepository<User, String> {
     User findByUsername(String username);
     User findById(ObjectId id);
 
+    @Query("{ $or: [ { username: { $regex: '?0', $options: 'i' } }, { displayName : { $regex: '?0', $options: 'i' } } ] }")
+    Page<User> findWithRegex(String regex, PageRequest pageable);
+
     @Query("{ 'id': { $in: ?0 } }")
     Page<User> findAllById(List<ObjectId> ids, PageRequest pageable);
 

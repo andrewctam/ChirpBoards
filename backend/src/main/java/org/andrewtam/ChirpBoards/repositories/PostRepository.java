@@ -13,13 +13,16 @@ import org.springframework.data.mongodb.repository.Query;
 public interface PostRepository extends MongoRepository<Post, String> {
     Post findById(ObjectId id);
 
+    @Query("{ text: { $regex: ?0, $options: 'i' } }")
+    Page<Post> findWithRegex(String regex, PageRequest pageable);
+
     @Query("{ isComment: false }")
     Page<Post> findAllBoards(PageRequest pageable);
 
     @Query("{ author: ?0, isComment: false }")
     Page<Post> findBoardsByAuthor(ObjectId authors, PageRequest pageable);
 
-    @Query("{ author: { $in: ?0, isComment: false } }")
+    @Query("{ author: { $in: ?0 } , isComment: false }")
     Page<Post> findBoardsByAuthors(List<ObjectId> authors, PageRequest pageable);
     
     @Query("{ 'id': { $in: ?0 } }")

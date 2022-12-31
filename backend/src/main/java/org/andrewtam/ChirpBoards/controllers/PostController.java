@@ -103,6 +103,18 @@ public class PostController {
         return page.getContent();
     }
 
+    @QueryMapping
+    public List<Post> searchPosts(@Argument String query, @Argument int first, @Argument int offset) {
+        if (query == null || query == "")
+            return new LinkedList<Post>();
+
+        PageRequest paging = PageRequest.of(first, offset, Sort.by("postDate").ascending());
+
+        Page<Post> page = postRepository.findWithRegex(".*" + query + ".*", paging);
+
+        return page.getContent();
+    }
+
     @SchemaMapping
     public String postDate(Post post, @Argument int timezone) {
         long adjustedTime = post.getPostDate() + timezone * 3600000;
@@ -369,5 +381,4 @@ public class PostController {
 
         return response;
     }
-    
 }

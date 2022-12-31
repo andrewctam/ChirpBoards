@@ -148,7 +148,7 @@ function Home() {
         }
     }
 
-
+    let msg = "";
     let feed = null;
     switch (feedSelected) {
         case Feed.Recent:
@@ -161,16 +161,25 @@ function Home() {
             if (followingFeed)
                 feed = followingFeed;
             else
-                feed = <div className = "text-center text-white text-lg mt-4">You are not following any users</div>
+                msg = "You are not following any users";
             break;
         default:
             break;
     }
 
+    if (feed && feed.length === 0) {
+        msg = "No chirps... you can hear the crickets chirping!"
+        feed = null
+    }
+     
+    if (!feed && doneFetching)
+        feed = <div className = "text-center text-white text-lg mt-4">{msg}</div>
+    
+
     useScrollBottom(getMoreChirps)
 
     return (<Layout>
-        <div className="mt-8 mx-auto w-5/6 lg:w-3/5">
+        <div className="mt-8 mx-auto w-5/6 lg:w-3/5 py-2">
             {userInfo.state.username ?
                 <PostComposer />
             : null}
@@ -178,19 +187,16 @@ function Home() {
             <div className="grid rows-2">
                 <div className="grid grid-cols-3">
                     <FeedButton
-                        type={Feed.Recent}
                         name={"Recent"}
-                        onClick={switchFeeds}
+                        onClick={() => switchFeeds(Feed.Recent)}
                         isActive={feedSelected === Feed.Recent} />
                     <FeedButton
-                        type={Feed.Popular}
                         name={"Popular"}
-                        onClick={switchFeeds}
+                        onClick={() => switchFeeds(Feed.Popular)}
                         isActive={feedSelected === Feed.Popular} />
                     <FeedButton
-                        type={Feed.Following}
                         name={"Following"}
-                        onClick={switchFeeds}
+                        onClick={() => switchFeeds(Feed.Following)}
                         isActive={feedSelected === Feed.Following} />
                 </div>
 

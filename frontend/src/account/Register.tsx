@@ -126,7 +126,7 @@ function Register() {
                     name = "Username"
                     value = {usernameInput}
                     setValue = {setUsernameInput}
-                    mt = "4"
+                    mt = "mt-4"
                 />
 
                 <FormInput

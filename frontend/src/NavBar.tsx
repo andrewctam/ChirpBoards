@@ -1,11 +1,38 @@
-import { useEffect, useContext, useState } from "react"
+import React, { useEffect, useContext, useState } from "react"
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { UserContext } from "./App"
 
 const NavBar = () => {
     const userInfo = useContext(UserContext);
 
     const [showDropdown, setShowDropdown] = useState(false);
+
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const [showMobileSearch, setShowMobileSearch] = useState(false);
+
+    const [searchInput, setSearchInput] = useState("");
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const navigate = useNavigate();
     
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowWidth(window.innerWidth);
+        }
+
+        window.addEventListener("resize", handleResize);
+
+        if (searchParams.get("query") && window.location.pathname === "/search") {
+            setSearchInput(searchParams.get("query") ?? "");
+        }
+
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        }
+
+    }, [])
+
+
     const verifySession = async () => {       
         if (!userInfo.state.username) {
             return;
@@ -29,6 +56,12 @@ const NavBar = () => {
         if (!response.data.verifySession) {
             userInfo.dispatch({type: "SIGNOUT"});
         }
+    }
+
+    const search = async (e: React.FormEvent<HTMLFormElement | HTMLInputElement> | React.MouseEvent<HTMLElement>) => {
+        e.preventDefault();
+        navigate(`/search?query=${searchInput}&feed=${searchParams.get("feed") ?? "chirps"}`)
+        window.location.reload();
     }
 
     useEffect(() => {
@@ -59,46 +92,74 @@ const NavBar = () => {
 
     }
 
-    return <div className = 'w-full sticky top-0 z-50 bg-stone-800 shadow-lg p-4 text-white flex justify-between items-center'>
-                <h1 className = "font-semibold text-2xl">
-                    <a href = "/">Chirp Boards</a>
-                </h1>
+    return (<>
+        <div className = 'w-full sticky top-0 z-50 bg-stone-800 shadow-lg p-4 text-white flex justify-between items-center'>
+            <h1 className = "font-semibold text-2xl inline">
+                <a href = "/">Chirp Boards</a>
+            </h1>
 
-                <div className = "text-md">
-                    { userInfo.state.username ? 
-                        <div>
-                            <p onClick = {() => setShowDropdown(!showDropdown)} className = "cursor-pointer select-none">
-                            {`@${userInfo.state.username} ▼ `}
-                            </p>
+            <div>
+                <form onSubmit = {search} className = "hidden sm:inline-block  mr-4">
+                    <input
+                        value = {searchInput}
+                        onChange = {(e) => setSearchInput(e.target.value)}
+                        className = "p-2 w-64 mx-auto rounded-xl bg-white/20 text-white border border-black" 
+                        placeholder="Search for a user or chirp..." />
+                </form>
 
-                            {showDropdown ?
-                                <div className = "relative">
-                                    <div className = "absolute lg:-rotate-12 -right-1 top-4 px-8 py-2 w-fit z-20 bg-sky-200 lg:bg-sky-200/80 border border-black lg:border-black/10 rounded-b-xl rounded-tl-xl text-center">
-                                        <p><a href={`/profile/${[userInfo.state.username]}`} className = "text-black mt-2 cursor-pointer text-center">
-                                            Profile
-                                        </a></p>
+                {windowWidth < 640 ?
+                <p className = "text-white mt-2 cursor-pointer text-center inline mr-6" onClick={() => setShowMobileSearch(!showMobileSearch)}>
+                    {showMobileSearch ? "Close" : "Search"}
+                </p> : null}
 
-                                        <p className="my-2"><a href={`/settings`} className = "text-black cursor-pointer text-center">
-                                            Settings
-                                        </a></p>
-                                        
-                                        <p className = "text-black cursor-pointer w-fit whitespace-nowrap text-center" onClick = {signOut}>
-                                            Sign Out
-                                        </p>
-                                    </div> 
-                                </div>
-                            : null}
 
-                        </div>
-                        :
-                        <>
-                            <a className = "text-gray-100" href = "/signin?return=true">Sign In</a>
-                            <a className = "ml-6 text-sky-300" href = "/register?return=true">Register</a>
-                        </>
+                { userInfo.state.username ? 
+                    <div className = "inline-block">
+                        <p onClick = {() => setShowDropdown(!showDropdown)} className = "cursor-pointer select-none">
+                        {`@${userInfo.state.username} ▼ `}
+                        </p>
 
-                    }
-                </div>
+                        {showDropdown ?
+                            <div className = "relative">
+                                <div className = "absolute lg:-rotate-12 -right-1 top-4 px-8 py-2 w-fit z-20 bg-sky-200 lg:bg-sky-200/80 border border-black lg:border-black/10 rounded-b-xl rounded-tl-xl text-center">
+                                    <p className = "text-black mt-2 cursor-pointer text-center"><a href={`/profile/${[userInfo.state.username]}`}>
+                                        Profile
+                                    </a></p>
+
+                                    <p className="my-2 text-black cursor-pointer text-center"><a href={`/settings`}>
+                                        Settings
+                                    </a></p>
+                                    
+                                    <p className = "text-black cursor-pointer w-fit whitespace-nowrap text-center" onClick = {signOut}>
+                                        Sign Out
+                                    </p>
+                                </div> 
+                            </div>
+                        : null}
+                    </div>
+                    :
+                    <>
+                        <a className = "text-lime-200" href = "/signin?return=true">{"Sign In"}</a>
+                        <a className = "ml-6 text-sky-300" href = "/register?return=true">Register</a>
+                    </>
+
+                }
             </div>
+        </div>
 
+        {showMobileSearch && windowWidth < 640 ?
+            <form onSubmit = {search} className = 'w-full bg-stone-800 shadow-lg p-4 text-white flex justify-between items-center'>
+                <input 
+                    value = {searchInput}
+                    onChange = {(e) => setSearchInput(e.target.value)}
+                    className = "p-2 w-full mx-auto rounded-xl bg-white/20 text-white border border-black mr-4" 
+                    placeholder="Search for a user or chirp..." /> 
+                
+                <p className = "text-gray-50 mt-2 cursor-pointer text-center mr-4" onClick={search}>
+                    Search
+                </p>
+            </form>
+        : null}
+    </>)
 }
 export default NavBar

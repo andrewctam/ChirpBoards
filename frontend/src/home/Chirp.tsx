@@ -7,11 +7,11 @@ interface ChirpProps extends PostChirp {
 }
 
 function Chirp(props: ChirpProps) {
-    return (<li className={`w-full relative mt-16`}>
-        <a href={`/profile/${props.authorUsername}`} className="absolute -top-8 left-2 z-10 bg-gray-300 text-black rounded-xl p-2 border border-black/20">
-            {props.authorDisplayName}
-            <div className="text-xs inline"> {`@${props.authorUsername}`} </div>
-            <div className="text-xs"> {props.postDate} </div>
+    return (<li className={`w-full relative mt-8`}>
+        <a href={`/profile/${props.authorUsername}`} className="absolute -top-4 -left-4 z-10 bg-stone-300 text-black p-1 rounded-lg border border-black/20">
+            <div className = "inline">{props.authorDisplayName}</div>
+            <div className="text-xs m-0 inline h-fit"> {`• @${props.authorUsername} •`} </div>
+            <div className="text-xs inline"> {props.postDate} </div>
         </a>
 
         { props.pinned ?

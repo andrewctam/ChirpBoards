@@ -1,6 +1,7 @@
 package org.andrewtam.ChirpBoards.controllers;
 
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -15,6 +16,7 @@ import org.andrewtam.ChirpBoards.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -41,6 +43,19 @@ public class UserController {
         
         context.put("username", username);
         return userRepository.findByUsername(username);   
+    }
+
+
+    @QueryMapping
+    public List<User> searchUsers(@Argument String query, @Argument int first, @Argument int offset) {
+        if (query == null || query == "")
+            return new LinkedList<User>();
+
+        PageRequest paging = PageRequest.of(first, offset, Sort.by("username").ascending());
+
+        Page<User> page = userRepository.findWithRegex(".*" + query + ".*", paging);
+
+        return page.getContent();
     }
 
     @SchemaMapping

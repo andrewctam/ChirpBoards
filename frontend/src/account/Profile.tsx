@@ -42,7 +42,6 @@ function Profile () {
 
     const fetchUserInfo = async (username: string) => {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
-        const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
 
         const query =
         `query {    
@@ -86,7 +85,7 @@ function Profile () {
     const getMoreChirps = async () => {
         if (chirps.length === postCount)
             return;
-            
+
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
@@ -174,10 +173,9 @@ function Profile () {
     }
 
     return (<Layout>
-        <div  className = "text-center bg-slate-600 text-white p-2 shadow-md">
+        <div className = "text-center bg-slate-600 text-white p-2 shadow-md">
             <h1 className = "text-3xl">{displayName}</h1>
             <h1 className = "text-gray-300 text-sm">{`@${username}`}</h1>
-
 
             <div className = "mx-auto flex justify-center mt-3 w-fit">
 
@@ -199,18 +197,19 @@ function Profile () {
             </div>
         </div>
 
-        <div className = "mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
+        <div className = "mt-4 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
             {userInfo.state.username === username ? 
                 <PostComposer /> 
             : null}
 
-            <ul className = "mt-24 mb-8">
-                {chirps}
+            <p className = "text-center text-white text-xl">{`${postCount} chirps`}</p>
+                <ul className = "mb-8">
+                    {chirps}
 
-            {postCount > 0 && chirps.length === 0 ?
-                <SpinningCircle /> 
-            : null}
-            </ul>
+                    {postCount > 0 && chirps.length === 0 ?
+                    <SpinningCircle /> 
+                    : null}
+                </ul>
         </div>
 
     </Layout>)
