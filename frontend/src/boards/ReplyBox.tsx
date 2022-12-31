@@ -66,6 +66,7 @@ function ReplyBox(props: ReplyBoxProps) {
                 score = {0}
                 voteStatus = {0}
                 local = {true}
+                autoLoadComments = {false}
             />
         
         )

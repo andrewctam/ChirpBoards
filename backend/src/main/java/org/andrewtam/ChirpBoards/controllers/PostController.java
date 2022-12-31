@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,7 +20,7 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-
+import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.ContextValue;
@@ -36,46 +35,14 @@ import graphql.GraphQLContext;
 @Controller
 public class PostController {
 
-    LinkedList<Post> recentPosts = new LinkedList<Post>();
-    PriorityQueue<Post> popularPosts = new PriorityQueue<Post>();
-
     @Autowired
     private PostRepository postRepository;
 
     @Autowired
     private UserRepository userRepository;
 
-    private void insertIntoFeeds(Post post) {
-        boolean adjustedRecent = false;
-        for (Post p : recentPosts) {
-            if (p.equals(post)) {
-                p.setScore(post.getScore());
-                adjustedRecent = true;
-                break;
-            }
-        }
-
-        if (!adjustedRecent) {
-            if (recentPosts.size() > 20) {
-                recentPosts.poll();
-            }
-            recentPosts.add(post);
-        }
-
-
-        if (popularPosts.contains(post)) {
-            popularPosts.remove(post);
-        }
-
-        popularPosts.offer(post);
-        if (popularPosts.size() > 20) {
-            popularPosts.poll();
-        }
-
-    }
-    
     @QueryMapping
-    public Post post(@Argument String id, @Argument String username, @Argument String relatedUsername, GraphQLContext context) {
+    public Post post(@Argument String id, @Argument String relatedUsername, GraphQLContext context) {
         if (relatedUsername != null)
             context.put("relatedUsername", relatedUsername.toLowerCase());
 
@@ -83,65 +50,57 @@ public class PostController {
             return null;
         }
 
-        if (username != null) {
-            context.put("username", username);
-        }
-
         return postRepository.findById(new ObjectId(id));
     }
 
     @QueryMapping
-    public Post[] recentPosts(@Argument String relatedUsername, GraphQLContext context) {
+    public List<Post> recentPosts(@Argument int first, @Argument int offset, @Argument String relatedUsername, GraphQLContext context) {
         if (relatedUsername != null)
             context.put("relatedUsername", relatedUsername.toLowerCase());
 
-        Post[] reversed = new Post[recentPosts.size()];
-        int i = reversed.length - 1;
-        for (Post post : recentPosts) {
-            reversed[i] = post;
-            i--;
-        }
-        return reversed;
-    }
 
-    @QueryMapping
-    public Post[] popularPosts(@Argument String relatedUsername, GraphQLContext context) {
-        if (relatedUsername != null)
-            context.put("relatedUsername", relatedUsername.toLowerCase());
-            
-        Post[] posts = new Post[popularPosts.size()];
-
-        PriorityQueue<Post> temp = new PriorityQueue<Post>();
-
-        int i = posts.length - 1;
-        while (!popularPosts.isEmpty()) {
-            posts[i] = popularPosts.poll();
-            temp.offer(posts[i]);
-            i--;
-        }
-
-        popularPosts = temp;
-        return posts;
-    }
-    
-    @QueryMapping
-    public Post[] followingPosts(@Argument String username) {
-        username = username.toLowerCase();
+        PageRequest paging = PageRequest.of(first, offset, Sort.by("postDate").descending());
         
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
+        Page<Post> page = postRepository.findAll(paging);
+        return page.getContent();
+
+    }
+
+    @QueryMapping
+    public List<Post> popularPosts(@Argument int first, @Argument int offset, @Argument String relatedUsername, GraphQLContext context) {
+        if (relatedUsername != null)
+            context.put("relatedUsername", relatedUsername.toLowerCase());
+
+
+        PageRequest paging = PageRequest.of(first, offset, Sort.by("score").descending());
+        
+        Page<Post> page = postRepository.findAll(paging);
+        return page.getContent();
+    }
+    @QueryMapping
+    public List<Post> followingPosts(@Argument int first, @Argument int offset, @Argument String username, GraphQLContext context) {
+        if (username == null)
             return null;
-        }
 
-        //List<ObjectId> following = user.getFollowing();
-        //List<User> usersFollowed = userRepository.findAllById(following);
+        User user = userRepository.findByUsername(username.toLowerCase());
+        if (user == null)
+            return null;
 
+        context.put("relatedUsername", username.toLowerCase());
 
-        //LinkedList<List<Post>> headsOfLinkedLists = new LinkedList<List<Post>>();
-        return null;
+        List<ObjectId> followingIds = user.getFollowing();
 
-        //with k followers 20k log k = k log k
+        PageRequest paging = PageRequest.of(first, offset, Sort.by("postDate").descending());
+        Page<Post> page;
 
+        if (followingIds.size() == 0)
+            return new LinkedList<Post>();
+        else if (followingIds.size() == 1)
+            page = postRepository.findByAuthor(followingIds.get(0), paging);        
+        else
+            page = postRepository.findByAuthors(followingIds, paging);
+
+        return page.getContent();
     }
 
     @SchemaMapping
@@ -171,6 +130,27 @@ public class PostController {
                     post -> idToAuthor.get(post.getAuthor())
                 ));
     }
+
+    @BatchMapping
+    public Map<Post, Post> parentPost(List<Post> posts) {
+        List<ObjectId> parentIds = posts.stream().map(post -> post.getParentPost()).collect(Collectors.toList());
+
+        List<Post> parents = postRepository.findAllById(parentIds);
+        HashMap<ObjectId, Post> idToParent = new HashMap<>();
+        
+        for (Post parent : parents) {
+            idToParent.put(parent.getId(), parent);
+        }
+
+        Map<Post, Post> map = new HashMap<>();
+        for (Post post : posts) {
+            //some may be null, so can't use streams
+            map.put(post, idToParent.get(post.getParentPost()));
+        }
+
+        return map;
+    }   
+
     
     @BatchMapping
     public Map<Post, Integer> voteStatus(List<Post> posts, @ContextValue String relatedUsername) {
@@ -202,33 +182,17 @@ public class PostController {
         return statuses;
     }
 
-    /*
     @SchemaMapping
-    public List<User> upvotes(Post post, @Argument int first, @Argument int offset) {
-        PageRequest paging = PageRequest.of(first, offset);
-        Page<User> page = userRepository.findAllById(post.getUpvotes(), paging);
-        return page.getContent();
-    }
+    public List<Post> comments(Post post, @Argument int first, @Argument int offset, @Argument String sortMethod) {
+        if (sortMethod != "postDate" && sortMethod != "score")
+            sortMethod = "postDate";
 
-    @SchemaMapping
-    public List<User> downvotes(Post post, @Argument int first, @Argument int offset) {
-        PageRequest paging = PageRequest.of(first, offset);
-
-        Page<User> page = userRepository.findAllById(post.getDownvotes(), paging);
-        return page.getContent();
-    } 
-    */
-
-
-    @SchemaMapping
-    public List<Post> comments(Post post, @Argument int first, @Argument int offset) {
-        PageRequest paging = PageRequest.of(first, offset);
+        PageRequest paging = PageRequest.of(first, offset, Sort.by(sortMethod).descending());
 
         Page<Post> page = postRepository.findAllById(post.getComments(), paging);
         return page.getContent();
     }
     
-
 
     @MutationMapping
     public PostResponse createPost(@Argument String text, @Argument String username, @Argument String sessionToken) {
@@ -245,13 +209,12 @@ public class PostController {
         if (!user.checkUserSession(userRepository, sessionToken))
             return new PostResponse("User not authenticated", null);
 
-        Post created = postRepository.save(new Post(text, user.getId(), false));
+        Post created = postRepository.save(new Post(text, user.getId()));
             
         user.getPosts().addFirst(created.getId());
         user.setPostCount(user.getPostCount() + 1);
         userRepository.save(user);
         
-        insertIntoFeeds(created);
         return new PostResponse("", created);
     }
 
@@ -274,8 +237,11 @@ public class PostController {
         if (parentPost == null)
             return new PostResponse("Post not found", null);
             
-        Post created = postRepository.save(new Post(text, user.getId(), true));
-        parentPost.getComments().add(created.getId());
+        Post created = new Post(text, user.getId());
+        created.declareComment(parentPost.getId());
+        created = postRepository.save(created);
+        
+        parentPost.getComments().addFirst(created.getId());
         parentPost.adjustCommentCount(1);
         
         postRepository.save(parentPost);
@@ -326,7 +292,6 @@ public class PostController {
            response = new IntResponse("1", post.getScore());
         }
         
-        insertIntoFeeds(post);
         userRepository.save(user);
         postRepository.save(post);
 
@@ -376,7 +341,6 @@ public class PostController {
             response =  new IntResponse("-1", post.getScore()); //downvoted
         }
 
-        insertIntoFeeds(post);
         
         userRepository.save(user);
         postRepository.save(post);

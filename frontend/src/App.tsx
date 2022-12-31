@@ -32,6 +32,33 @@ type UserContextType = {
     dispatch: React.Dispatch<UserAction>;
 }
 
+export interface UserPayload {
+    username: string
+    displayName: string
+    followerCount: number
+    followingCount: number
+    pinnedPost: PostPayload
+    headerColor: string
+    isFollowing: boolean
+    followers: UserPayload[]
+    following: UserPayload[]
+    posts: PostPayload[]
+    postCount: number
+}
+export interface PostPayload {
+    id: string
+    author: UserPayload
+    text: string
+    isComment: boolean
+    parentPost: PostPayload | null
+    postDate: string
+    score: number
+    voteStatus: number
+    commentCount: number
+    comments: PostPayload[]
+}
+
+
 export const UserContext = createContext<UserContextType>(
     {state: {username: "", sessionToken: ""}, dispatch: () => {}}        
 );

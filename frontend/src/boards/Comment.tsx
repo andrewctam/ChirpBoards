@@ -1,11 +1,12 @@
 import { useContext, useEffect, useState } from "react"
-import { UserContext } from "../App"
+import { UserContext, PostPayload } from "../App"
 import { Post } from "./Board"
 import ReplyBox from "./ReplyBox"
 import Vote from "./Vote"
 
 interface CommentProps extends Post {
     local: boolean
+    autoLoadComments: boolean
 }
 
 function Comment(props: CommentProps) {
@@ -17,8 +18,12 @@ function Comment(props: CommentProps) {
     const [showReplies, setShowReplies] = useState(true)
     const [replying, setReplying] = useState(false)  
 
-
     const userInfo = useContext(UserContext);
+
+    useEffect(() => {
+        if (props.autoLoadComments && props.commentCount > 0)
+            loadMoreReplies();
+    }, [])
 
     const loadMoreReplies = async () => {
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
@@ -49,12 +54,13 @@ function Comment(props: CommentProps) {
         }).then(res => res.json())
         
         console.log(response)
-        
         const info = response.data.post;
+        
 
         setPageNum(pageNum + 1)
+
         setReplies(replies.concat(
-            info.comments.map((comment: any) => {
+            info.comments.map((comment: PostPayload) => {
                 return <Comment
                     key = {comment.id}
                     id = {comment.id}
@@ -64,8 +70,9 @@ function Comment(props: CommentProps) {
                     authorDisplayName = {comment.author.displayName}
                     commentCount = {comment.commentCount}
                     score = {comment.score}
-                    voteStatus = {userInfo.state.username ? info.voteStatus : null}
+                    voteStatus = {userInfo.state.username ? comment.voteStatus : 0}
                     local = {false}
+                    autoLoadComments = {false}
                 />
             }))
         )
@@ -78,15 +85,18 @@ function Comment(props: CommentProps) {
                 <div className = "block mb-3">
                     <a href={`/profile/${props.authorUsername}`}>
                         {props.authorDisplayName}
-                        <div className="text-xs inline ml-1"> {`@${props.authorUsername}`} </div>
+                        <div className="text-xs inline"> {`• @${props.authorUsername}`} </div>
                     </a>
                     
                     <div className = "text-xs inline">
                         {` • ${props.postDate}`}
                     </div>
+
+                    <a className = "text-gray-200 ml-2" href = {`/board/${props.id}`}> ► </a>
                 </div>
                 
                 {props.text}
+                
 
                 {replying ? 
                 <ReplyBox 
@@ -111,7 +121,6 @@ function Comment(props: CommentProps) {
                         onClick = {() => {setReplying(true)}}>
                         Reply
                     </button> : null}
-                   
                 </div>
 
                 <Vote postId = {props.id} initialScore = {props.score} initialVoteStatus = {props.voteStatus}/>

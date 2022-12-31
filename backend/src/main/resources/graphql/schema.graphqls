@@ -4,12 +4,12 @@ type Query {
     #No authentication required. Include relatedUsername to get information for certain queries.
     post(id: String!, relatedUsername: String = null): Post
     
-    #No authentication required. Retrieves the 20 most recent posts. Include relatedUsername to get information for certain queries.
-    recentPosts(relatedUsername: String = null): [Post!]!
-    #No authentication required. Retrieves the 20 most popular posts. Include relatedUsername to get information for certain queries.
-    popularPosts(relatedUsername: String = null): [Post!]!
-    #No authentication required. Retrieves the 20 most recent posts from a user's following list
-    followingPosts(username: String): [Post!]!
+    #No authentication required. Retrieves recent posts. Include relatedUsername to get information for certain queries.
+    recentPosts(first: Int!, offset: Int!, relatedUsername: String = null): [Post!]!
+    #No authentication required. Retrieves popular posts by score. Include relatedUsername to get information for certain queries.
+    popularPosts(first: Int!, offset: Int!, relatedUsername: String = null): [Post!]!
+    #No authentication required. Retrieves the most recent posts from a user's following list. username is also relatedUsername.
+    followingPosts(first: Int!, offset: Int!, username: String!): [Post!]
 
 }
 
@@ -69,13 +69,14 @@ type Post {
     author: User!
     text: String!
     isComment: Boolean!
+    parentPost: Post
     postDate(timezone: Int!): String!
     score: Int!
 
     #vote status (0, 1, or -1) of the relatedUsername argument passed in query.
     voteStatus: Int
     commentCount: Int!
-    comments(first: Int = 0, offset: Int = 10): [Post!]! 
+    comments(first: Int = 0, offset: Int = 10, sortMethod: String = "postDate"): [Post!]! 
 }
 
 type SigninRegisterResponse {
@@ -87,7 +88,6 @@ type PostResponse {
     msg: String
     post: Post
 }
-
 
 type BooleanResponse {
     msg: String

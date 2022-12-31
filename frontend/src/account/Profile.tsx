@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { PostChirp, UserContext } from "../App";
+import { PostPayload, UserContext } from "../App";
 import Chirp from "../home/Chirp";
 import PostComposer from "../home/PostComposer";
 import Layout from "../Layout";
@@ -124,7 +124,7 @@ function Profile () {
         const info = response.data.user;
         setPostCount(info.postCount)
         
-        setChirps(chirps.concat(info.posts.map((post: any, i: number) => {
+        setChirps(chirps.concat(info.posts.map((post: PostPayload, i: number) => {
             return <Chirp
                     authorUsername={username ?? ""}
                     authorDisplayName={displayName}
@@ -133,7 +133,7 @@ function Profile () {
                     text = {post.text}
                     key = {post.id}
                     score = {post.score}
-                    voteStatus = {userInfo.state.username ? post.voteStatus : null}
+                    voteStatus = {userInfo.state.username ? post.voteStatus : 0}
                     pinned = {i === 0}
                 />
         })))

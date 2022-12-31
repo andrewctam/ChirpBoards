@@ -6,13 +6,20 @@ import { PostChirp, UserContext } from "../App";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import SpinningCircle from "../SpinningCircle";
 import PostComposer from "./PostComposer";
+import { PostPayload } from "../App";
 
 export enum Feed { None, Following, Recent, Popular }
 
 function Home() {
     const [feedSelected, setFeedSelected] = useState<Feed>(Feed.None)
+
     const [recentFeed, setRecentFeed] = useState<JSX.Element[]>([]);
     const [popularFeed, setPopularFeed] = useState<JSX.Element[]>([]);
+    const [followingFeed, setFollowingFeed] = useState<JSX.Element[]>([]);
+        
+    const [recentPageNum, setRecentPageNum] = useState(0);
+    const [popularPageNum, setPopularPageNum] = useState(0);
+    const [followingPageNum, setFollowingPageNum] = useState(0);
 
     const [doneFetching, setDoneFetching] = useState(false);
     const userInfo = useContext(UserContext);
@@ -20,29 +27,16 @@ function Home() {
 
     const [searchParams, setSearchParams] = useSearchParams();
 
+    const switchFeeds = (feed: Feed) => {
+        setFeedSelected(feed);
+        setDoneFetching(false)
+        setSearchParams({ feed: feed === Feed.Recent ? "recent" : feed === Feed.Popular ? "popular" : "following" })
+    }
+
     useEffect(() => {
-        switch (feedSelected) {
-            case Feed.Recent:
-                setDoneFetching(false);
-                getRecentPopularChirps("recent");
-                setSearchParams({ feed: "recent" })
+        if (feedSelected !== Feed.None)
+            getMoreChirps();
 
-                return;
-            case Feed.Popular:
-                setDoneFetching(false);
-                getRecentPopularChirps("popular");
-                setSearchParams({ feed: "popular" })
-                return;
-            case Feed.Following:
-                if (!userInfo.state.username) {
-                    navigate("/signin?return=true")
-                } else
-                    setSearchParams({ feed: "following" })
-                return;
-
-            default:
-                return;
-        }
     }, [feedSelected])
 
     useEffect(() => {
@@ -64,12 +58,35 @@ function Home() {
     }, [])
 
 
-    const getRecentPopularChirps = async (type: "recent" | "popular") => {
+    const getMoreChirps = async () => {
+        let type = "";
+        let pageNum = 0
+        if (feedSelected === Feed.Following) {
+            type = "following";
+            pageNum = followingPageNum;
+        } else if (feedSelected === Feed.Popular) {
+            type = "popular";
+            pageNum = popularPageNum;
+        } else if (feedSelected === Feed.Recent) {
+            type = "recent";
+            pageNum = recentPageNum;
+        } else {
+            return;
+        }
+
+        let usernameField = "";
+        if (feedSelected === Feed.Following)
+            usernameField = `, username: "${userInfo.state.username}"`
+        else if (userInfo.state.username)
+            usernameField = `, relatedUsername: "${userInfo.state.username}"`
+
+        
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const query =
             `query {
-            ${type}Posts${userInfo.state.username ? `(relatedUsername: "${userInfo.state.username}")` : ""} {
+            ${type}Posts(first: ${pageNum}, offset: 10${usernameField}) {
+
                 id
                 text
                 author {
@@ -91,33 +108,34 @@ function Home() {
         }).then(res => res.json())
         console.log(response)
 
-        if (type === "popular") {
-            setPopularFeed(response.data.popularPosts.map((post: any) => {
-                return <Chirp
-                    authorUsername={post.author.username}
-                    authorDisplayName={post.author.displayName}
-                    id={post.id}
-                    postDate={post.postDate}
-                    text={post.text}
-                    key={post.id}
-                    score={post.score}
-                    voteStatus={userInfo.state.username ? post.voteStatus : null}
-                />
-            }))
+        let info = response.data[`${type}Posts`];
+        if (!info)
+            return;
+
+        let newChirps = info.map((post: PostPayload) => {
+            return <Chirp
+                authorUsername={post.author.username}
+                authorDisplayName={post.author.displayName}
+                id={post.id}
+                postDate={post.postDate}
+                text={post.text}
+                key={"type" + post.id}
+                score={post.score}
+                voteStatus={userInfo.state.username ? post.voteStatus : 0}
+            />
+        })
+
+        if (feedSelected === Feed.Recent) {
+            setRecentFeed([...recentFeed, ...newChirps]);
+            setRecentPageNum(recentPageNum + 1);
+        } else if (feedSelected === Feed.Popular) {
+            setPopularFeed([...popularFeed, ...newChirps]);
+            setPopularPageNum(popularPageNum + 1);
         } else {
-            setRecentFeed(response.data.recentPosts.map((post: any) => {
-                return <Chirp
-                    authorUsername={post.author.username}
-                    authorDisplayName={post.author.displayName}
-                    id={post.id}
-                    postDate={post.postDate}
-                    text={post.text}
-                    key={post.id}
-                    score={post.score}
-                    voteStatus={userInfo.state.username ? post.voteStatus : null}
-                />
-            }))
+            setFollowingFeed([...followingFeed, ...newChirps]);
+            setFollowingPageNum(followingPageNum + 1);
         }
+
 
         setDoneFetching(true);
 
@@ -134,7 +152,7 @@ function Home() {
             feed = popularFeed;
             break;
         case Feed.Following:
-            feed = null
+            feed = followingFeed;
             break;
         default:
             break;
@@ -146,23 +164,22 @@ function Home() {
                 <PostComposer />
             : null}
 
-
             <div className="grid rows-2">
                 <div className="grid grid-cols-3">
                     <FeedButton
                         type={Feed.Recent}
                         name={"Recent"}
-                        setFeed={setFeedSelected}
+                        onClick={switchFeeds}
                         isActive={feedSelected === Feed.Recent} />
                     <FeedButton
                         type={Feed.Popular}
                         name={"Popular"}
-                        setFeed={setFeedSelected}
+                        onClick={switchFeeds}
                         isActive={feedSelected === Feed.Popular} />
                     <FeedButton
                         type={Feed.Following}
                         name={"Following"}
-                        setFeed={setFeedSelected}
+                        onClick={switchFeeds}
                         isActive={feedSelected === Feed.Following} />
                 </div>
 
@@ -170,9 +187,9 @@ function Home() {
                     {feed}
 
                     {feed && feed.length > 0 ?
-                        <li className="text-center text-white my-5">
-                            End of Feed
-                        </li>
+                        <button className="text-center text-white my-5" onClick = {getMoreChirps}>
+                            Load more chirps
+                        </button>
                         :
                         !doneFetching ?
                             <SpinningCircle /> 

@@ -20,7 +20,6 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.session.DisableEncodeUrlFilter;
 import org.springframework.stereotype.Controller;
 
 import graphql.GraphQLContext;
