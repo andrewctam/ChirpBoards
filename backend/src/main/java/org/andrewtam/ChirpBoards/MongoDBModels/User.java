@@ -28,9 +28,12 @@ public class User {
 
     private int postCount;
     private LinkedList<ObjectId> posts; //references to posts
+    private ObjectId pinnedPost;
 
     private String sessionToken;
     private Date sessionTokenExpiration;
+
+    private String headerColor;
     
 
     public User(String username, String displayName, String hashedPassword) {
@@ -42,6 +45,7 @@ public class User {
         this.followers = new LinkedList<ObjectId>();
         this.following = new LinkedList<ObjectId>();
         this.posts = new LinkedList<ObjectId>();
+        this.pinnedPost = null;
 
         this.followerCount = 0;
         this.followingCount = 0;
@@ -49,6 +53,8 @@ public class User {
 
         this.sessionToken = null;
         this.sessionTokenExpiration = null;
+
+        this.headerColor = null;
     }
 
     public ObjectId getId() { return id; }
@@ -78,12 +84,17 @@ public class User {
 
     public LinkedList<ObjectId> getPosts() { return posts; }
 
+    public ObjectId getPinnedPost() { return pinnedPost; }
+    public void setPinnedPost(ObjectId pinnedPost) { this.pinnedPost = pinnedPost; }
+
     public String getSessionToken() { return sessionToken; }
     public void setSessionToken(String sessionToken) { this.sessionToken = sessionToken; }
 
     public Date getSessionTokenExpiration() { return sessionTokenExpiration; }
     public void setSessionTokenExpiration(Date sessionTokenExpiration) { this.sessionTokenExpiration = sessionTokenExpiration; }
     
+    public String getHeaderColor() { return headerColor; }
+    public void setHeaderColor(String headerColor) { this.headerColor = headerColor; }
 
     public boolean checkUserSession(UserRepository userRepository, String sessionToken) {
         if(this.sessionToken == null || !this.sessionToken.equals(sessionToken) || this.sessionTokenExpiration == null)

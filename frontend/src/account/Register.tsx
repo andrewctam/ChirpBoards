@@ -15,10 +15,6 @@ function Register() {
     const navigate = useNavigate()
     const [searchParams, setSearchParams] = useSearchParams();
 
-    useEffect(() => {
-        if (userInfo.state.username)
-            setError("Already logged in")
-    }, [])
     
     const register = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
@@ -33,6 +29,12 @@ function Register() {
             setError("Username must be between 3 and 16 characters");
             return;
         }
+
+        if (displayNameInput.length > 32) {
+            setError("Display name must be less than 32 characters");
+            return;
+        }
+
 
         if (passwordInput.length < 8) {
             setError("Password must be at least 8 characters");
@@ -140,7 +142,7 @@ function Register() {
                     value = {passwordInput}
                     setValue = {setPasswordInput}
                     password = {true}
-                    mt = "8"
+                    mt = "mt-8"
                 />
 
                 <FormInput

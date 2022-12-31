@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { PostChirp, UserContext } from "../App";
 import Chirp from "../home/Chirp";
 import PostComposer from "../home/PostComposer";
@@ -21,6 +21,7 @@ function Profile () {
     const [pageNum, setPageNum] = useState(0);
     const [postCount, setPostCount] = useState(0);
 
+    const navigate = useNavigate();
 
 
     useEffect( () => {
@@ -39,9 +40,12 @@ function Profile () {
 
 
     const handleScroll = (e: React.UIEvent<HTMLElement>) => {
-        if ((e.target as HTMLElement).scrollHeight - (e.target as HTMLElement).scrollTop === (e.target as HTMLElement).clientHeight) {
-            alert()
-            getMoreChirps();
+        let element = e.target as HTMLElement;
+
+        if (element.scrollHeight - element.scrollTop === element.clientHeight) {
+            if (chirps.length < postCount) {
+                getMoreChirps();
+            }
         }
     }
 
@@ -93,14 +97,14 @@ function Profile () {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
-            user(username: "${username}") {
+            user(username: "${username}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
                 postCount
                 posts(first: ${pageNum}, offset: 5) {
                     id
                     text
                     postDate(timezone: ${timezone})
                     score
-                    ${userInfo.state.username ? `voteStatus(username: "${userInfo.state.username}")` : ""}
+                    ${userInfo.state.username ? "voteStatus" : ""}
                 }
             }
         }`
@@ -120,7 +124,7 @@ function Profile () {
         const info = response.data.user;
         setPostCount(info.postCount)
         
-        setChirps(chirps.concat(info.posts.map((post: any) => {
+        setChirps(chirps.concat(info.posts.map((post: any, i: number) => {
             return <Chirp
                     authorUsername={username ?? ""}
                     authorDisplayName={displayName}
@@ -130,11 +134,16 @@ function Profile () {
                     key = {post.id}
                     score = {post.score}
                     voteStatus = {userInfo.state.username ? post.voteStatus : null}
+                    pinned = {i === 0}
                 />
         })))
     }
 
     const toggleFollow = async () => {
+        if (!userInfo.state.username) {
+            navigate("/signin?return=true")
+        }
+         
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
 
         const query =
@@ -169,14 +178,14 @@ function Profile () {
     }
 
     return (<Layout>
-        <div onScroll = {handleScroll} className = "text-center bg-slate-600 text-white p-2 shadow-md">
+        <div  className = "text-center bg-slate-600 text-white p-2 shadow-md">
             <h1 className = "text-3xl">{displayName}</h1>
             <h1 className = "text-gray-300 text-sm">{`@${username}`}</h1>
 
 
             <div className = "mx-auto flex justify-center mt-3 w-fit">
 
-                <div className = "text-sm w-fit my-auto border border-white/10 bg-slate-200/25 px-4 py-1 rounded-xl">
+                <div className = "text-sm w-fit my-auto border border-white/10 text-black bg-slate-200/50 px-4 py-1 rounded-xl">
                     <div className="w-fit mx-auto">
                     {`${followerCount} follower${followerCount !== 1 ? "s" : ""}` }
                     </div>
@@ -194,7 +203,7 @@ function Profile () {
             </div>
         </div>
 
-        <div className = "mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
+        <div onScroll = {handleScroll} className = "mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
             {userInfo.state.username === username ? 
                 <PostComposer /> 
             : null}
@@ -202,14 +211,9 @@ function Profile () {
             <ul className = "mt-24 mb-8">
                 {chirps}
 
-                {postCount > 0 && chirps.length === 0 ?
-                    <SpinningCircle /> 
-                : null}
-
-                {chirps.length < postCount && chirps.length !== 0 ?
-                    <p onClick = {getMoreChirps} className = "cursor-pointer text-sky-100">{`Load more chirps`}</p>
-                : null 
-                }
+            {postCount > 0 && chirps.length === 0 ?
+                <SpinningCircle /> 
+            : null}
             </ul>
         </div>
 

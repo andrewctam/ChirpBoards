@@ -54,8 +54,8 @@ function Vote(props: VoteProps) {
 
 
     return (
-        <div className="absolute -right-5 my-auto h-fit top-0 bottom-0 bg-white border border-black/20 py-1 px-1 w-12 rounded-xl text-center text-sm">
-            <button style = { {color: voteStatus === 1 ? "rgb(0, 200, 0)" : "black"} } className = "font-extrabold" onClick = {() => {vote("upvote")}}>
+        <div className="absolute -right-5 my-auto h-fit top-0 bottom-0 text-black bg-gray-300 border border-black/20 py-1 px-1 w-12 rounded-xl text-center text-sm">
+            <button style = { {color: voteStatus === 1 ? "rgb(0, 180, 0)" : "black"} } className = "font-extrabold" onClick = {() => {vote("upvote")}}>
             ↑
             </button>
 

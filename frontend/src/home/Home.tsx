@@ -141,7 +141,7 @@ function Home() {
     }
 
     return (<Layout>
-        <div className="mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
+        <div className="mt-8 mx-auto w-5/6 lg:w-3/5">
             {userInfo.state.username ?
                 <PostComposer />
             : null}

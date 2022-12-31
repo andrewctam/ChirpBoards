@@ -74,11 +74,11 @@ function ReplyBox(props: ReplyBoxProps) {
     }
 
     return (
-        <form onSubmit = {addComment} className = "w-[95%] mx-auto h-24 my-6 bg-gray-200/25 border border-black/25 shadow-lg relative rounded-xl">
+        <form onSubmit = {addComment} className = "w-[95%] mx-auto h-24 my-6 bg-gray-200/25 border border-black/25  shadow-lg relative rounded-xl">
             <textarea 
                 value = {comment} 
                 onChange = {(e) => setComment(e.target.value)} 
-                className = "w-full h-full bg-transparent p-2 resize-none focus:outline-none placeholder:text-black/75"
+                className = "w-full h-full bg-transparent p-2 resize-none focus:outline-none text-white"
                 placeholder= "Add a comment..."/>
 
 

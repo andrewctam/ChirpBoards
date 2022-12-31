@@ -2,6 +2,7 @@ import { createContext, useReducer } from "react";
 import { BrowserRouter, Route, Routes} from "react-router-dom";
 import Profile from "./account/Profile";
 import Register from "./account/Register";
+import Settings from "./account/Settings";
 import Signin from "./account/Signin";
 import Board from "./boards/Board";
 import Home from "./home/Home";
@@ -74,6 +75,7 @@ function App() {
                     <Route path="/signin" element={  <Signin /> }/>
                     <Route path="/register" element={  <Register /> }/>
                     <Route path="/profile/:username" element={  <Profile /> }/>
+                    <Route path="/settings" element={  <Settings /> }/>
                 </Routes>
 
             </BrowserRouter>

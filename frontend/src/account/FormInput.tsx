@@ -13,7 +13,7 @@ function FormInput(props: FormInputProps) {
     const [highlightLabel, setHighlightLabel] = useState(false);
     
     return (
-    <div className = {`mt-${props.mt ? props.mt : "2"}`}>
+    <div className = {`${props.mt ? props.mt : "mt-2"} text-left`}>
 
         <input 
             value = {props.value}

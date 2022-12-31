@@ -74,7 +74,7 @@ function Comment(props: CommentProps) {
 
     return (
         <div className = "w-[95%] ml-[5%]">
-            <div className = {`my-6 px-8 py-4 border border-black rounded-lg relative break-all bg-gray-100 ${props.local ? "animate-fadeColor": ""} `} >
+            <div className = {`my-6 px-8 py-4 border border-black rounded-lg relative break-all bg-black/10 text-gray-100 ${props.local ? "animate-fadeColor": ""} `} >
                 <div className = "block mb-3">
                     <a href={`/profile/${props.authorUsername}`}>
                         {props.authorDisplayName}

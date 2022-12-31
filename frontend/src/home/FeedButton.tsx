@@ -11,7 +11,7 @@ function FeedButton (props: FeedButtonProps) {
     return (
         <button 
             onClick = { () => props.setFeed(props.type) }
-            className = {`px-4 py-2 rounded m-1 border border-black/10 ${props.isActive ? "bg-sky-300" : "bg-slate-300"}`}>
+            className = {`px-4 py-2 rounded m-1 border border-black/10 ${props.isActive ? "bg-green-100" : "bg-slate-300"}`}>
             {props.name}
         </button>)
 }

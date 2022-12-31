@@ -49,7 +49,7 @@ function Board() {
                 score
                 commentCount
                 ${userInfo.state.username ? "voteStatus" : ""}
-                comments(first:0, offset:5) {
+                comments(first:0, offset:10) {
                     id
                     text
                     commentCount
@@ -111,14 +111,14 @@ function Board() {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
-            post(id: "${mainPost.id}") {
-                comments(first:${pageNum}, offset:5) {
+            post(id: "${mainPost.id}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}` : ""}") {
+                comments(first:${pageNum}, offset:10) {
                     id
                     text
                     commentCount
                     postDate(timezone: ${timezone})
                     score
-                    ${userInfo.state.username ? `voteStatus(username: "${userInfo.state.username}")` : ""}
+                    ${userInfo.state.username ? "voteStatus" : ""}
                     author {
                         username
                         displayName
@@ -167,9 +167,9 @@ function Board() {
             {mainPost ? 
             <div className = "mx-auto w-11/12 md:w-4/5 lg:w-3/4">
 
-                <div className = "w-full mt-12 mb-6 p-8 border border-black rounded-xl bg-sky-100 relative break-all">
+                <div className = "w-full mt-12 mb-6 p-12 pb-6 border border-black rounded-xl bg-black/25 text-white relative break-all">
 
-                    <a href={`/profile/${mainPost.authorUsername}`} className = "absolute -top-8 left-2 bg-white text-black rounded-xl p-2 border border-black">
+                    <a href={`/profile/${mainPost.authorUsername}`} className = "absolute -top-8 left-2 bg-gray-300 text-black rounded-xl p-2 border border-black">
                         {mainPost.authorDisplayName}
                         <div className="text-xs inline"> {`@${mainPost.authorUsername}`} </div>
                         <div className = "text-xs"> {mainPost.postDate} </div>

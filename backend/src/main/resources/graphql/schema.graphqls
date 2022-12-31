@@ -39,6 +39,12 @@ type Mutation {
 
     #Requires authentication. Checks if session is still valid
     verifySession(username: String!, sessionToken: String!): Boolean
+
+    #Requires authentication. Changes display name.
+    changeDisplayName(newDisplayName: String!, username: String!, sessionToken: String!): BooleanResponse
+
+    #No authentication required (but old password needed, so a sessionToken could be obtained anyway). Changes password.
+    changePassword(oldPassword: String!, newPassword: String!, username: String!): BooleanResponse
 }
 
 
@@ -47,6 +53,8 @@ type User {
     displayName: String!
     followerCount: Int!
     followingCount: Int!
+    pinnedPost: Post
+    headerColor: String
 
     isFollowing(followeeUsername: String!): Boolean
     followers(first: Int = 0, offset: Int = 10): [User!]!

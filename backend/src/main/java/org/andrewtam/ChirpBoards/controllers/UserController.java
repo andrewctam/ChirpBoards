@@ -20,6 +20,7 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.session.DisableEncodeUrlFilter;
 import org.springframework.stereotype.Controller;
 
 import graphql.GraphQLContext;
@@ -83,8 +84,15 @@ public class UserController {
     public SigninRegisterResponse register(@Argument String username, @Argument String displayName, @Argument String password) {
         username = username.toLowerCase();
 
+        if (username == "" || displayName == "" || password == "")
+            return new SigninRegisterResponse("All fields are required", "");
+
         if (username.length() > 16 || username.length() < 3) 
             return new SigninRegisterResponse("Username must be between 3 and 20 characters", "");
+
+        if (displayName.length() > 32) 
+            return new SigninRegisterResponse("Display name must be less than 32 characters", "");
+
 
         if (password.length() < 8)
             return new SigninRegisterResponse("Password must be at least 8 characters", "");
@@ -212,6 +220,62 @@ public class UserController {
         userRepository.save(user);
         userRepository.save(followUser);
         return new BooleanResponse(followUser.getFollowerCount() + "", nowFollowing);
+    }
+
+    @MutationMapping
+    public BooleanResponse changeDisplayName(@Argument String newDisplayName, @Argument String username, @Argument String sessionToken) {
+        username = username.toLowerCase();
+        if (newDisplayName == "")
+            return new BooleanResponse("Enter a new display name", null); 
+
+
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return new BooleanResponse("Username not found", null);
+        }
+
+        if (!user.checkUserSession(userRepository, sessionToken))
+            return new BooleanResponse("User not authenticated", null);
+
+        if (newDisplayName.length() > 32) 
+            return new BooleanResponse("Display name must be less than 32 characters", null);
+        
+        if (newDisplayName.equals(user.getDisplayName()))
+            return new BooleanResponse("Display name is already " + newDisplayName, null);
+
+        user.setDisplayName(newDisplayName);
+        userRepository.save(user);
+
+        return new BooleanResponse("Successfully changed display name to " + newDisplayName, true);
+    }
+
+    @MutationMapping
+    public BooleanResponse changePassword(@Argument String oldPassword, @Argument String newPassword, @Argument String username) {
+        username = username.toLowerCase();
+
+        if (newPassword.length() < 8)
+            return new BooleanResponse("Password must be at least 8 characters", null);
+
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return new BooleanResponse("Username not found", null);
+        }
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        if (!encoder.matches(oldPassword, user.getHashedPassword())) {
+            return new BooleanResponse("Incorrect old password", null);
+        }
+
+        if (encoder.matches(newPassword, user.getHashedPassword())) {
+            return new BooleanResponse("New password must be different from the old password", null);
+        }
+
+        String hashedPassword = encoder.encode(newPassword);
+
+        user.setHashedPassword(hashedPassword);
+        userRepository.save(user);
+
+        return new BooleanResponse("Successfully changed password", true);
     }
     
 
