@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../App";
+import { PostPayload, UserContext } from "../App";
 import Comment from "./Comment";
 interface ReplyBoxProps {
     close: () => void
@@ -52,7 +52,7 @@ function ReplyBox(props: ReplyBoxProps) {
         
         console.log(response)
 
-        const info = response.data.comment.post;
+        const info: PostPayload = response.data.comment.post;
 
         props.addReply(
             <Comment

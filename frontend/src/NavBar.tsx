@@ -73,7 +73,7 @@ const NavBar = () => {
 
                             {showDropdown ?
                                 <div className = "relative">
-                                    <div className = "absolute lg:-rotate-[8deg] -right-1 top-2 px-8 py-2 w-fit z-20 bg-sky-200 lg:bg-sky-200/80 border border-black lg:border-black/10 rounded-b-xl rounded-tl-xl text-center">
+                                    <div className = "absolute lg:-rotate-12 -right-1 top-4 px-8 py-2 w-fit z-20 bg-sky-200 lg:bg-sky-200/80 border border-black lg:border-black/10 rounded-b-xl rounded-tl-xl text-center">
                                         <p><a href={`/profile/${[userInfo.state.username]}`} className = "text-black mt-2 cursor-pointer text-center">
                                             Profile
                                         </a></p>

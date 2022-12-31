@@ -7,6 +7,7 @@ import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import SpinningCircle from "../SpinningCircle";
 import PostComposer from "./PostComposer";
 import { PostPayload } from "../App";
+import useScrollBottom from "../hooks/useScrollBottom";
 
 export enum Feed { None, Following, Recent, Popular }
 
@@ -15,7 +16,7 @@ function Home() {
 
     const [recentFeed, setRecentFeed] = useState<JSX.Element[]>([]);
     const [popularFeed, setPopularFeed] = useState<JSX.Element[]>([]);
-    const [followingFeed, setFollowingFeed] = useState<JSX.Element[]>([]);
+    const [followingFeed, setFollowingFeed] = useState<JSX.Element[] | null>([]);
         
     const [recentPageNum, setRecentPageNum] = useState(0);
     const [popularPageNum, setPopularPageNum] = useState(0);
@@ -23,7 +24,7 @@ function Home() {
 
     const [doneFetching, setDoneFetching] = useState(false);
     const userInfo = useContext(UserContext);
-    const navigate = useNavigate();
+    const navigate = useNavigate(); 
 
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -62,6 +63,9 @@ function Home() {
         let type = "";
         let pageNum = 0
         if (feedSelected === Feed.Following) {
+            if (userInfo.state.username === "")
+                navigate("/signin?return=true")
+                
             type = "following";
             pageNum = followingPageNum;
         } else if (feedSelected === Feed.Popular) {
@@ -86,7 +90,6 @@ function Home() {
         const query =
             `query {
             ${type}Posts(first: ${pageNum}, offset: 10${usernameField}) {
-
                 id
                 text
                 author {
@@ -108,18 +111,26 @@ function Home() {
         }).then(res => res.json())
         console.log(response)
 
-        let info = response.data[`${type}Posts`];
-        if (!info)
-            return;
+        setDoneFetching(true);
 
-        let newChirps = info.map((post: PostPayload) => {
+        const info = response.data[`${type}Posts`];
+
+        if (!info) {
+            if (feedSelected === Feed.Following)
+                setFollowingFeed(null);
+
+            return;
+        }
+
+
+        const newChirps = info.map((post: PostPayload) => {
             return <Chirp
                 authorUsername={post.author.username}
                 authorDisplayName={post.author.displayName}
                 id={post.id}
                 postDate={post.postDate}
                 text={post.text}
-                key={"type" + post.id}
+                key={post.id}
                 score={post.score}
                 voteStatus={userInfo.state.username ? post.voteStatus : 0}
             />
@@ -131,19 +142,14 @@ function Home() {
         } else if (feedSelected === Feed.Popular) {
             setPopularFeed([...popularFeed, ...newChirps]);
             setPopularPageNum(popularPageNum + 1);
-        } else {
+        } else if (feedSelected == Feed.Following && followingFeed !== null) {
             setFollowingFeed([...followingFeed, ...newChirps]);
             setFollowingPageNum(followingPageNum + 1);
         }
-
-
-        setDoneFetching(true);
-
     }
 
 
     let feed = null;
-
     switch (feedSelected) {
         case Feed.Recent:
             feed = recentFeed;
@@ -152,11 +158,16 @@ function Home() {
             feed = popularFeed;
             break;
         case Feed.Following:
-            feed = followingFeed;
+            if (followingFeed)
+                feed = followingFeed;
+            else
+                feed = <div className = "text-center text-white text-lg mt-4">You are not following any users</div>
             break;
         default:
             break;
     }
+
+    useScrollBottom(getMoreChirps)
 
     return (<Layout>
         <div className="mt-8 mx-auto w-5/6 lg:w-3/5">
@@ -186,14 +197,9 @@ function Home() {
                 <ul>
                     {feed}
 
-                    {feed && feed.length > 0 ?
-                        <button className="text-center text-white my-5" onClick = {getMoreChirps}>
-                            Load more chirps
-                        </button>
-                        :
-                        !doneFetching ?
-                            <SpinningCircle /> 
-                        : null}
+                    {!doneFetching ?
+                        <SpinningCircle /> 
+                    : null}
                 </ul>
 
             </div>

@@ -1,4 +1,4 @@
-import { createContext, useReducer } from "react";
+import { createContext, useReducer, useState } from "react";
 import { BrowserRouter, Route, Routes} from "react-router-dom";
 import Profile from "./account/Profile";
 import Register from "./account/Register";
@@ -51,6 +51,7 @@ export interface PostPayload {
     text: string
     isComment: boolean
     parentPost: PostPayload | null
+    rootPost: PostPayload | null
     postDate: string
     score: number
     voteStatus: number
@@ -64,13 +65,14 @@ export const UserContext = createContext<UserContextType>(
 );
 
 
+
 function App() {
     const [userInfo, userInfoDispatch] = useReducer(
         (state: UserInfo, action: UserAction) => {
             switch(action.type) {
                 case "UPDATE":
                     return {
-                        username: action.payload.username,
+                        username: action.payload.username.toLowerCase(),
                         sessionToken: action.payload.sessionToken
                     }
                 case "REFRESH":
@@ -97,7 +99,6 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={ <Home /> }/>
-                    <Route path="/board" element={ <Board /> }/>
                     <Route path="/board/:id" element={ <Board /> }/>
                     <Route path="/signin" element={  <Signin /> }/>
                     <Route path="/register" element={  <Register /> }/>

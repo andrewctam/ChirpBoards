@@ -15,6 +15,8 @@ public class Post implements Comparable<Post> {
     
     private boolean isComment;
     private ObjectId parentPost;
+    private ObjectId rootPost;
+
     private String text;
     private ObjectId author; //reference to user
     private long postDate; //milliseconds since epoch
@@ -32,6 +34,7 @@ public class Post implements Comparable<Post> {
 
         this.isComment = false;
         this.parentPost = null;
+        this.rootPost = null;
 
         //MM/dd/yy HH:mm:ss
         this.postDate = System.currentTimeMillis();
@@ -44,9 +47,14 @@ public class Post implements Comparable<Post> {
         this.comments = new LinkedList<ObjectId>();
     }
 
-    public void declareComment(ObjectId parentPost) {
+    public void declareComment(Post parentPost) {
         this.isComment = true;
-        this.parentPost = parentPost;
+        this.parentPost = parentPost.id;
+
+        if (parentPost.isComment)
+            this.rootPost = parentPost.rootPost;
+        else
+            this.rootPost = parentPost.id;
     }
 
     public ObjectId getId() { return id; }
@@ -54,7 +62,8 @@ public class Post implements Comparable<Post> {
     public boolean isComment() { return isComment; }
 
     public ObjectId getParentPost() { return parentPost; }
-    public void setParentPost(ObjectId parentPost) { this.parentPost = parentPost; }
+
+    public ObjectId getRootPost() { return rootPost; }
 
     public String getText() { return text; }
 

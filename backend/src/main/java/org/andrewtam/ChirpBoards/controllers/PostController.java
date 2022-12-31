@@ -61,7 +61,7 @@ public class PostController {
 
         PageRequest paging = PageRequest.of(first, offset, Sort.by("postDate").descending());
         
-        Page<Post> page = postRepository.findAll(paging);
+        Page<Post> page = postRepository.findAllBoards(paging);
         return page.getContent();
 
     }
@@ -71,10 +71,10 @@ public class PostController {
         if (relatedUsername != null)
             context.put("relatedUsername", relatedUsername.toLowerCase());
 
-
-        PageRequest paging = PageRequest.of(first, offset, Sort.by("score").descending());
+        //sort by score, then post date if same score
+        PageRequest paging = PageRequest.of(first, offset, Sort.by("score", "postDate").descending());
         
-        Page<Post> page = postRepository.findAll(paging);
+        Page<Post> page = postRepository.findAllBoards(paging);
         return page.getContent();
     }
     @QueryMapping
@@ -94,11 +94,11 @@ public class PostController {
         Page<Post> page;
 
         if (followingIds.size() == 0)
-            return new LinkedList<Post>();
+            return null;
         else if (followingIds.size() == 1)
-            page = postRepository.findByAuthor(followingIds.get(0), paging);        
+            page = postRepository.findBoardsByAuthor(followingIds.get(0), paging);        
         else
-            page = postRepository.findByAuthors(followingIds, paging);
+            page = postRepository.findBoardsByAuthors(followingIds, paging);
 
         return page.getContent();
     }
@@ -146,6 +146,27 @@ public class PostController {
         for (Post post : posts) {
             //some may be null, so can't use streams
             map.put(post, idToParent.get(post.getParentPost()));
+        }
+
+        return map;
+    }   
+
+
+    @BatchMapping
+    public Map<Post, Post> rootPost(List<Post> posts) {
+        List<ObjectId> rootIds = posts.stream().map(post -> post.getRootPost()).collect(Collectors.toList());
+
+        List<Post> roots = postRepository.findAllById(rootIds);
+        HashMap<ObjectId, Post> idToRoot = new HashMap<>();
+        
+        for (Post root : roots) {
+            idToRoot.put(root.getId(), root);
+        }
+
+        Map<Post, Post> map = new HashMap<>();
+        for (Post post : posts) {
+            //some may be null, so can't use streams
+            map.put(post, idToRoot.get(post.getRootPost()));
         }
 
         return map;
@@ -238,7 +259,8 @@ public class PostController {
             return new PostResponse("Post not found", null);
             
         Post created = new Post(text, user.getId());
-        created.declareComment(parentPost.getId());
+
+        created.declareComment(parentPost);
         created = postRepository.save(created);
         
         parentPost.getComments().addFirst(created.getId());

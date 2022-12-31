@@ -1,8 +1,9 @@
 import React, { useState, useContext, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { PostPayload, UserContext } from "../App";
+import { PostPayload, UserContext, UserPayload } from "../App";
 import Chirp from "../home/Chirp";
 import PostComposer from "../home/PostComposer";
+import useScrollBottom from "../hooks/useScrollBottom";
 import Layout from "../Layout";
 import SpinningCircle from "../SpinningCircle";
 
@@ -23,7 +24,6 @@ function Profile () {
 
     const navigate = useNavigate();
 
-
     useEffect( () => {
         if (params && params.username) {
             fetchUserInfo(params.username);
@@ -39,15 +39,6 @@ function Profile () {
     }, [username])
 
 
-    const handleScroll = (e: React.UIEvent<HTMLElement>) => {
-        let element = e.target as HTMLElement;
-
-        if (element.scrollHeight - element.scrollTop === element.clientHeight) {
-            if (chirps.length < postCount) {
-                getMoreChirps();
-            }
-        }
-    }
 
     const fetchUserInfo = async (username: string) => {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
@@ -73,7 +64,7 @@ function Profile () {
 
         setLoading(false)
         console.log(response)
-        const info = response.data.user
+        const info: UserPayload = response.data.user
         if (info === null) {
             setUsername(null);
             return
@@ -93,6 +84,9 @@ function Profile () {
     }
 
     const getMoreChirps = async () => {
+        if (chirps.length === postCount)
+            return;
+            
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
@@ -121,7 +115,7 @@ function Profile () {
         
         setPageNum(pageNum + 1)
 
-        const info = response.data.user;
+        const info: UserPayload = response.data.user;
         setPostCount(info.postCount)
         
         setChirps(chirps.concat(info.posts.map((post: PostPayload, i: number) => {
@@ -138,6 +132,8 @@ function Profile () {
                 />
         })))
     }
+
+    useScrollBottom(getMoreChirps);
 
     const toggleFollow = async () => {
         if (!userInfo.state.username) {
@@ -203,7 +199,7 @@ function Profile () {
             </div>
         </div>
 
-        <div onScroll = {handleScroll} className = "mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
+        <div className = "mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
             {userInfo.state.username === username ? 
                 <PostComposer /> 
             : null}

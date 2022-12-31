@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { PostChirp, PostPayload, UserContext } from "../App"
+import useScrollBottom from "../hooks/useScrollBottom"
 import Layout from "../Layout"
 import SpinningCircle from "../SpinningCircle"
 import Comment from "./Comment"
@@ -10,7 +11,9 @@ import Vote from "./Vote"
 export interface Post extends PostChirp {
     commentCount: number
     parentPost?: string | null
+    rootPost?: string | null
 }
+
 
 function Board() {
     const [mainPost, setMainPost] = useState<Post | null>(null)
@@ -26,7 +29,7 @@ function Board() {
     const navigate = useNavigate();
 
     const userInfo = useContext(UserContext);
-    
+
     useEffect( () => {
         if (params && params.id) {
             fetchPost(params.id);
@@ -54,6 +57,9 @@ function Board() {
                 parentPost {
                     id
                 }
+                rootPost {
+                    id
+                }
                 isComment
                 postDate(timezone: ${timezone})
                 score
@@ -69,8 +75,7 @@ function Board() {
         }).then(res => res.json())
         console.log(response)
 
-        const info = response.data.post;
-
+        const info: PostPayload = response.data.post;
         setMainPost({
             id: postId,
             text: info.text,
@@ -80,12 +85,14 @@ function Board() {
             authorDisplayName: info.author.displayName,
             commentCount: info.commentCount,
             score: info.score,
-            parentPost: info.parentPost ? info.parentPost.id : null
+            parentPost: info.parentPost ? info.parentPost.id : null,
+            rootPost: info.rootPost ? info.rootPost.id : null
         })
+
     }
 
     const loadMoreComments = async () => {
-        if (!mainPost)
+        if (!mainPost || comments.length === mainPost.commentCount)
             return;
 
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
@@ -116,12 +123,11 @@ function Board() {
         
         console.log(response)
         
-        const info = response.data.post;
+        const info: PostPayload = response.data.post;
         if (!info || info.isComment)
             navigate("/");
 
         setPageNum(pageNum + 1)
-
         setComments(comments.concat(
             info.comments.map((comment: PostPayload) => {
                 return <Comment
@@ -143,47 +149,60 @@ function Board() {
 
 
 
+    useScrollBottom(loadMoreComments);
+
     return (
         <Layout>
             {mainPost ? 
             <div className = "mx-auto w-11/12 md:w-4/5 lg:w-3/4">
                 {mainPost.parentPost ? 
-                    <p className = "text-white mt-6 ml-4">
-                        <a href={`/board/${mainPost.parentPost}`} className = "text-blue-200">Back to parent post</a>
-                    </p>    
+                    <div className = "mt-6 mb-6 ml-4">
+
+                        {mainPost.rootPost && mainPost.parentPost !== mainPost.rootPost ?
+                        <p className = "mb-2">
+                            <a href={`/board/${mainPost.rootPost}`} className = "text-blue-400">← Top of the board</a>
+                        </p>    
+                        : null}
+
+                        <p>
+                            <a href={`/board/${mainPost.parentPost}`} className = "text-blue-200">← Parent comment</a>
+                        </p>    
+                    </div>
                 : null}
-                
-                <div className = "w-full mt-12 mb-6 p-12 pb-6 border border-black rounded-xl bg-black/25 text-white relative break-all">
 
-                    <a href={`/profile/${mainPost.authorUsername}`} className = "absolute -top-8 left-2 bg-gray-300 text-black rounded-xl p-2 border border-black">
-                        {mainPost.authorDisplayName}
-                        <div className="text-xs inline"> {`@${mainPost.authorUsername}`} </div>
-                        <div className = "text-xs"> {mainPost.postDate} </div>
-                    </a>
+                <div className = "sticky top-16  z-50">
+                    <div className = "w-full mt-6 mb-6 p-6 border border-black rounded-xl bg-black/50 text-white relative break-all">
+                        <div className = "block mb-3">
+                            <a href={`/profile/${mainPost.authorUsername}`}>
+                                {mainPost.authorDisplayName}
+                                <div className="text-xs inline"> {`• @${mainPost.authorUsername}`} </div>
+                            </a>
+                            
+                            <div className = "text-xs inline">
+                                {` • ${mainPost.postDate}`}
+                            </div>
+                        </div>
 
-                    {mainPost.text}
-                    <Vote postId = {mainPost.id} initialScore = {mainPost.score} initialVoteStatus = {mainPost.voteStatus}/>
+                        {mainPost.text}
+                        <Vote postId = {mainPost.id} initialScore = {mainPost.score} initialVoteStatus = {mainPost.voteStatus}/>
 
-                    {replying ?
-                    <ReplyBox postId = {mainPost.id} close = {() => {setReplying(false)}} 
-                        addReply = {(reply) => {
-                            setLocalComments([reply, ...localComments])
-                        }}/> 
-                    : 
-                    <button className = "px-2 py-1 absolute -bottom-3 right-12 bg-gray-200 text-black border border-black/20 rounded shadow-md text-xs" 
-                        onClick = {() => {setReplying(true)}}>
-                            Reply
-                    </button>
-                    }
+                        {replying ?
+                        <ReplyBox postId = {mainPost.id} close = {() => {setReplying(false)}} 
+                            addReply = {(reply) => {
+                                setLocalComments([reply, ...localComments])
+                            }}/> 
+                        : 
+                        <button className = "px-2 py-1 absolute -bottom-3 right-12 bg-gray-200 text-black border border-black/20 rounded shadow-md text-xs" 
+                            onClick = {() => {setReplying(true)}}>
+                                Reply
+                        </button>
+                        }
+                    </div>
                 </div>
                 
                 
-                <div className = "w-full border-l mb-10 border-l-gray-200">
+                <div className = "w-full border-l mb-10 border-l-black">
                     {localComments.length > 0 ? localComments.concat(comments) : comments}
-
-                    {comments.length !== 0 && comments.length < mainPost.commentCount ?
-                        <p onClick = {loadMoreComments} className = "cursor-pointer ml-[5%] text-sky-100">Load more comments</p>
-                    : null}
                 </div>                
 
             </div> 

@@ -58,7 +58,7 @@ function Settings() {
 
     const updatePassword = async () => {
         setMsg("");
-        /*
+        
         if (oldPasswordInput === "") {
             setMsg("Please enter your current password");
         }
@@ -77,7 +77,7 @@ function Settings() {
         if (oldPasswordInput === newPasswordInput) {
             setMsg("New password must be different from the old password");
             return;
-        }*/
+        }
 
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query = 
@@ -123,11 +123,11 @@ function Settings() {
                 />
                 <p className = "text-white break-words my-3">{msg}</p>
 
-                <button onClick = {() => {setEditingPassword(false); setMsg("")}} className = "py-1 px-2 mb-2 border border-black/10 text-black bg-rose-100 rounded mx-1">
+                <button onClick = {() => {setEditingPassword(false); setMsg("")}} className = "py-1 px-2 mb-2 border border-black/25 text-white bg-rose-500/50 rounded mx-1">
                     Cancel
                 </button>
 
-                <button onClick = {updatePassword} className = "py-1 px-2 mb-2 mt-8 border border-black/10 text-black bg-green-200 rounded mx-1">
+                <button onClick = {updatePassword} className = "py-1 px-2 mb-2 border border-black/25 text-white bg-slate-700/50 rounded mx-1">
                     Save Changes
                 </button>
         </>)
@@ -138,13 +138,14 @@ function Settings() {
                     value = {displayNameInput}
                     setValue = {setDisplayNameInput}
                 />
+
                 <p className = "text-white break-words my-3">{msg}</p>
 
-                <button onClick = {() => {setEditingDisplayName(false); setMsg("")}} className = "py-1 px-2 mb-2 border border-black/10 text-black bg-rose-100 rounded mx-1">
+                <button onClick = {() => {setEditingDisplayName(false); setMsg("")}} className = "py-1 px-2 mb-2 border border-black/25 text-white bg-rose-500/50 rounded mx-1">
                     Cancel
                 </button>
 
-                <button onClick = {updateDisplayName} className = "py-1 px-2 mb-2 border border-black/10 text-black bg-green-200 rounded mx-1">
+                <button onClick = {updateDisplayName} className = "py-1 px-2 mb-2 border border-black/25 text-white bg-slate-700/50 rounded mx-1">
                     Save Changes
                 </button>
 

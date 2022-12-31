@@ -54,7 +54,7 @@ function Comment(props: CommentProps) {
         }).then(res => res.json())
         
         console.log(response)
-        const info = response.data.post;
+        const info: PostPayload = response.data.post;
         
 
         setPageNum(pageNum + 1)
@@ -118,7 +118,9 @@ function Comment(props: CommentProps) {
 
                     {!replying ? 
                     <button className = "bg-gray-200 text-black border border-black/20 rounded shadow-md text-xs px-2 py-1" 
-                        onClick = {() => {setReplying(true)}}>
+                        onClick = {() => {
+                            setReplying(true)
+                        }}>
                         Reply
                     </button> : null}
                 </div>
@@ -127,7 +129,7 @@ function Comment(props: CommentProps) {
             </div>
 
             {showReplies ? 
-                <div className = "w-full border-l border-l-white">
+                <div className = "w-full border-l border-l-black">
                     {localReplies.length > 0 ? localReplies.concat(replies) : replies}
 
                     {replies.length < props.commentCount ?

@@ -11,7 +11,7 @@ module.exports = {
 
       keyframes: theme => ({
         fadeColor: {
-          "0%": { backgroundColor: theme("colors.lime.800") },
+          "0%": { backgroundColor: theme("colors.lime.900") },
           "100%": { backgroundColor: theme("#414545") }
         }
       })

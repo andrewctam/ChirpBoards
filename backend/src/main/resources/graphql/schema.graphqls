@@ -70,6 +70,7 @@ type Post {
     text: String!
     isComment: Boolean!
     parentPost: Post
+    rootPost: Post
     postDate(timezone: Int!): String!
     score: Int!
 
