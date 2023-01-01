@@ -1,9 +1,9 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Layout from "../Layout";
 import FeedButton from "./FeedButton";
 import Chirp from "./Chirp";
-import { PostChirp, UserContext } from "../App";
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { UserContext } from "../App";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import SpinningCircle from "../SpinningCircle";
 import PostComposer from "./PostComposer";
 import { PostPayload } from "../App";
@@ -38,6 +38,7 @@ function Home() {
         if (feedSelected !== Feed.None)
             getMoreChirps();
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [feedSelected])
 
     useEffect(() => {
@@ -56,6 +57,7 @@ function Home() {
                 setFeedSelected(Feed.Recent);
         }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps 
     }, [])
 
 
@@ -64,7 +66,7 @@ function Home() {
         let pageNum = 0
         if (feedSelected === Feed.Following) {
             if (userInfo.state.username === "")
-                navigate("/signin?return=true")
+            navigate(`/signin?return=${window.location.pathname}`)
                 
             type = "following";
             pageNum = followingPageNum;
@@ -142,7 +144,7 @@ function Home() {
         } else if (feedSelected === Feed.Popular) {
             setPopularFeed([...popularFeed, ...newChirps]);
             setPopularPageNum(popularPageNum + 1);
-        } else if (feedSelected == Feed.Following && followingFeed !== null) {
+        } else if (feedSelected === Feed.Following && followingFeed !== null) {
             setFollowingFeed([...followingFeed, ...newChirps]);
             setFollowingPageNum(followingPageNum + 1);
         }
@@ -179,36 +181,37 @@ function Home() {
     useScrollBottom(getMoreChirps)
 
     return (<Layout>
-        <div className="mt-8 mx-auto w-5/6 lg:w-3/5 py-2">
-            {userInfo.state.username ?
-                <PostComposer />
-            : null}
-
-            <div className="grid rows-2">
-                <div className="grid grid-cols-3">
-                    <FeedButton
-                        name={"Recent"}
-                        onClick={() => switchFeeds(Feed.Recent)}
-                        isActive={feedSelected === Feed.Recent} />
-                    <FeedButton
-                        name={"Popular"}
-                        onClick={() => switchFeeds(Feed.Popular)}
-                        isActive={feedSelected === Feed.Popular} />
-                    <FeedButton
-                        name={"Following"}
-                        onClick={() => switchFeeds(Feed.Following)}
-                        isActive={feedSelected === Feed.Following} />
+        {userInfo.state.username ?
+            <div className = "w-full bg-black/20 shadow-md pt-8">
+                <div className="mx-auto w-5/6 lg:w-3/5 py-2">
+                        <PostComposer />
                 </div>
+            </div> 
+        : <div />}
 
-                <ul>
-                    {feed}
-
-                    {!doneFetching ?
-                        <SpinningCircle /> 
-                    : null}
-                </ul>
-
+        <div className="mx-auto w-5/6 lg:w-3/5 py-2  mt-4">
+            <div className="grid grid-cols-3">
+                <FeedButton
+                    name={"Recent"}
+                    onClick={() => switchFeeds(Feed.Recent)}
+                    isActive={feedSelected === Feed.Recent} />
+                <FeedButton
+                    name={"Popular"}
+                    onClick={() => switchFeeds(Feed.Popular)}
+                    isActive={feedSelected === Feed.Popular} />
+                <FeedButton
+                    name={"Following"}
+                    onClick={() => switchFeeds(Feed.Following)}
+                    isActive={feedSelected === Feed.Following} />
             </div>
+
+            <ul className = "mt-6">
+                {feed}
+
+                {!doneFetching ?
+                    <SpinningCircle /> 
+                : null}
+            </ul>
         </div>
     </Layout>)
 }

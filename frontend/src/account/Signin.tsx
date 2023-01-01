@@ -60,10 +60,9 @@ function Signin() {
         localStorage.setItem("username", usernameInput);
         localStorage.setItem("sessionToken", sessionToken);
 
-        if (searchParams && searchParams.get("return") === "true") {
-            navigate(-1);
-        } else
-            navigate("/");
+        navigate(searchParams.get("return") ?? "/");
+
+
     }
 
     return (
@@ -72,7 +71,7 @@ function Signin() {
             {userInfo.state.username ?
             <div className = "mx-auto w-fit">
                 <p>Already signed in.</p>
-                <button onClick = {() => { userInfo.dispatch({type: "SIGNOUT"}) }} className = "py-2 px-4 my-2 w-full border border-black/10 bg-black rounded block">
+                <button onClick = {() => { userInfo.dispatch({type: "SIGNOUT"}) }} className = "text-sm text-white px-4 py-2 mx-auto my-2 bg-black/20 rounded-xl block border border-black/50">
                     Sign Out
                 </button>
             </div>
@@ -101,7 +100,7 @@ function Signin() {
                 />
 
                 <p className = "text-rose-200">{error}</p>
-                <button onClick = {signin} className = "mx-auto py-2 px-4 mb-2 mt-4 border border-black/10 bg-black rounded block">
+                <button onClick = {signin} className = "text-sm text-white px-4 py-2 mx-auto my-2 bg-black/20 rounded-xl block border border-black/50">
                     Sign In
                 </button>
 

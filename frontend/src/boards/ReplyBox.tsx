@@ -18,7 +18,7 @@ function ReplyBox(props: ReplyBoxProps) {
         e.preventDefault()
 
         if (!userInfo.state.username) {
-            navigate("/signin?return=true")
+            navigate(`/signin?return=${window.location.pathname}`)
             return;
         }
 
@@ -84,12 +84,12 @@ function ReplyBox(props: ReplyBoxProps) {
 
 
             <div className = "absolute -bottom-3 right-4">
-                <button className = "bg-rose-100 text-black border border-black/20 rounded shadow-md  px-2 py-1" 
+                <button className = "bg-rose-200 text-black border border-black/20 rounded shadow-md px-2 py-1" 
                     onClick = {props.close}>
                     Cancel
                 </button>
 
-                <button className = "bg-gray-200 text-black border border-black/20 rounded shadow-md -bottom-3 right-4 px-2 py-1 ml-2" 
+                <button className = "bg-[#b9cfe2] text-black border border-black/20 rounded shadow-md -bottom-3 right-4 px-2 py-1 ml-2" 
                     onClick = {addComment}>
                     Reply
                 </button>

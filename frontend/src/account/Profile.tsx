@@ -1,5 +1,6 @@
-import React, { useState, useContext, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { editableInputTypes } from "@testing-library/user-event/dist/utils";
+import { useState, useContext, useEffect } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { PostPayload, UserContext, UserPayload } from "../App";
 import Chirp from "../home/Chirp";
 import PostComposer from "../home/PostComposer";
@@ -11,6 +12,8 @@ import SpinningCircle from "../SpinningCircle";
 function Profile () {
     const userInfo = useContext(UserContext);
     const params = useParams();
+    const [searchParams, setSearchParams] = useSearchParams();
+    
     const [loading, setLoading] = useState(true);
 
     const [username, setUsername] = useState<string | null>("");
@@ -21,6 +24,9 @@ function Profile () {
     const [chirps, setChirps] = useState<JSX.Element[]>([]);
     const [pageNum, setPageNum] = useState(0);
     const [postCount, setPostCount] = useState(0);
+    
+    const [headerColor, setHeaderColor] = useState<string>("#9590b7")
+    const [editingHeaderColor, setEditingHeaderColor] = useState(false);
 
     const navigate = useNavigate();
 
@@ -28,15 +34,21 @@ function Profile () {
         if (params && params.username) {
             fetchUserInfo(params.username);
         }
-
+        
+        if (searchParams && searchParams.get("editHeaderColor")) {
+            setEditingHeaderColor(true);
+            setSearchParams("")
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [] )
 
+
     useEffect(() => {
-        if (username && postCount > 0) {
+        if (username && postCount > 0 && !editingHeaderColor) {
             getMoreChirps(); // separate getting chirps to speed up initial load
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [username])
+    }, [username, editingHeaderColor])
 
 
 
@@ -51,6 +63,7 @@ function Profile () {
                 followerCount
                 followingCount
                 postCount
+                headerColor
                 ${userInfo.state.username ? `isFollowing(followeeUsername: "${userInfo.state.username}")` : ""}
             }
         }`
@@ -74,12 +87,11 @@ function Profile () {
         setFollowerCount(info.followerCount)
         setFollowingCount(info.followingCount)
         setPostCount(info.postCount)
+        setHeaderColor(info.headerColor)
 
         
         if (userInfo.state.username)
             setIsFollowing(info.isFollowing)
-
-        
     }
 
     const getMoreChirps = async () => {
@@ -134,9 +146,18 @@ function Profile () {
 
     useScrollBottom(getMoreChirps);
 
+    const textColor = (): "black" | "white" => {
+        const r = parseInt(headerColor.substring(1,3), 16);
+        const g = parseInt(headerColor.substring(3,5), 16);
+        const b = parseInt(headerColor.substring(5,7), 16);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+        return brightness > 125 ? "black" : "white";
+    }
+    
     const toggleFollow = async () => {
         if (!userInfo.state.username) {
-            navigate("/signin?return=true")
+            navigate(`/signin?return=${window.location.pathname}`)
         }
          
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
@@ -161,6 +182,27 @@ function Profile () {
         setIsFollowing(!isFollowing)
     }
 
+    
+    const updateHeaderColor = async () => {
+        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const query = 
+        `mutation {
+            changeHeaderColor(newHeaderColor: "${headerColor}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
+                msg
+                endRes
+            }
+        }`
+        const response = await fetch(url ?? '', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({query})
+        }).then(res => res.json())
+        console.log(response)
+
+        setEditingHeaderColor(false);
+    }
 
     if (loading)
         return <Layout><SpinningCircle /></Layout>
@@ -173,9 +215,12 @@ function Profile () {
     }
 
     return (<Layout>
-        <div className = "text-center bg-slate-600 text-white p-2 shadow-md">
-            <h1 className = "text-3xl">{displayName}</h1>
-            <h1 className = "text-gray-300 text-sm">{`@${username}`}</h1>
+        <div className = "text-center p-2 shadow-md" style = {{
+            backgroundColor: headerColor,
+            color: textColor()
+        }}>
+            <h1 className = "text-3xl break-words">{displayName}</h1>
+            <h1 className = "text-sm">{`@${username}`}</h1>
 
             <div className = "mx-auto flex justify-center mt-3 w-fit">
 
@@ -197,20 +242,39 @@ function Profile () {
             </div>
         </div>
 
-        <div className = "mt-4 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
-            {userInfo.state.username === username ? 
-                <PostComposer /> 
-            : null}
+        {editingHeaderColor ? 
+            <div className = "mx-auto w-fit mt-3 text-center border border-black/10 bg-slate-800/10 shadow-md rounded-xl px-12 py-6">
+                    <p className = "text-white w-full" >Click below to select a new color</p>
+                    <input type = "color" className = "bg-transparent w-full h-16" value = {headerColor} onChange = {(e) => setHeaderColor(e.target.value)} />
+                    <button onClick = {() => {window.location.reload()}} className = "text-sm text-white px-4 py-2 mx-auto my-2 mr-2 bg-rose-700/30 rounded-xl border border-black/50">
+                        Cancel
+                    </button>
+                    <button onClick = {updateHeaderColor} className = "text-sm text-white px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50">
+                        Save Changes
+                    </button>
 
-            <p className = "text-center text-white text-xl">{`${postCount} chirps`}</p>
-                <ul className = "mb-8">
-                    {chirps}
+            </div>
+        :
+        <>
+            {userInfo.state.username ?
+                <div className = "w-full bg-black/20 shadow-md pt-8 pb-1">
+                    <div className = "mx-auto w-11/12 md:w-3/4 lg:w-3/5">
+                        <PostComposer />
+                    </div>
+                </div> 
+            : <div />}
+            
+            <div className = "mt-4 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
+                <p className = "text-center text-white text-xl">{`${postCount} chirps`}</p>
+                    <ul className = "mb-8">
+                        {chirps}
 
-                    {postCount > 0 && chirps.length === 0 ?
-                    <SpinningCircle /> 
-                    : null}
-                </ul>
-        </div>
+                        {postCount > 0 && chirps.length === 0 ?
+                        <SpinningCircle /> 
+                        : null}
+                    </ul>
+            </div>
+        </>}
 
     </Layout>)
 

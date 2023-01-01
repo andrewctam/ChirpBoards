@@ -96,10 +96,9 @@ function Register() {
 
         localStorage.setItem("username", usernameInput);
         localStorage.setItem("sessionToken", sessionToken);
-        if (searchParams && searchParams.get("return") === "true") {
-            navigate(-1);
-        } else
-            navigate("/");
+
+
+        navigate(searchParams.get("redirect") ?? "/")
     }
 
 
@@ -109,7 +108,7 @@ function Register() {
             {userInfo.state.username ?
             <div className = "mx-auto w-fit">
                 <p>Already signed in.</p>
-                <button onClick = {() => { userInfo.dispatch({type: "SIGNOUT"}) }} className = "py-2 px-4 my-2 w-full border border-black/10 bg-black rounded block">
+                <button onClick = {() => { userInfo.dispatch({type: "SIGNOUT"}) }} className = "text-sm text-white px-4 py-2 mx-auto my-2 bg-black/20 rounded-xl block border border-black/50">
                     Sign Out
                 </button>
             </div>
@@ -155,7 +154,7 @@ function Register() {
 
                 <p className = "text-rose-200 break-words">{error}</p>
 
-                <button onClick = {register} className = "py-2 px-4 mb-2 mt-8 mx-auto border border-black/10 bg-black rounded block">
+                <button onClick = {register} className = "text-sm text-white px-4 py-2 mx-auto my-2 bg-black/20 rounded-xl block border border-black/50">
                     Register
                 </button>
             </form>

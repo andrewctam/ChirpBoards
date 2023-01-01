@@ -47,9 +47,12 @@ public class UserController {
 
 
     @QueryMapping
-    public List<User> searchUsers(@Argument String query, @Argument int first, @Argument int offset) {
+    public List<User> searchUsers(@Argument String query, @Argument int first, @Argument int offset, @Argument String relatedUsername, GraphQLContext context) {
         if (query == null || query == "")
             return new LinkedList<User>();
+
+        if (relatedUsername != null)
+            context.put("relatedUsername", relatedUsername);
 
         PageRequest paging = PageRequest.of(first, offset, Sort.by("username").ascending());
 
@@ -290,6 +293,29 @@ public class UserController {
         userRepository.save(user);
 
         return new BooleanResponse("Successfully changed password", true);
+    }
+
+    @MutationMapping
+    public BooleanResponse changeHeaderColor(@Argument String newHeaderColor, @Argument String username, @Argument String sessionToken) {
+        username = username.toLowerCase();
+
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return new BooleanResponse("Username not found", null);
+        }
+
+        if (!user.checkUserSession(userRepository, sessionToken))
+            return new BooleanResponse("User not authenticated", null);
+
+        Pattern pattern = Pattern.compile("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
+        Matcher matcher = pattern.matcher(newHeaderColor);
+        if (!matcher.matches())
+            return new BooleanResponse("Invalid color", null);
+
+        user.setHeaderColor(newHeaderColor);
+        userRepository.save(user);
+
+        return new BooleanResponse("Successfully changed header color to " + newHeaderColor, true);
     }
     
 

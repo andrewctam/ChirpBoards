@@ -54,7 +54,7 @@ public class User {
         this.sessionToken = null;
         this.sessionTokenExpiration = null;
 
-        this.headerColor = null;
+        this.headerColor = "#2e2e2e";
     }
 
     public ObjectId getId() { return id; }

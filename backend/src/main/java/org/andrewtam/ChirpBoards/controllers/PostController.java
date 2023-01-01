@@ -104,9 +104,13 @@ public class PostController {
     }
 
     @QueryMapping
-    public List<Post> searchPosts(@Argument String query, @Argument int first, @Argument int offset) {
+    public List<Post> searchPosts(@Argument String query, @Argument int first, @Argument int offset, @Argument String relatedUsername, GraphQLContext context) {
+
         if (query == null || query == "")
             return new LinkedList<Post>();
+
+        if (relatedUsername != null)
+            context.put("relatedUsername", relatedUsername.toLowerCase());
 
         PageRequest paging = PageRequest.of(first, offset, Sort.by("postDate").ascending());
 

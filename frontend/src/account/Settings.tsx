@@ -1,26 +1,30 @@
 import Layout from "../Layout";
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import FormInput from "./FormInput";
 import { UserContext } from "../App";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
+enum Setting {
+    None,
+    DisplayName,
+    Password,
+    HeaderColor
+}
 function Settings() {
     const [oldPasswordInput, setOldPasswordInput] = useState("");
     const [newPasswordInput, setNewPasswordInput] = useState("");
     const [displayNameInput, setDisplayNameInput] = useState("");
+    const [headerColorInput, setHeaderColorInput] = useState("#9590b7");
+    const [editing, setEditing] = useState(Setting.None);
+    
     const [msg, setMsg] = useState("");
-
-    const [editingDisplayName, setEditingDisplayName] = useState(false);
-    const [editingPassword, setEditingPassword] = useState(false);
-
     const userInfo = useContext(UserContext);
-
     const navigate = useNavigate()
     
 
     useEffect(() => {
         if (!userInfo.state.username)
-            navigate("/signin?return=true")
+        navigate(`/signin?return=${window.location.pathname}`)
     }, [])
     
     const updateDisplayName = async () => {
@@ -103,35 +107,47 @@ function Settings() {
     }
 
 
+    const textColor = (): "black" | "white" => {
+        const r = parseInt(headerColorInput.substring(1,3), 16);
+        const g = parseInt(headerColorInput.substring(3,5), 16);
+        const b = parseInt(headerColorInput.substring(5,7), 16);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+        return brightness > 125 ? "black" : "white";
+    }
+
+
     let center = null;
-    if (editingPassword) {
-        center = (<>
-                <FormInput
-                    name = "Current Password"
-                    value = {oldPasswordInput}
-                    setValue = {setOldPasswordInput}
-                    password = {true}
-                />
+    switch (editing) {
+        case Setting.Password:
+            center = (<>
+                    <FormInput
+                        name = "Current Password"
+                        value = {oldPasswordInput}
+                        setValue = {setOldPasswordInput}
+                        password = {true}
+                    />
 
-                <FormInput
-                    name = "New Password"
-                    value = {newPasswordInput}
-                    setValue = {setNewPasswordInput}
-                    placeholder = ""
-                    password = {true}
-                    mt = {"8"}
-                />
-                <p className = "text-white break-words my-3">{msg}</p>
+                    <FormInput
+                        name = "New Password"
+                        value = {newPasswordInput}
+                        setValue = {setNewPasswordInput}
+                        placeholder = ""
+                        password = {true}
+                        mt = {"8"}
+                    />
+                    <p className = "text-white break-words my-3">{msg}</p>
 
-                <button onClick = {() => {setEditingPassword(false); setMsg("")}} className = "py-1 px-2 mb-2 border border-black/25 text-white bg-rose-500/50 rounded mx-1">
-                    Cancel
-                </button>
+                    <button onClick = {() => {setEditing(Setting.None); setMsg("")}} className = "text-sm text-white px-4 py-2 mx-auto my-2 mr-2 bg-rose-700/30 rounded-xl border border-black/50">
+                        Cancel
+                    </button>
 
-                <button onClick = {updatePassword} className = "py-1 px-2 mb-2 border border-black/25 text-white bg-slate-700/50 rounded mx-1">
-                    Save Changes
-                </button>
-        </>)
-    } else if (editingDisplayName) {
+                    <button onClick = {updatePassword} className = "text-sm text-white px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50">
+                        Save Changes
+                    </button>
+            </>)
+            break;
+    case Setting.DisplayName:
         center = <>
                 <FormInput
                     name = "New Display Name"
@@ -141,35 +157,44 @@ function Settings() {
 
                 <p className = "text-white break-words my-3">{msg}</p>
 
-                <button onClick = {() => {setEditingDisplayName(false); setMsg("")}} className = "py-1 px-2 mb-2 border border-black/25 text-white bg-rose-500/50 rounded mx-1">
+                <button onClick = {() => {setEditing(Setting.None); setMsg("")}} className = "text-sm text-white px-4 py-2 mx-auto my-2 mr-2 bg-rose-700/30 rounded-xl border border-black/50">
                     Cancel
                 </button>
 
-                <button onClick = {updateDisplayName} className = "py-1 px-2 mb-2 border border-black/25 text-white bg-slate-700/50 rounded mx-1">
+                <button onClick = {updateDisplayName} className = "text-sm text-white px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50">
                     Save Changes
                 </button>
-
-                
         </>
-    } else 
-    center = (<>
-        <button 
-            onClick = {() => {setEditingDisplayName(true)}} 
-            className = "text-sm block border text-black border-black px-4 py-2 bg-slate-200 rounded-xl mx-auto my-1">
-            Edit Display Name
-        </button>
+        break;
+    
+    default:
+        center = (<>
+            <button 
+                onClick = {() => {setEditing(Setting.DisplayName)}} 
+                className = "text-sm block text-white px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50">
+                Edit Display Name
+            </button>
 
-        <button onClick = {() => {setEditingPassword(true)}}
-            className = "text-sm block border text-black border-black px-4 py-2 bg-slate-200 rounded-xl mx-auto my-1 mb-4 ">
-            Change Password
-        </button>
-    </>)
+            <a
+                href = {`/profile/${userInfo.state.username}?editHeaderColor=true`}
+                className = "text-sm block text-white w-fit px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50">
+                Edit Profile Header Color
+            </a>
+
+
+
+            <button onClick = {() => {setEditing(Setting.Password)}}
+                className = "text-sm block text-white px-4 py-2 mx-auto my-1 mb-4  bg-black/10 rounded-xl border border-black/50">
+                Change Password
+            </button>
+        </>)
+    }
 
 
     return (
         <Layout>
             <div className = "text-white mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
-                <div className = "mx-auto border border-black/10 w-1/2 px-12 py-4 rounded-xl bg-slate-100/10 shadow-md text-center">
+                <div className = "mx-auto border border-black/10 w-5/6 md:w-3/4 lg:w-1/2 px-12 py-4 rounded-xl bg-slate-100/10 shadow-md text-center">
                     <h1 className = "text-3xl mb-4 ">Settings</h1>
                     {center}
                 </div>

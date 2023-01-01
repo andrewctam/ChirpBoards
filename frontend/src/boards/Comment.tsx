@@ -109,7 +109,7 @@ function Comment(props: CommentProps) {
 
                 <div className = "absolute -bottom-3 right-12">
                     {props.commentCount > 0 ?
-                    <button className = {`bg-${showReplies ? "rose-100" : "gray-200"} text-black border border-black/20 rounded shadow-md text-xs mr-2 px-2 py-1`} 
+                    <button className = {`${showReplies ? "bg-rose-200" : "bg-gray-200"} text-black border border-black/20 rounded shadow-md text-xs mr-2 px-2 py-1`} 
                         onClick = {() => {setShowReplies(!showReplies)}}>
 
                         {`${showReplies ? "Hide " : "Show "} Replies`}
@@ -117,7 +117,7 @@ function Comment(props: CommentProps) {
 
 
                     {!replying ? 
-                    <button className = "bg-gray-200 text-black border border-black/20 rounded shadow-md text-xs px-2 py-1" 
+                    <button className = "bg-[#b9cfe2] text-black border border-black/20 rounded shadow-md text-xs px-2 py-1" 
                         onClick = {() => {
                             setReplying(true)
                         }}>
@@ -129,7 +129,7 @@ function Comment(props: CommentProps) {
             </div>
 
             {showReplies ? 
-                <div className = "w-full border-l border-l-black">
+                <div className = "w-full border-l border-l-white">
                     {localReplies.length > 0 ? localReplies.concat(replies) : replies}
 
                     {replies.length < props.commentCount ?

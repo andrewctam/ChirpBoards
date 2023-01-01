@@ -25,7 +25,7 @@ function PostComposer() {
         e.preventDefault()
 
         if (!userInfo.state.username) {
-            navigate("/signin?return=true")
+            navigate(`/signin?return=${window.location.pathname}`)
             return;
         }
 
@@ -67,7 +67,7 @@ function PostComposer() {
         <textarea
             value={composedChirp}
             onChange={updateComposedChirp}
-            className="bg-sky-200 border border-black/10 shadow rounded-xl resize-none px-6 pt-2 mt-2 ml-[-2%] w-[104%] h-24 focus:outline-none placeholder:text-black/75"
+            className="bg-sky-200 border border-black/10 shadow rounded-lg resize-none px-6 pt-2 mt-2 ml-[-2%] w-[104%] h-24 focus:outline-none placeholder:text-black/75"
             placeholder="Compose a chirp..." />
 
         <p className="text-white mb-4 ml-4">
@@ -75,7 +75,7 @@ function PostComposer() {
                 : `${composedChirp.length}/500 characters`}
         </p>
 
-        <button className="bg-sky-200 text-black border border-black/10 rounded shadow-md absolute -bottom-3 right-4 px-4 py-2"
+        <button className="bg-sky-200 text-xs sm:text-base text-black border border-black/10 rounded shadow-md absolute -bottom-3 right-4 px-4 py-2"
             onClick={createChirp}>
             Post
         </button>

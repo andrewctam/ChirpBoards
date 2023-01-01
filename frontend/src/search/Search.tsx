@@ -16,7 +16,7 @@ export enum SearchFeed {
 
 function Search () {
     const [searchParams, setSearchParams] = useSearchParams();
-    const [query, setQuery] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
     const [feedSelected, setFeedSelected] = useState(SearchFeed.None);
     const [doneFetching, setDoneFetching] = useState(false);
 
@@ -28,7 +28,7 @@ function Search () {
     const userInfo = useContext(UserContext);
 
     useEffect(() => {
-        setQuery(searchParams.get("query") ?? "");
+        setSearchQuery(searchParams.get("query") ?? "");
         let feed = searchParams.get("feed") 
 
         if (feed === "users") {
@@ -42,24 +42,31 @@ function Search () {
     useEffect(() => {
         setDoneFetching(false);
         search();
-    }, [query, feedSelected])
+    }, [feedSelected])
 
     const search = () => {
-        if (query) {
-            if (feedSelected === SearchFeed.Users)
-                searchUsers(query);
-            else if (feedSelected === SearchFeed.Chirps)
-                searchChirps(query);
+        if (!searchQuery.match(/[^a-zA-Z0-9]/)) {
+            setDoneFetching(true);
+            return;
         }
-        
+
+        if (feedSelected === SearchFeed.Users)
+            searchUsers();
+        else if (feedSelected === SearchFeed.Chirps)
+            searchChirps();
     }
             
-    const searchChirps = async (searchQuery: string) => {
+    const searchChirps = async () => {
+        if (searchQuery === "") {
+            setDoneFetching(true)
+            return;
+        }
+
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
-            searchPosts(query: "${searchQuery}", first: ${chirpPageNum}, offset: 10) {
+            searchPosts(query: "${searchQuery}", first: ${chirpPageNum}, offset: 10${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
                 id
                 text
                 author {
@@ -103,7 +110,12 @@ function Search () {
         setDoneFetching(true);
     }
 
-    const searchUsers = async (searchQuery: string) => {
+    const searchUsers = async () => {
+        if (searchQuery === "") {
+            setDoneFetching(true)
+            return;
+        }
+            
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
@@ -146,7 +158,7 @@ function Search () {
     const switchFeeds = (feed: SearchFeed) => {
         setFeedSelected(feed);
         setDoneFetching(false)
-        setSearchParams({query: query, feed: feed === SearchFeed.Users ? "users" : "chirps"})
+        setSearchParams({query: searchQuery, feed: feed === SearchFeed.Users ? "users" : "chirps"})
     }
 
     useScrollBottom(search)
@@ -157,7 +169,9 @@ function Search () {
     } else if (feedSelected === SearchFeed.Chirps && chirpResults.length > 0) {
         feed = chirpResults;
     } else if (doneFetching) {
-        feed = <div className = "text-center text-white text-lg mt-4">No results found</div>;
+        feed = <div className = "text-center text-white text-lg mt-4">
+            {searchQuery === "" ? "Search query is blank" : "No results found"}
+        </div>;
     }
 
     return (

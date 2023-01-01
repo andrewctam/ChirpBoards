@@ -192,7 +192,7 @@ function Board() {
                                 setLocalComments([reply, ...localComments])
                             }}/> 
                         : 
-                        <button className = "px-2 py-1 absolute -bottom-3 right-12 bg-gray-200 text-black border border-black/20 rounded shadow-md text-xs" 
+                        <button className = "px-2 py-1 absolute -bottom-3 right-12 bg-[#b9cfe2] text-black border border-black/20 rounded shadow-md text-xs" 
                             onClick = {() => {setReplying(true)}}>
                                 Reply
                         </button>
@@ -201,7 +201,7 @@ function Board() {
                 </div>
                 
                 
-                <div className = "w-full border-l mb-10 border-l-black">
+                <div className = "w-full border-l mb-10 border-l-white">
                     {localComments.length > 0 ? localComments.concat(comments) : comments}
                 </div>                
 

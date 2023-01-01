@@ -1,5 +1,3 @@
-import { Feed } from "./Home"
-import { SearchFeed } from "../search/Search"
 
 type FeedButtonProps = {
     name: string,
@@ -11,7 +9,7 @@ function FeedButton (props: FeedButtonProps) {
     return (
         <button 
             onClick = {props.onClick}
-            className = {`px-4 py-2 rounded m-1 border border-black/10 ${props.isActive ? "bg-green-100" : "bg-slate-300"}`}>
+            className = {`px-4 py-2 rounded m-1 border text-xs sm:text-base border-black/10 ${props.isActive ? "bg-sky-300" : "bg-sky-100"}`}>
             {props.name}
         </button>)
 }
