@@ -12,6 +12,7 @@ export interface Post extends PostChirp {
     commentCount: number
     parentPost?: string | null
     rootPost?: string | null
+    userColor: string
 }
 
 
@@ -52,6 +53,7 @@ function Board() {
                 author {
                     username
                     displayName
+                    userColor
                 }
                 text
                 parentPost {
@@ -75,6 +77,9 @@ function Board() {
         }).then(res => res.json())
         console.log(response)
 
+        if (response.errors || !response.data.post)
+            navigate("/");
+
         const info: PostPayload = response.data.post;
         setMainPost({
             id: postId,
@@ -86,7 +91,8 @@ function Board() {
             commentCount: info.commentCount,
             score: info.score,
             parentPost: info.parentPost ? info.parentPost.id : null,
-            rootPost: info.rootPost ? info.rootPost.id : null
+            rootPost: info.rootPost ? info.rootPost.id : null,
+            userColor: info.author.userColor
         })
 
     }
@@ -110,6 +116,7 @@ function Board() {
                     author {
                         username
                         displayName
+                        userColor
                     }
                 }
             }
@@ -122,6 +129,9 @@ function Board() {
         }).then(res => res.json())
         
         console.log(response)
+        
+        if (response.errors)
+            navigate("/");
         
         const info: PostPayload = response.data.post;
         if (!info || info.isComment)
@@ -142,6 +152,7 @@ function Board() {
                     voteStatus = {userInfo.state.username ? comment.voteStatus : 0}
                     local = {false}
                     autoLoadComments = {mainPost.commentCount < 10}
+                    userColor = {comment.author.userColor}
                 />
             }))
         )
@@ -170,12 +181,15 @@ function Board() {
                     </div>
                 : null}
 
-                <div className = "sticky top-16  z-50">
-                    <div className = "w-full mt-6 mb-6 p-6 border border-black rounded-xl bg-black/50 text-white relative break-all">
-                        <div className = "block mb-3">
-                            <a href={`/profile/${mainPost.authorUsername}`}>
+                <div>
+                    <div className = "w-full mt-6 mb-6 p-6 border border-black rounded-bl-xl rounded-tr-xl bg-black/50 text-white relative break-all">
+                        <div className = "mb-3">
+                            <a href={`/profile/${mainPost.authorUsername}`} className = "text-lg" style = {{color: mainPost.userColor}}>
                                 {mainPost.authorDisplayName}
-                                <div className="text-xs inline"> {`• @${mainPost.authorUsername}`} </div>
+                            </a>
+
+                            <a href={`/profile/${mainPost.authorUsername}`} className = "text-xs">
+                                {` • @${mainPost.authorUsername}`}
                             </a>
                             
                             <div className = "text-xs inline">
@@ -183,7 +197,9 @@ function Board() {
                             </div>
                         </div>
 
-                        {mainPost.text}
+                        <div className = "whitespace-pre">
+                            {mainPost.text}
+                        </div>
                         <Vote postId = {mainPost.id} initialScore = {mainPost.score} initialVoteStatus = {mainPost.voteStatus}/>
 
                         {replying ?

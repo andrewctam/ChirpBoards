@@ -13,6 +13,8 @@ const NavBar = () => {
     const [searchInput, setSearchInput] = useState("");
     const [searchParams, setSearchParams] = useSearchParams();
 
+    const [userColor, setUserColor] = useState("#000000");
+
     const navigate = useNavigate();
     
     useEffect(() => {
@@ -39,7 +41,9 @@ const NavBar = () => {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query = 
         `mutation {
-            verifySession(username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}")
+            verifySession(username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
+                userColor
+            }
         }`
 
         const response = await fetch(url ?? '', {
@@ -53,6 +57,8 @@ const NavBar = () => {
         console.log(response);
         if (!response.data.verifySession) {
             userInfo.dispatch({type: "SIGNOUT"});
+        } else {
+            setUserColor(response.data.verifySession.userColor);
         }
     }
 
@@ -120,9 +126,15 @@ const NavBar = () => {
 
                 { userInfo.state.username ? 
                     <div className = "inline-block">
-                        <p onClick = {() => setShowDropdown(!showDropdown)} className = "cursor-pointer select-none">
-                        {`@${userInfo.state.username} ▼ `}
-                        </p>
+                        <div onClick = {() => setShowDropdown(!showDropdown)} className = "cursor-pointer select-none inline-block">
+                            
+                            <div style = {{color: userColor}} className = "inline" >
+                                {`@${userInfo.state.username} `}
+                            </div>
+
+                            <div className = "ml-1 inline text-sky-100"> ▼ </div>
+                        </div>
+                        
 
                         {showDropdown ?
                             <div className = "relative">

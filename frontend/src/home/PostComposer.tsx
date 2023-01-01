@@ -37,7 +37,7 @@ function PostComposer() {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
             `mutation {
-            createPost(text: "${composedChirp}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
+            createPost(text: """${composedChirp}""", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
                 post {
                     id
                 }

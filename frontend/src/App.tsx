@@ -39,7 +39,7 @@ export interface UserPayload {
     followerCount: number
     followingCount: number
     pinnedPost: PostPayload
-    headerColor: string
+    userColor: string
     isFollowing: boolean
     followers: UserPayload[]
     following: UserPayload[]

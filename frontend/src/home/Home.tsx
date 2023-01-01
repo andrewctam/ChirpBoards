@@ -97,6 +97,7 @@ function Home() {
                 author {
                     username
                     displayName
+                    userColor
                 }
                 postDate(timezone: ${timezone})
                 score
@@ -135,6 +136,7 @@ function Home() {
                 key={post.id}
                 score={post.score}
                 voteStatus={userInfo.state.username ? post.voteStatus : 0}
+                userColor={post.author.userColor}
             />
         })
 
@@ -189,7 +191,7 @@ function Home() {
             </div> 
         : <div />}
 
-        <div className="mx-auto w-5/6 lg:w-3/5 py-2  mt-4">
+        <div className="mx-auto w-5/6 lg:w-3/5 py-2 mt-4">
             <div className="grid grid-cols-3">
                 <FeedButton
                     name={"Recent"}
@@ -205,7 +207,7 @@ function Home() {
                     isActive={feedSelected === Feed.Following} />
             </div>
 
-            <ul className = "mt-6">
+            <ul className = "mt-6 w-[95%] mx-auto">
                 {feed}
 
                 {!doneFetching ?

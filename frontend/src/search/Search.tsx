@@ -45,7 +45,7 @@ function Search () {
     }, [feedSelected])
 
     const search = () => {
-        if (!searchQuery.match(/[^a-zA-Z0-9]/)) {
+        if (! (/[a-zA-Z0-9]/.test(searchQuery))) {
             setDoneFetching(true);
             return;
         }
@@ -72,6 +72,7 @@ function Search () {
                 author {
                     username
                     displayName
+                    userColor
                 }
                 postDate(timezone: ${timezone})
                 score
@@ -104,6 +105,8 @@ function Search () {
                     score = {post.score}
                     voteStatus = {userInfo.state.username ? post.voteStatus : 0}
                     pinned = {false}
+                    userColor={post.author.userColor}
+
                 />
         })))
 
@@ -126,6 +129,7 @@ function Search () {
                 followerCount
                 followingCount
                 postCount
+                userColor
             }
         }`
 
@@ -144,11 +148,12 @@ function Search () {
 
         setUserResults(userResults.concat(info.map((user: UserPayload) => {
             return <UserSearchResult
-                    username={user.username}
-                    displayName={user.displayName}
-                    followerCount = {user.followerCount}
-                    followingCount = {user.followingCount}
-                    postCount = {user.postCount}
+                username={user.username}
+                displayName={user.displayName}
+                followerCount = {user.followerCount}
+                followingCount = {user.followingCount}
+                postCount = {user.postCount}
+                userColor={user.userColor}
                     key = {user.username} />
         })))
 
@@ -176,8 +181,8 @@ function Search () {
 
     return (
         <Layout>
+            <h1 className = "text-2xl text-white text-center py-4 bg-black/20 shadow-md">Search Results</h1>
             <div className="mt-2 mx-auto w-5/6 lg:w-3/5 py-2">                
-                <h1 className = "text-2xl text-white text-center mb-2">Search Results</h1>
 
                 <div className = "grid grid-cols-2">
                     <FeedButton
@@ -193,7 +198,9 @@ function Search () {
                     />
                 </div>
 
-                <ul> {feed} </ul>
+                <ul className = "w-[95%] mx-auto"> 
+                    {feed} 
+                </ul>
             </div>
         </Layout>
     )

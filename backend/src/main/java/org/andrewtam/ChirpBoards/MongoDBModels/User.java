@@ -33,9 +33,8 @@ public class User {
     private String sessionToken;
     private Date sessionTokenExpiration;
 
-    private String headerColor;
+    private String userColor;
     
-
     public User(String username, String displayName, String hashedPassword) {
         this.username = username;
         this.hashedPassword = hashedPassword;
@@ -54,7 +53,8 @@ public class User {
         this.sessionToken = null;
         this.sessionTokenExpiration = null;
 
-        this.headerColor = "#2e2e2e";
+        String[] defaultColors = { "#FFCCCC", "#FFE5CC", "#FFFFCC", "#E5FFCC", "#CCFFCC", "#CCFFE5", "#CCFFFF", "#CCE5FF", "#CCCCFF", "#E5CCFF", "#FFCCFF", "#FFCCE5", "#FF9999", "#FFCC99", "#FFFF99", "#CCFF99", "#99FF99", "#99FFCC", "#99FFFF", "#99CCFF" };
+        this.userColor = defaultColors[(int) (Math.random() * defaultColors.length)];
     }
 
     public ObjectId getId() { return id; }
@@ -93,8 +93,8 @@ public class User {
     public Date getSessionTokenExpiration() { return sessionTokenExpiration; }
     public void setSessionTokenExpiration(Date sessionTokenExpiration) { this.sessionTokenExpiration = sessionTokenExpiration; }
     
-    public String getHeaderColor() { return headerColor; }
-    public void setHeaderColor(String headerColor) { this.headerColor = headerColor; }
+    public String getUserColor() { return userColor; }
+    public void setUserColor(String userColor) { this.userColor = userColor; }
 
     public boolean checkUserSession(UserRepository userRepository, String sessionToken) {
         if(this.sessionToken == null || !this.sessionToken.equals(sessionToken) || this.sessionTokenExpiration == null)

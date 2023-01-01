@@ -27,7 +27,7 @@ function ReplyBox(props: ReplyBoxProps) {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `mutation {
-            comment(text: "${comment}", parentPostId: "${props.postId}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
+            comment(text: """${comment}""", parentPostId: "${props.postId}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
                 msg
                 post {
                     id
@@ -36,6 +36,7 @@ function ReplyBox(props: ReplyBoxProps) {
                     author {
                         username
                         displayName
+                        userColor
                     }
                 }
             }
@@ -67,6 +68,7 @@ function ReplyBox(props: ReplyBoxProps) {
                 voteStatus = {0}
                 local = {true}
                 autoLoadComments = {false}
+                userColor = {info.author.userColor}
             />
         
         )

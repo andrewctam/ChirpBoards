@@ -8,13 +8,13 @@ enum Setting {
     None,
     DisplayName,
     Password,
-    HeaderColor
+    UserColor
 }
 function Settings() {
     const [oldPasswordInput, setOldPasswordInput] = useState("");
     const [newPasswordInput, setNewPasswordInput] = useState("");
     const [displayNameInput, setDisplayNameInput] = useState("");
-    const [headerColorInput, setHeaderColorInput] = useState("#9590b7");
+    const [colorInput, setColorInput] = useState("#9590b7");
     const [editing, setEditing] = useState(Setting.None);
     
     const [msg, setMsg] = useState("");
@@ -108,9 +108,9 @@ function Settings() {
 
 
     const textColor = (): "black" | "white" => {
-        const r = parseInt(headerColorInput.substring(1,3), 16);
-        const g = parseInt(headerColorInput.substring(3,5), 16);
-        const b = parseInt(headerColorInput.substring(5,7), 16);
+        const r = parseInt(colorInput.substring(1,3), 16);
+        const g = parseInt(colorInput.substring(3,5), 16);
+        const b = parseInt(colorInput.substring(5,7), 16);
         const brightness = (r * 299 + g * 587 + b * 114) / 1000;
 
         return brightness > 125 ? "black" : "white";
@@ -176,9 +176,9 @@ function Settings() {
             </button>
 
             <a
-                href = {`/profile/${userInfo.state.username}?editHeaderColor=true`}
+                href = {`/profile/${userInfo.state.username}?editColor=true`}
                 className = "text-sm block text-white w-fit px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50">
-                Edit Profile Header Color
+                Edit User Color
             </a>
 
 

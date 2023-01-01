@@ -41,6 +41,7 @@ function Comment(props: CommentProps) {
                     author {
                         username
                         displayName
+                        userColor
                     }
                 }
             }
@@ -73,6 +74,7 @@ function Comment(props: CommentProps) {
                     voteStatus = {userInfo.state.username ? comment.voteStatus : 0}
                     local = {false}
                     autoLoadComments = {false}
+                    userColor = {comment.author.userColor}
                 />
             }))
         )
@@ -81,21 +83,23 @@ function Comment(props: CommentProps) {
 
     return (
         <div className = "w-[95%] ml-[5%]">
-            <div className = {`my-6 px-8 py-4 border border-black rounded-lg relative break-all bg-black/10 text-gray-100 ${props.local ? "animate-fadeColor": ""} `} >
-                <div className = "block mb-3">
-                    <a href={`/profile/${props.authorUsername}`}>
+            <div className = {`my-6 px-8 py-4 border border-black rounded-bl-xl rounded-tr-xl relative break-all bg-black/10 text-gray-100 ${props.local ? "animate-fadeColor": ""} `} >
+                <div className = "inline mb-3 text-xs">
+                    <a href={`/profile/${props.authorUsername}`} style = {{color: props.userColor}}>
                         {props.authorDisplayName}
-                        <div className="text-xs inline"> {`• @${props.authorUsername}`} </div>
                     </a>
-                    
+                    <a href={`/profile/${props.authorUsername}`}>
+                        {` • @${props.authorUsername}`}
+                    </a>
                     <div className = "text-xs inline">
                         {` • ${props.postDate}`}
                     </div>
-
-                    <a className = "text-gray-200 ml-2" href = {`/board/${props.id}`}> ► </a>
+                    <a className = "text-gray-200 ml-1" href = {`/board/${props.id}`}> ► </a>
                 </div>
                 
-                {props.text}
+                <div className = "whitespace-pre">
+                    {props.text}
+                </div>
                 
 
                 {replying ? 

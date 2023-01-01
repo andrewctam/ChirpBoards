@@ -41,7 +41,7 @@ type Mutation {
     toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): BooleanResponse
 
     #Requires authentication. Checks if session is still valid
-    verifySession(username: String!, sessionToken: String!): Boolean
+    verifySession(username: String!, sessionToken: String!): User
 
     #Requires authentication. Changes display name.
     changeDisplayName(newDisplayName: String!, username: String!, sessionToken: String!): BooleanResponse
@@ -49,8 +49,8 @@ type Mutation {
     #No authentication required (but old password needed, so a sessionToken could be obtained anyway). Changes password.
     changePassword(oldPassword: String!, newPassword: String!, username: String!): BooleanResponse
 
-    #Requires authentication. Changes header color.
-    changeHeaderColor(newHeaderColor: String!, username: String!, sessionToken: String!): BooleanResponse
+    #Requires authentication. Changes user color.
+    changeUserColor(newUserColor: String!, username: String!, sessionToken: String!): BooleanResponse
 }
 
 
@@ -60,7 +60,7 @@ type User {
     followerCount: Int!
     followingCount: Int!
     pinnedPost: Post
-    headerColor: String
+    userColor: String
 
     isFollowing(followeeUsername: String!): Boolean
     followers(first: Int = 0, offset: Int = 10): [User!]!

@@ -162,14 +162,17 @@ public class UserController {
 
 
     @MutationMapping
-    public Boolean verifySession(@Argument String username, @Argument String sessionToken) {
+    public User verifySession(@Argument String username, @Argument String sessionToken) {
         username = username.toLowerCase();
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            return false;
+            return null;
         }
 
-        return user.checkUserSession(userRepository, sessionToken);
+        if (user.checkUserSession(userRepository, sessionToken))
+            return user;
+        else
+            return null;
     }
 
     @MutationMapping
@@ -296,7 +299,7 @@ public class UserController {
     }
 
     @MutationMapping
-    public BooleanResponse changeHeaderColor(@Argument String newHeaderColor, @Argument String username, @Argument String sessionToken) {
+    public BooleanResponse changeUserColor(@Argument String newUserColor, @Argument String username, @Argument String sessionToken) {
         username = username.toLowerCase();
 
         User user = userRepository.findByUsername(username);
@@ -308,14 +311,14 @@ public class UserController {
             return new BooleanResponse("User not authenticated", null);
 
         Pattern pattern = Pattern.compile("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
-        Matcher matcher = pattern.matcher(newHeaderColor);
+        Matcher matcher = pattern.matcher(newUserColor);
         if (!matcher.matches())
             return new BooleanResponse("Invalid color", null);
 
-        user.setHeaderColor(newHeaderColor);
+        user.setUserColor(newUserColor);
         userRepository.save(user);
 
-        return new BooleanResponse("Successfully changed header color to " + newHeaderColor, true);
+        return new BooleanResponse("Successfully changed color to " + newUserColor, true);
     }
     
 
