@@ -162,17 +162,14 @@ public class UserController {
 
 
     @MutationMapping
-    public User verifySession(@Argument String username, @Argument String sessionToken) {
+    public Boolean verifySession(@Argument String username, @Argument String sessionToken) {
         username = username.toLowerCase();
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            return null;
+            return false;
         }
 
-        if (user.checkUserSession(userRepository, sessionToken))
-            return user;
-        else
-            return null;
+        return user.checkUserSession(userRepository, sessionToken);
     }
 
     @MutationMapping

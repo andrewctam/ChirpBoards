@@ -287,7 +287,7 @@ function Profile () {
             
             <div className = "mt-4 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
                 <p className = "text-center text-white text-xl">{`${postCount} chirps`}</p>
-                    <ul className = "mb-8">
+                    <ul className = "mt-4">
                         {chirps}
 
                         {postCount > 0 && chirps.length === 0 ?

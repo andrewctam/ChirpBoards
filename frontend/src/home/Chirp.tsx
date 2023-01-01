@@ -8,7 +8,7 @@ interface ChirpProps extends PostChirp {
 }
 
 function Chirp(props: ChirpProps) {
-    return (<li className={`w-full relative mt-8`}>
+    return (<li className={`w-full relative mb-8`}>
         
             <div className="block bg-black/10 text-white p-1 rounded-tr-xl border border-b-0 truncate border-black ">
                 <a href={`/profile/${props.authorUsername}`} className="text-xs ml-2 inline" style = {{color: props.userColor}}>

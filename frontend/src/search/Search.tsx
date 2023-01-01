@@ -198,7 +198,7 @@ function Search () {
                     />
                 </div>
 
-                <ul className = "w-[95%] mx-auto"> 
+                <ul className = "w-[95%] mx-auto mt-6"> 
                     {feed} 
                 </ul>
             </div>

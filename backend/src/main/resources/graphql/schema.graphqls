@@ -41,7 +41,7 @@ type Mutation {
     toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): BooleanResponse
 
     #Requires authentication. Checks if session is still valid
-    verifySession(username: String!, sessionToken: String!): User
+    verifySession(username: String!, sessionToken: String!): Boolean!
 
     #Requires authentication. Changes display name.
     changeDisplayName(newDisplayName: String!, username: String!, sessionToken: String!): BooleanResponse

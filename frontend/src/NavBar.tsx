@@ -41,9 +41,7 @@ const NavBar = () => {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query = 
         `mutation {
-            verifySession(username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
-                userColor
-            }
+            verifySession(username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}")
         }`
 
         const response = await fetch(url ?? '', {
@@ -127,12 +125,7 @@ const NavBar = () => {
                 { userInfo.state.username ? 
                     <div className = "inline-block">
                         <div onClick = {() => setShowDropdown(!showDropdown)} className = "cursor-pointer select-none inline-block">
-                            
-                            <div style = {{color: userColor}} className = "inline" >
-                                {`@${userInfo.state.username} `}
-                            </div>
-
-                            <div className = "ml-1 inline text-sky-100"> ▼ </div>
+                            {`@${userInfo.state.username} ▼`}
                         </div>
                         
 
