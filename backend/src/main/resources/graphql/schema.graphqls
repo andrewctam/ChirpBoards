@@ -11,9 +11,14 @@ type Query {
     #No authentication required. Retrieves the most recent posts from a user's following list. username is also relatedUsername.
     followingPosts(pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate", username: String!): PaginatedPosts
 
+    #No authentication required. Retrieves posts from a user. Include relatedUsername to get information for certain queries.
     searchUsers(query: String!, pageNum: Int = 0, size: Int = 10, relatedUsername: String = null): PaginatedUsers
+
+    #No authentication required. Retrieves posts from a user. Include relatedUsername to get information for certain queries.
     searchPosts(query: String!, pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate", relatedUsername: String = null): PaginatedPosts
 
+    #Authentication required. Retrieves notifications for a user.
+    notifications(pageNum: Int = 0, size: Int = 10, username: String!, sessionToken: String!, relatedUsername: String = null): PaginatedNotifications
 }
 
 type Mutation {
@@ -40,8 +45,8 @@ type Mutation {
     #Requires authentication. Follows or unfollows a user. Returns the ending follow status as a boolean, or null if unauthorized.
     toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): BooleanResponse
 
-    #Requires authentication. Checks if session is still valid
-    verifySession(username: String!, sessionToken: String!): Boolean!
+    #Requires authentication. Checks if session is still valid and requests notifications. Returns null if false, or the number of unread notifications if true.
+    verifySession(username: String!, sessionToken: String!): Int
 
     #Requires authentication. Changes display name.
     changeDisplayName(newDisplayName: String!, username: String!, sessionToken: String!): BooleanResponse
@@ -115,4 +120,17 @@ type PaginatedPosts {
 type PaginatedUsers {
     users: [User!]!
     hasNext: Boolean
+}
+
+type Notification {
+    type: String!
+    pinger: User!
+    post: Post!
+    date(timezone: Int!): String!
+} 
+
+type PaginatedNotifications {
+    notifications: [Notification!]!
+    hasNext: Boolean!
+    unread: Int!
 }

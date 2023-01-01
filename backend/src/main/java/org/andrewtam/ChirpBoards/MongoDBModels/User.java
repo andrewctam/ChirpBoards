@@ -2,6 +2,7 @@ package org.andrewtam.ChirpBoards.MongoDBModels;
 
 import java.util.Date;
 
+import org.andrewtam.ChirpBoards.repositories.NotificationRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -34,6 +35,10 @@ public class User {
     private Date sessionTokenExpiration;
 
     private String userColor;
+
+    private LinkedList<ObjectId> notifications;
+    private int unreadNotifications;
+    
     
     public User(String username, String displayName, String hashedPassword) {
         this.username = username;
@@ -55,6 +60,9 @@ public class User {
 
         String[] defaultColors = { "#FFCCCC", "#FFE5CC", "#FFFFCC", "#E5FFCC", "#CCFFCC", "#CCFFE5", "#CCFFFF", "#CCE5FF", "#CCCCFF", "#E5CCFF", "#FFCCFF", "#FFCCE5", "#FF9999", "#FFCC99", "#FFFF99", "#CCFF99", "#99FF99", "#99FFCC", "#99FFFF", "#99CCFF" };
         this.userColor = defaultColors[(int) (Math.random() * defaultColors.length)];
+
+        this.notifications = new LinkedList<ObjectId>();
+        this.unreadNotifications = 0;
     }
 
     public ObjectId getId() { return id; }
@@ -130,6 +138,24 @@ public class User {
 
     public int hashCode() {
         return this.username.hashCode();
+    }
+
+
+    public LinkedList<ObjectId> getNotifications() {  return notifications; }
+
+    public int getUnreadNotifications() { return unreadNotifications; }
+    
+    public void readNotifications(int num) { 
+        this.unreadNotifications -= num;
+        if (this.unreadNotifications < 0)
+            this.unreadNotifications = 0; 
+    }
+        
+    public void notifyReply(ObjectId pinger, ObjectId post, NotificationRepository notificationRepository, UserRepository userRepository) {
+        Notification notif = notificationRepository.save(new Notification("reply", this.getId(), pinger, post));
+        this.unreadNotifications++;
+        this.notifications.add(notif.getId());
+        userRepository.save(this);
     }
 
 }

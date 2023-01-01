@@ -1,5 +1,5 @@
 import React, { useEffect, useContext, useState } from "react"
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { UserContext } from "./App"
 
 const NavBar = () => {
@@ -13,7 +13,7 @@ const NavBar = () => {
     const [searchInput, setSearchInput] = useState("");
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const [userColor, setUserColor] = useState("#000000");
+    const [unreadNotifs, setUnreadNotifs] = useState(0);
 
     const navigate = useNavigate();
     
@@ -53,10 +53,10 @@ const NavBar = () => {
         }).then(res => res.json())
 
         console.log(response);
-        if (!response.data.verifySession) {
+        if (response.data.verifySession === null) {
             userInfo.dispatch({type: "SIGNOUT"});
         } else {
-            setUserColor(response.data.verifySession.userColor);
+            setUnreadNotifs(response.data.verifySession);
         }
     }
 
@@ -102,7 +102,7 @@ const NavBar = () => {
                 <a href = "/">Chirp Boards</a>
             </h1>
 
-            <div>
+            <div className = "">
                 <form onSubmit = {search} className = "hidden sm:inline-block  mr-4">
                     <input
                         value = {searchInput}
@@ -124,8 +124,12 @@ const NavBar = () => {
 
                 { userInfo.state.username ? 
                     <div className = "inline-block">
-                        <div onClick = {() => setShowDropdown(!showDropdown)} className = "cursor-pointer select-none inline-block">
+                        <div onClick = {() => setShowDropdown(!showDropdown)} className = "cursor-pointer relative select-none inline-block ">
                             {`@${userInfo.state.username} ▼`}
+
+                            { unreadNotifs > 0 && window.location.pathname !== "/inbox" ?
+                                <div className = "absolute bg-rose-400 top-0 -right-2 p-1  rounded-full" />
+                            : null  }
                         </div>
                         
 
@@ -134,6 +138,17 @@ const NavBar = () => {
                                 <div className = "absolute -right-1 top-4 px-8 py-2 w-fit z-20 bg-sky-200 lg:bg-sky-200/80 border border-black lg:border-black/10 rounded-b-xl rounded-tl-xl text-center">
                                     <p className = "text-black cursor-pointer text-center"><a href={`/profile/${[userInfo.state.username]}`}>
                                         Profile
+                                    </a></p>
+
+                                    <p className = "my-2 text-black cursor-pointer text-center whitespace-nowrap"><a href="/inbox">
+                                        Inbox
+                                         
+                                        {unreadNotifs > 0 && window.location.pathname !== "/inbox" ? 
+                                        <span className = "text-red-900">
+                                            {` (${unreadNotifs > 99 ? "99+" : unreadNotifs})`}
+                                        </span>
+
+                                        : null}
                                     </a></p>
 
                                     <p className="my-2 text-black cursor-pointer text-center"><a href={`/settings`}>

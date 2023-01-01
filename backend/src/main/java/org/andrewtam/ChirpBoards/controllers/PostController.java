@@ -14,7 +14,7 @@ import org.andrewtam.ChirpBoards.GraphQLModels.PostResponse;
 
 import org.andrewtam.ChirpBoards.MongoDBModels.Post;
 import org.andrewtam.ChirpBoards.MongoDBModels.User;
-
+import org.andrewtam.ChirpBoards.repositories.NotificationRepository;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
 import org.bson.types.ObjectId;
@@ -41,6 +41,9 @@ public class PostController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     @QueryMapping
     public Post post(@Argument String id, @Argument String relatedUsername, GraphQLContext context) {
@@ -118,7 +121,7 @@ public class PostController {
         if (relatedUsername != null)
             context.put("relatedUsername", relatedUsername.toLowerCase());
 
-        PageRequest paging = PageRequest.of(pageNum, size, Sort.by(sortMethod).ascending());
+        PageRequest paging = PageRequest.of(pageNum, size, Sort.by(sortMethod).descending());
 
         Page<Post> page = postRepository.findWithRegex(".*" + query + ".*", paging);
 
@@ -287,8 +290,12 @@ public class PostController {
         
         parentPost.getComments().addFirst(created.getId());
         parentPost.adjustCommentCount(1);
-        
         postRepository.save(parentPost);
+
+        if (!parentPost.getAuthor().equals(user.getId())) {
+            User author = userRepository.findById(parentPost.getAuthor());
+            author.notifyReply(user.getId(), created.getId(), notificationRepository, userRepository);
+        }
 
         return new PostResponse("", created);
     }
