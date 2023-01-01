@@ -22,9 +22,11 @@ function Search () {
 
     const [chirpResults, setChirpResults] = useState<JSX.Element[]>([]);
     const [chirpPageNum, setChirpPageNum] = useState(0);
+    const [chirpHasNextPage, setChirpHasNextPage] = useState(true);
 
     const [userResults, setUserResults] = useState<JSX.Element[]>([]);
     const [userPageNum, setUserPageNum] = useState(0);
+    const [userHasNextPage, setUserHasNextPage] = useState(true);
     const userInfo = useContext(UserContext);
 
     useEffect(() => {
@@ -57,7 +59,7 @@ function Search () {
     }
             
     const searchChirps = async () => {
-        if (searchQuery === "") {
+        if (searchQuery === "" || !chirpHasNextPage) {
             setDoneFetching(true)
             return;
         }
@@ -66,17 +68,20 @@ function Search () {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
-            searchPosts(query: "${searchQuery}", first: ${chirpPageNum}, offset: 10${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
-                id
-                text
-                author {
-                    username
-                    displayName
-                    userColor
+            searchPosts(query: "${searchQuery}", pageNum: ${chirpPageNum}, size: 10${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
+                posts {
+                    id
+                    text
+                    author {
+                        username
+                        displayName
+                        userColor
+                    }
+                    postDate(timezone: ${timezone})
+                    score
+                    ${userInfo.state.username ? "voteStatus" : ""}
                 }
-                postDate(timezone: ${timezone})
-                score
-                ${userInfo.state.username ? "voteStatus" : ""}
+                hasNext
             }
         }`
 
@@ -89,12 +94,12 @@ function Search () {
         
         console.log(response)
 
-
         
         let info = response.data.searchPosts;
         setChirpPageNum(chirpPageNum + 1);
+        setChirpHasNextPage(info.hasNext);
 
-        setChirpResults(chirpResults.concat(info.map((post: PostPayload) => {
+        setChirpResults(chirpResults.concat(info.posts.map((post: PostPayload) => {
             return <Chirp
                     authorUsername={post.author.username ?? ""}
                     authorDisplayName={post.author.displayName}
@@ -114,7 +119,7 @@ function Search () {
     }
 
     const searchUsers = async () => {
-        if (searchQuery === "") {
+        if (searchQuery === "" || !userHasNextPage) {
             setDoneFetching(true)
             return;
         }
@@ -123,13 +128,16 @@ function Search () {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
-            searchUsers(query: "${searchQuery}", first: ${userPageNum}, offset: 10) {
-                username
-                displayName
-                followerCount
-                followingCount
-                postCount
-                userColor
+            searchUsers(query: "${searchQuery}", pageNum: ${userPageNum}, size: 10) {
+                users {
+                    username
+                    displayName
+                    followerCount
+                    followingCount
+                    postCount
+                    userColor
+                }
+                hasNext
             }
         }`
 
@@ -145,8 +153,9 @@ function Search () {
         
         let info = response.data.searchUsers;
         setUserPageNum(userPageNum + 1);
+        setUserHasNextPage(info.hasNext);
 
-        setUserResults(userResults.concat(info.map((user: UserPayload) => {
+        setUserResults(userResults.concat(info.users.map((user: UserPayload) => {
             return <UserSearchResult
                 username={user.username}
                 displayName={user.displayName}

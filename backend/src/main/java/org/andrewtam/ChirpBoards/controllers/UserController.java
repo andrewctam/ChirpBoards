@@ -1,13 +1,13 @@
 package org.andrewtam.ChirpBoards.controllers;
 
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.andrewtam.ChirpBoards.GraphQLModels.BooleanResponse;
+import org.andrewtam.ChirpBoards.GraphQLModels.PaginatedPosts;
+import org.andrewtam.ChirpBoards.GraphQLModels.PaginatedUsers;
 import org.andrewtam.ChirpBoards.GraphQLModels.SigninRegisterResponse;
 import org.andrewtam.ChirpBoards.MongoDBModels.Post;
 import org.andrewtam.ChirpBoards.MongoDBModels.User;
@@ -47,43 +47,46 @@ public class UserController {
 
 
     @QueryMapping
-    public List<User> searchUsers(@Argument String query, @Argument int first, @Argument int offset, @Argument String relatedUsername, GraphQLContext context) {
+    public PaginatedUsers searchUsers(@Argument String query, @Argument int pageNum, @Argument int size, @Argument String relatedUsername, GraphQLContext context) {
         if (query == null || query == "")
-            return new LinkedList<User>();
+            return new PaginatedUsers(null);
 
         if (relatedUsername != null)
             context.put("relatedUsername", relatedUsername);
 
-        PageRequest paging = PageRequest.of(first, offset, Sort.by("username").ascending());
+        PageRequest paging = PageRequest.of(pageNum, size, Sort.by("followerCount").descending());
 
         Page<User> page = userRepository.findWithRegex(".*" + query + ".*", paging);
 
-        return page.getContent();
+        return new PaginatedUsers(page);
     }
 
     @SchemaMapping
-    public List<User> following(User user, @Argument int first, @Argument int offset) {
-        PageRequest paging = PageRequest.of(first, offset);
+    public PaginatedUsers following(User user, @Argument int pageNum, @Argument int size) {
+        PageRequest paging = PageRequest.of(pageNum, size);
 
         Page<User> page = userRepository.findAllById(user.getFollowing(), paging);
-        return page.getContent();
+        return new PaginatedUsers(page);
     }
 
     @SchemaMapping
-    public List<User> followers(User user, @Argument int first, @Argument int offset) {
-        PageRequest paging = PageRequest.of(first, offset);
+    public PaginatedUsers followers(User user, @Argument int pageNum, @Argument int size) {
+        PageRequest paging = PageRequest.of(pageNum, size);
 
         Page<User> page = userRepository.findAllById(user.getFollowers(), paging);
-        return page.getContent();
+        return new PaginatedUsers(page);
     }
         
 
     @SchemaMapping
-    public List<Post> posts(User user, @Argument int first, @Argument int offset) {
-        PageRequest paging = PageRequest.of(first, offset);
+    public PaginatedPosts posts(User user, @Argument int pageNum, @Argument int size, @Argument String sortMethod) {
+        if (!sortMethod.equals("postDate") && !sortMethod.equals("score"))
+            sortMethod = "postDate";
+
+        PageRequest paging = PageRequest.of(pageNum, size, Sort.by(sortMethod).descending());
 
         Page<Post> page = postRepository.findAllById(user.getPosts(), paging);
-        return page.getContent();
+        return new PaginatedPosts(page);
     }
 
     @SchemaMapping

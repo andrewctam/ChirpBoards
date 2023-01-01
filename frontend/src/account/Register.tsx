@@ -94,7 +94,7 @@ function Register() {
             sessionToken: sessionToken}
         });
 
-        localStorage.setItem("username", usernameInput);
+        localStorage.setItem("username", usernameInput.toLowerCase());
         localStorage.setItem("sessionToken", sessionToken);
 
 

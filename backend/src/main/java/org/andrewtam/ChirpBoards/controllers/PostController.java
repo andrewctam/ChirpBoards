@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.andrewtam.ChirpBoards.GraphQLModels.IntResponse;
+import org.andrewtam.ChirpBoards.GraphQLModels.PaginatedPosts;
 import org.andrewtam.ChirpBoards.GraphQLModels.PostResponse;
 
 import org.andrewtam.ChirpBoards.MongoDBModels.Post;
@@ -54,31 +55,34 @@ public class PostController {
     }
 
     @QueryMapping
-    public List<Post> recentPosts(@Argument int first, @Argument int offset, @Argument String relatedUsername, GraphQLContext context) {
+    public PaginatedPosts recentPosts(@Argument int pageNum, @Argument int size, @Argument String relatedUsername, GraphQLContext context) {
         if (relatedUsername != null)
             context.put("relatedUsername", relatedUsername.toLowerCase());
 
 
-        PageRequest paging = PageRequest.of(first, offset, Sort.by("postDate").descending());
+        PageRequest paging = PageRequest.of(pageNum, size, Sort.by("postDate").descending());
         
         Page<Post> page = postRepository.findAllBoards(paging);
-        return page.getContent();
+        return new PaginatedPosts(page);
 
     }
 
     @QueryMapping
-    public List<Post> popularPosts(@Argument int first, @Argument int offset, @Argument String relatedUsername, GraphQLContext context) {
+    public PaginatedPosts popularPosts(@Argument int pageNum, @Argument int size, @Argument String relatedUsername, GraphQLContext context) {
         if (relatedUsername != null)
             context.put("relatedUsername", relatedUsername.toLowerCase());
 
         //sort by score, then post date if same score
-        PageRequest paging = PageRequest.of(first, offset, Sort.by("score", "postDate").descending());
+        PageRequest paging = PageRequest.of(pageNum, size, Sort.by("score", "postDate").descending());
         
         Page<Post> page = postRepository.findAllBoards(paging);
-        return page.getContent();
+        return new PaginatedPosts(page);
     }
     @QueryMapping
-    public List<Post> followingPosts(@Argument int first, @Argument int offset, @Argument String username, GraphQLContext context) {
+    public PaginatedPosts followingPosts(@Argument int pageNum, @Argument int size, @Argument String username, @Argument String sortMethod, GraphQLContext context) {
+        if (!sortMethod.equals("postDate") && !sortMethod.equals("score"))
+            sortMethod = "postDate";
+
         if (username == null)
             return null;
 
@@ -90,33 +94,35 @@ public class PostController {
 
         List<ObjectId> followingIds = user.getFollowing();
 
-        PageRequest paging = PageRequest.of(first, offset, Sort.by("postDate").descending());
+        PageRequest paging = PageRequest.of(pageNum, size, Sort.by(sortMethod).descending());
         Page<Post> page;
 
         if (followingIds.size() == 0)
-            return null;
+            return new PaginatedPosts(null);
         else if (followingIds.size() == 1)
             page = postRepository.findBoardsByAuthor(followingIds.get(0), paging);        
         else
             page = postRepository.findBoardsByAuthors(followingIds, paging);
 
-        return page.getContent();
+        return new PaginatedPosts(page);
     }
 
     @QueryMapping
-    public List<Post> searchPosts(@Argument String query, @Argument int first, @Argument int offset, @Argument String relatedUsername, GraphQLContext context) {
+    public PaginatedPosts searchPosts(@Argument String query, @Argument int pageNum, @Argument int size, @Argument String sortMethod, @Argument String relatedUsername, GraphQLContext context) {
+        if (!sortMethod.equals("postDate") && !sortMethod.equals("score"))
+            sortMethod = "postDate";
 
         if (query == null || query == "")
-            return new LinkedList<Post>();
+            return new PaginatedPosts(null);
 
         if (relatedUsername != null)
             context.put("relatedUsername", relatedUsername.toLowerCase());
 
-        PageRequest paging = PageRequest.of(first, offset, Sort.by("postDate").ascending());
+        PageRequest paging = PageRequest.of(pageNum, size, Sort.by(sortMethod).ascending());
 
         Page<Post> page = postRepository.findWithRegex(".*" + query + ".*", paging);
 
-        return page.getContent();
+        return new PaginatedPosts(page);
     }
 
     @SchemaMapping
@@ -220,14 +226,14 @@ public class PostController {
     }
 
     @SchemaMapping
-    public List<Post> comments(Post post, @Argument int first, @Argument int offset, @Argument String sortMethod) {
-        if (sortMethod != "postDate" && sortMethod != "score")
+    public PaginatedPosts comments(Post post, @Argument int pageNum, @Argument int size, @Argument String sortMethod) {
+        if (!sortMethod.equals("postDate") && !sortMethod.equals("score"))
             sortMethod = "postDate";
 
-        PageRequest paging = PageRequest.of(first, offset, Sort.by(sortMethod).descending());
+        PageRequest paging = PageRequest.of(pageNum, size, Sort.by(sortMethod).descending());
 
         Page<Post> page = postRepository.findAllById(post.getComments(), paging);
-        return page.getContent();
+        return new PaginatedPosts(page);
     }
     
 

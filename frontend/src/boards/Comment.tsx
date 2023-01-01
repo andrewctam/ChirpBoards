@@ -15,6 +15,8 @@ function Comment(props: CommentProps) {
     const [localReplies, setLocalReplies] = useState<JSX.Element[]>([])
 
     const [pageNum, setPageNum] = useState(0);
+    const [hasNextPage, setHasNextPage] = useState(true);
+
     const [showReplies, setShowReplies] = useState(true)
     const [replying, setReplying] = useState(false)  
 
@@ -26,23 +28,29 @@ function Comment(props: CommentProps) {
     }, [])
 
     const loadMoreReplies = async () => {
+        if (!hasNextPage) 
+            return;
+
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
             post(id: "${props.id}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
-                comments(first:${pageNum}, offset:3) {
-                    id
-                    text
-                    commentCount
-                    postDate(timezone: ${timezone})
-                    score
-                    ${userInfo.state.username ? "voteStatus" : ""}
-                    author {
-                        username
-                        displayName
-                        userColor
+                comments(pageNum:${pageNum}, size:3) {
+                    posts {
+                        id
+                        text
+                        commentCount
+                        postDate(timezone: ${timezone})
+                        score
+                        ${userInfo.state.username ? "voteStatus" : ""}
+                        author {
+                            username
+                            displayName
+                            userColor
+                        }
                     }
+                    hasNext
                 }
             }
         }`
@@ -55,13 +63,14 @@ function Comment(props: CommentProps) {
         }).then(res => res.json())
         
         console.log(response)
-        const info: PostPayload = response.data.post;
+        const info = response.data.post;
         
 
         setPageNum(pageNum + 1)
+        setHasNextPage(info.comments.hasNext)
 
         setReplies(replies.concat(
-            info.comments.map((comment: PostPayload) => {
+            info.comments.posts.map((comment: PostPayload) => {
                 return <Comment
                     key = {comment.id}
                     id = {comment.id}

@@ -22,8 +22,10 @@ function Profile () {
     const [followerCount, setFollowerCount] = useState<number>(0);
     const [followingCount, setFollowingCount] = useState<number>(0);
     const [chirps, setChirps] = useState<JSX.Element[]>([]);
-    const [pageNum, setPageNum] = useState(0);
     const [postCount, setPostCount] = useState(0);
+
+    const [pageNum, setPageNum] = useState(0);
+    const [hasNextPage, setHasNextPage] = useState(true);
     
     const [userColor, setUserColor] = useState<string>("#9590b7")
     const [editingColor, setEditingColor] = useState(false);
@@ -105,12 +107,15 @@ function Profile () {
             user(username: "${username}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
                 postCount
                 userColor
-                posts(first: ${pageNum}, offset: 5) {
-                    id
-                    text
-                    postDate(timezone: ${timezone})
-                    score
-                    ${userInfo.state.username ? "voteStatus" : ""}
+                posts(pageNum: ${pageNum}, size:10) {
+                    posts {
+                        id
+                        text
+                        postDate(timezone: ${timezone})
+                        score
+                        ${userInfo.state.username ? "voteStatus" : ""}
+                    }
+                    hasNext
                 }
             }
         }`
@@ -127,10 +132,12 @@ function Profile () {
         
         setPageNum(pageNum + 1)
 
-        const info: UserPayload = response.data.user;
+        const info = response.data.user;
+
         setPostCount(info.postCount)
+        setHasNextPage(info.posts.hasNext)
         
-        setChirps(chirps.concat(info.posts.map((post: PostPayload) => {
+        setChirps(chirps.concat(info.posts.posts.map((post: PostPayload) => {
             return <Chirp
                     authorUsername={username ?? ""}
                     authorDisplayName={displayName}
@@ -277,7 +284,7 @@ function Profile () {
         </>
         :
         <>
-            {userInfo.state.username ?
+            {userInfo.state.username === username ?
                 <div className = "w-full bg-black/20 shadow-md pt-8 pb-1">
                     <div className = "mx-auto w-11/12 md:w-3/4 lg:w-3/5">
                         <PostComposer />

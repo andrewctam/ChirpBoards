@@ -24,6 +24,7 @@ function Board() {
     const [localComments, setLocalComments] = useState<JSX.Element[]>([])
 
     const [pageNum, setPageNum] = useState(0); //start at 1 because the first page is already loaded
+    const [hasNextPage, setHasNextPage] = useState(true);
     const [replying, setReplying] = useState(false)
 
     const params = useParams();
@@ -98,7 +99,7 @@ function Board() {
     }
 
     const loadMoreComments = async () => {
-        if (!mainPost || comments.length === mainPost.commentCount)
+        if (!mainPost || !hasNextPage)
             return;
 
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
@@ -106,18 +107,21 @@ function Board() {
         const query =
         `query {    
             post(id: "${mainPost.id}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
-                comments(first:${pageNum}, offset:10) {
-                    id
-                    text
-                    commentCount
-                    postDate(timezone: ${timezone})
-                    score
-                    ${userInfo.state.username ? "voteStatus" : ""}
-                    author {
-                        username
-                        displayName
-                        userColor
+                comments(pageNum:${pageNum}, size:10) {
+                    posts {
+                        id
+                        text
+                        commentCount
+                        postDate(timezone: ${timezone})
+                        score
+                        ${userInfo.state.username ? "voteStatus" : ""}
+                        author {
+                            username
+                            displayName
+                            userColor
+                        }
                     }
+                    hasNext
                 }
             }
         }`
@@ -133,13 +137,15 @@ function Board() {
         if (response.errors)
             navigate("/");
         
-        const info: PostPayload = response.data.post;
+        const info = response.data.post;
         if (!info || info.isComment)
             navigate("/");
 
         setPageNum(pageNum + 1)
+        setHasNextPage(info.comments.hasNext)
+
         setComments(comments.concat(
-            info.comments.map((comment: PostPayload) => {
+            info.comments.posts.map((comment: PostPayload) => {
                 return <Comment
                     key = {comment.id}
                     id = {comment.id}

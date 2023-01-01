@@ -22,6 +22,10 @@ function Home() {
     const [popularPageNum, setPopularPageNum] = useState(0);
     const [followingPageNum, setFollowingPageNum] = useState(0);
 
+    const [recentHasNextPage, setRecentHasNextPage] = useState(true);
+    const [popularHasNextPage, setPopularHasNextPage] = useState(true);
+    const [followingHasNextPage, setFollowingHasNextPage] = useState(true);
+
     const [doneFetching, setDoneFetching] = useState(false);
     const userInfo = useContext(UserContext);
     const navigate = useNavigate(); 
@@ -65,15 +69,25 @@ function Home() {
         let type = "";
         let pageNum = 0
         if (feedSelected === Feed.Following) {
-            if (userInfo.state.username === "")
-            navigate(`/signin?return=${window.location.pathname}`)
+            if (userInfo.state.username === "") {
+                navigate(`/signin?return=${window.location.pathname}`)
+                return;
+            }
+            if (!followingHasNextPage)
+                return;
                 
             type = "following";
             pageNum = followingPageNum;
         } else if (feedSelected === Feed.Popular) {
+            if (!popularHasNextPage)
+                return;
+
             type = "popular";
             pageNum = popularPageNum;
         } else if (feedSelected === Feed.Recent) {
+            if (!recentHasNextPage)
+                return;
+
             type = "recent";
             pageNum = recentPageNum;
         } else {
@@ -91,17 +105,20 @@ function Home() {
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const query =
             `query {
-            ${type}Posts(first: ${pageNum}, offset: 10${usernameField}) {
-                id
-                text
-                author {
-                    username
-                    displayName
-                    userColor
+            ${type}Posts(pageNum: ${pageNum}, size: 10${usernameField}) {
+                posts {
+                    id
+                    text
+                    author {
+                        username
+                        displayName
+                        userColor
+                    }
+                    postDate(timezone: ${timezone})
+                    score
+                    ${userInfo.state.username ? "voteStatus" : ""}
                 }
-                postDate(timezone: ${timezone})
-                score
-                ${userInfo.state.username ? "voteStatus" : ""}
+                hasNext
             }
         }`
 
@@ -126,7 +143,7 @@ function Home() {
         }
 
 
-        const newChirps = info.map((post: PostPayload) => {
+        const newChirps = info.posts.map((post: PostPayload) => {
             return <Chirp
                 authorUsername={post.author.username}
                 authorDisplayName={post.author.displayName}
@@ -143,12 +160,15 @@ function Home() {
         if (feedSelected === Feed.Recent) {
             setRecentFeed([...recentFeed, ...newChirps]);
             setRecentPageNum(recentPageNum + 1);
+            setRecentHasNextPage(info.hasNext);
         } else if (feedSelected === Feed.Popular) {
             setPopularFeed([...popularFeed, ...newChirps]);
             setPopularPageNum(popularPageNum + 1);
+            setPopularHasNextPage(info.hasNext);
         } else if (feedSelected === Feed.Following && followingFeed !== null) {
             setFollowingFeed([...followingFeed, ...newChirps]);
             setFollowingPageNum(followingPageNum + 1);
+            setFollowingHasNextPage(info.hasNext);
         }
     }
 
