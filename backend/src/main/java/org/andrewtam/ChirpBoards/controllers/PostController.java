@@ -232,6 +232,7 @@ public class PostController {
     public PaginatedPosts comments(Post post, @Argument int pageNum, @Argument int size, @Argument String sortMethod) {
         if (!sortMethod.equals("postDate") && !sortMethod.equals("score"))
             sortMethod = "postDate";
+        System.out.println(sortMethod);
 
         PageRequest paging = PageRequest.of(pageNum, size, Sort.by(sortMethod).descending());
 

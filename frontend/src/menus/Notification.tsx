@@ -22,15 +22,15 @@ function Notification(props: NotificationProps)  {
 
     return (
         <a href = {`/board/${props.postId}`}>
-        <li className = "border border-black p-4 text-white bg-black/20 rounded my-3 relative">
-            <div className = "inline text-sm">{props.date}</div>
-            <div> {msg} </div>
+            <li className = "border border-black p-4 text-white bg-black/20 rounded my-3 relative">
+                <div className = "inline text-sm">{props.date}</div>
+                <div> {msg} </div>
 
-            {props.unread ?
-                <div className = "absolute -top-1 -left-1 p-1 rounded-full bg-rose-400" />: null}
+                {props.unread ?
+                    <div className = "absolute -top-1 -left-1 p-1 rounded-full bg-rose-400" />: null}
 
 
-        </li>
+            </li>
         </a>
 
     )

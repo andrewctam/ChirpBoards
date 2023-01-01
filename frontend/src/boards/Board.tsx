@@ -1,11 +1,12 @@
 import { useContext, useEffect, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { PostChirp, PostPayload, UserContext } from "../App"
 import useScrollBottom from "../hooks/useScrollBottom"
 import Layout from "../Layout"
 import SpinningCircle from "../SpinningCircle"
 import Comment from "./Comment"
 import ReplyBox from "./ReplyBox"
+import Sort, { SortMethod } from "./Sort"
 import Vote from "./Vote"
 
 export interface Post extends PostChirp {
@@ -26,24 +27,60 @@ function Board() {
     const [pageNum, setPageNum] = useState(0); //start at 1 because the first page is already loaded
     const [hasNextPage, setHasNextPage] = useState(true);
     const [replying, setReplying] = useState(false)
+    const [sortMethod, setSortMethod] = useState<SortMethod>(SortMethod.New);
 
     const params = useParams();
     const navigate = useNavigate();
 
     const userInfo = useContext(UserContext);
 
+    const [searchParams, setSearchParams] = useSearchParams();
+
     useEffect( () => {
+        if (searchParams && searchParams.get("sort") !== null) {
+            switch(searchParams.get("sort")) {
+                case "new":
+                    setSortMethod(SortMethod.New)
+                    break;
+                case "score":
+                    setSortMethod(SortMethod.Score)
+                    break;
+                default:
+                    setSortMethod(SortMethod.New)
+                    break;
+            }
+        }
+
         if (params && params.id) {
             fetchPost(params.id);
         }
     }, [] )
 
-    useEffect( () => {
+    useEffect(() => {
+        //get comments after the main post loads
         if (mainPost && mainPost.commentCount > 0) {
             loadMoreComments();
         }
     }, [mainPost])
 
+    useEffect(() => {
+        //if the user updates sort method, reload to get the sorted board
+        if (mainPost) {
+            switch(sortMethod) {
+                case SortMethod.New:
+                    setSearchParams({sort: "new"})
+                    break;
+                case SortMethod.Score:
+                    setSearchParams({sort: "score"})
+                    break;
+                default: break;
+            }
+
+            window.location.reload();
+        }
+    }, [sortMethod])
+
+    
     const fetchPost = async (postId: string) => {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
@@ -102,12 +139,18 @@ function Board() {
         if (!mainPost || !hasNextPage)
             return;
 
+        let sort = "postDate";
+        if (sortMethod === SortMethod.New)
+            sort = "postDate";
+        else if (sortMethod === SortMethod.Score)
+            sort = "score";
+
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
             post(id: "${mainPost.id}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
-                comments(pageNum:${pageNum}, size:10) {
+                comments(pageNum:${pageNum}, size:10, sortMethod: "${sort}") {
                     posts {
                         id
                         text
@@ -159,6 +202,7 @@ function Board() {
                     local = {false}
                     autoLoadComments = {mainPost.commentCount < 10}
                     userColor = {comment.author.userColor}
+                    sortMethod = {sortMethod}
                 />
             }))
         )
@@ -172,6 +216,8 @@ function Board() {
         <Layout>
             {mainPost ? 
             <div className = "mx-auto w-11/12 md:w-4/5 lg:w-3/4">
+                <Sort sortMethod = {sortMethod} setSortMethod = {setSortMethod} />
+
                 {mainPost.parentPost ? 
                     <div className = "mt-6 mb-6 ml-4">
 
@@ -209,7 +255,10 @@ function Board() {
                         <Vote postId = {mainPost.id} initialScore = {mainPost.score} initialVoteStatus = {mainPost.voteStatus}/>
 
                         {replying ?
-                        <ReplyBox postId = {mainPost.id} close = {() => {setReplying(false)}} 
+                        <ReplyBox 
+                            postId = {mainPost.id} 
+                            close = {() => {setReplying(false)}} 
+                            sortMethod = {sortMethod}
                             addReply = {(reply) => {
                                 setLocalComments([reply, ...localComments])
                             }}/> 

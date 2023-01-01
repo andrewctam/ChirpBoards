@@ -85,22 +85,54 @@ function Inbox () {
         setDoneLoading(true)
     }
 
+    const clearNotifications = async () => {
+        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const query =
+        `mutation {    
+            clearNotifications(username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}")
+        }`
+
+        const response = await fetch(url ?? '', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({query})
+        }).then(res => res.json())
+        
+        console.log(response)
+
+        setNotificationsFeed([])
+        setPageNum(0)
+    }
+    
+
+    let center= null
+
+    if (!doneLoading)
+        center = <SpinningCircle />
+    else if (notificationsFeed.length == 0)
+        center = <h1 className = "text-lg text-white text-center mt-2">No notifications</h1>
+    else 
+        center = <>
+            <div className = "text-center">
+                <button
+                    onClick = {clearNotifications} 
+                    className = "mx-auto bg-black/20 text-white p-4 border border-black/20 rounded-md py-2">
+                    Clear Notifications
+                </button>
+            </div>
+            <ul className = "w-[95%] mx-auto mt-6"> 
+                {notificationsFeed}
+            </ul>
+        </>
+
     useScrollBottom(getNotifications);
 
     return (
         <Layout>
             <h1 className = "text-2xl text-white text-center py-4 bg-black/20 shadow-md">Inbox</h1>
-            <div className="mt-2 mx-auto w-5/6 lg:w-3/5 py-2">                
-                <ul className = "w-[95%] mx-auto mt-6"> 
-                    { doneLoading ? 
-                        notificationsFeed.length == 0 ?
-                            <div>
-                                <h1 className = "text-lg text-white text-center mt-2">No notifications found</h1>
-                            </div> 
-                            : notificationsFeed
-                        : <SpinningCircle />
-                    } 
-                </ul>
+
+            <div className="mt-2 mx-auto w-5/6 lg:w-3/5 py-2">
+                {center}
             </div>
         </Layout>
     )

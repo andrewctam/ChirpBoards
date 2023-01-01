@@ -14,5 +14,8 @@ public interface NotificationRepository extends MongoRepository<Notification, St
 
     @Query("{ _id: { $in: ?0 } }")
     Page<Notification> findAllById(List<ObjectId> ids, PageRequest pageable);
+
+    @Query(value="{ _id: { $in: ?0 } }", delete = true)
+    void deleteAllById(List<ObjectId> ids);
     
 }

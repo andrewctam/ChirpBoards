@@ -56,6 +56,10 @@ type Mutation {
 
     #Requires authentication. Changes user color.
     changeUserColor(newUserColor: String!, username: String!, sessionToken: String!): BooleanResponse
+
+    #Requires authentication. Clears notifications
+    clearNotifications(username: String!, sessionToken: String!): Boolean
+
 }
 
 

@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
@@ -110,4 +111,26 @@ public class NotificationController {
                 ));
     }
 
+    @MutationMapping
+    public Boolean clearNotifications(@Argument String username, @Argument String sessionToken) {
+        username = username.toLowerCase();
+
+        if (sessionToken == null || sessionToken == "")
+            return false;
+
+        User user = userRepository.findByUsername(username);
+        if (user == null)
+            return false;
+
+        if (!user.checkUserSession(userRepository, sessionToken))
+            return false;
+
+        notificationRepository.deleteAllById(user.getNotifications());
+        user.getNotifications().clear();
+        user.readNotifications(user.getUnreadNotifications());
+
+        userRepository.save(user);
+
+        return true;
+    }
 }
