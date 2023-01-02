@@ -58,29 +58,44 @@ public class PostController {
     }
 
     @QueryMapping
-    public PaginatedPosts recentPosts(@Argument int pageNum, @Argument int size, @Argument String relatedUsername, GraphQLContext context) {
+    public PaginatedPosts allPosts(@Argument int pageNum, @Argument int size, @Argument String sortMethod, @Argument String relatedUsername, GraphQLContext context) {        
         if (relatedUsername != null)
             context.put("relatedUsername", relatedUsername.toLowerCase());
 
+        Sort sort;
+        switch(sortMethod) {
+            case "postDate":
+                sort = Sort.by("postDate", "id").descending();
+                break;
+            case "score":
+                sort = Sort.by("score", "postDate", "id").descending();
+                break;
+            default:
+                sort = Sort.by("postDate", "id").descending();
+                break;
+        }
+        
 
-        PageRequest paging = PageRequest.of(pageNum, size, Sort.by("postDate").descending());
+        PageRequest paging = PageRequest.of(pageNum, size, sort);
         
         Page<Post> page = postRepository.findAllBoards(paging);
         return new PaginatedPosts(page);
 
     }
-
     @QueryMapping
-    public PaginatedPosts popularPosts(@Argument int pageNum, @Argument int size, @Argument String relatedUsername, GraphQLContext context) {
+    public PaginatedPosts trendingPosts(@Argument int pageNum, @Argument int size, @Argument String relatedUsername, GraphQLContext context) {        
         if (relatedUsername != null)
             context.put("relatedUsername", relatedUsername.toLowerCase());
 
-        //sort by score, then post date if same score
-        PageRequest paging = PageRequest.of(pageNum, size, Sort.by("score", "postDate").descending());
         
-        Page<Post> page = postRepository.findAllBoards(paging);
+        PageRequest paging = PageRequest.of(pageNum, size, Sort.by("score", "postDate", "id").descending());
+        
+        long last24Hours = System.currentTimeMillis() - 86400000;
+        Page<Post> page = postRepository.findTrendingPosts(last24Hours, paging);
         return new PaginatedPosts(page);
+
     }
+
     @QueryMapping
     public PaginatedPosts followingPosts(@Argument int pageNum, @Argument int size, @Argument String username, @Argument String sortMethod, GraphQLContext context) {
         if (username == null)
@@ -97,28 +112,28 @@ public class PostController {
         Sort sort;
         switch(sortMethod) {
             case "postDate":
-                sort = Sort.by("postDate").descending();
+                sort = Sort.by("postDate", "id").descending();
                 break;
             case "score":
-                sort = Sort.by("score", "postDate").descending();
+                sort = Sort.by("score", "postDate", "id").descending();
                 break;
             default:
-                sort = Sort.by("postDate").descending();
+                sort = Sort.by("postDate", "id").descending();
                 break;
         }
 
         PageRequest paging = PageRequest.of(pageNum, size, sort);
         switch(sortMethod) {
             case "postDate":
-                sort = Sort.by("postDate").descending();
+                sort = Sort.by("postDate", "id").descending();
                 break;
             case "score":
-                sort = Sort.by("score", "postDate").descending();
+                sort = Sort.by("score", "postDate", "id").descending();
                 break;
             default:
-                sort = Sort.by("postDate").descending();
+                sort = Sort.by("postDate", "id").descending();
                 break;
-        });
+        }
         Page<Post> page;
 
         if (followingIds.size() == 0)
@@ -142,13 +157,13 @@ public class PostController {
         Sort sort;
         switch(sortMethod) {
             case "postDate":
-                sort = Sort.by("postDate").descending();
+                sort = Sort.by("postDate", "id").descending();
                 break;
             case "score":
-                sort = Sort.by("score", "postDate").descending();
+                sort = Sort.by("score", "postDate", "id").descending();
                 break;
             default:
-                sort = Sort.by("postDate").descending();
+                sort = Sort.by("postDate", "id").descending();
                 break;
         }
 
@@ -264,13 +279,13 @@ public class PostController {
         Sort sort;
         switch(sortMethod) {
             case "postDate":
-                sort = Sort.by("postDate").descending();
+                sort = Sort.by("postDate", "id").descending();
                 break;
             case "score":
-                sort = Sort.by("score", "postDate").descending();
+                sort = Sort.by("score", "postDate", "id").descending();
                 break;
             default:
-                sort = Sort.by("postDate").descending();
+                sort = Sort.by("postDate", "id").descending();
                 break;
         }
 

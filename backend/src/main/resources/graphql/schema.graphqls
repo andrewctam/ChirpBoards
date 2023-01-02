@@ -4,10 +4,12 @@ type Query {
     #No authentication required. Include relatedUsername to get information for certain queries.
     post(id: String!, relatedUsername: String = null): Post
     
-    #No authentication required. Retrieves recent posts. Include relatedUsername to get information for certain queries.
-    recentPosts(pageNum: Int = 0, size: Int = 10, relatedUsername: String = null): PaginatedPosts
-    #No authentication required. Retrieves popular posts by score. Include relatedUsername to get information for certain queries.
-    popularPosts(pageNum: Int = 0, size: Int = 10, relatedUsername: String = null): PaginatedPosts
+    #No authentication required. Retrieves any posts. Include relatedUsername to get information for certain queries.
+    allPosts(pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate", relatedUsername: String = null): PaginatedPosts
+
+    #No authentication required. Retrieves trending posts, sorted by score in the last 24 hours. Include relatedUsername to get information for certain queries.
+    trendingPosts(pageNum: Int = 0, size: Int = 10, relatedUsername: String = null): PaginatedPosts
+    
     #No authentication required. Retrieves the most recent posts from a user's following list. username is also relatedUsername.
     followingPosts(pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate", username: String!): PaginatedPosts
 

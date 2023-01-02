@@ -8,22 +8,23 @@ import SpinningCircle from "../SpinningCircle";
 import PostComposer from "./PostComposer";
 import { PostPayload } from "../App";
 import useScrollBottom from "../hooks/useScrollBottom";
+import useSort from "../hooks/useSort";
 
-export enum Feed { None, Following, Recent, Popular }
+export enum Feed { None, Trending, All, Following }
 
 function Home() {
     const [feedSelected, setFeedSelected] = useState<Feed>(Feed.None)
 
-    const [recentFeed, setRecentFeed] = useState<JSX.Element[]>([]);
-    const [popularFeed, setPopularFeed] = useState<JSX.Element[]>([]);
+    const [allFeed, setAllFeed] = useState<JSX.Element[]>([]);
+    const [trendingFeed, setTrendingFeed] = useState<JSX.Element[]>([]);
     const [followingFeed, setFollowingFeed] = useState<JSX.Element[] | null>([]);
         
-    const [recentPageNum, setRecentPageNum] = useState(0);
-    const [popularPageNum, setPopularPageNum] = useState(0);
+    const [allPageNum, setAllPageNum] = useState(0);
+    const [trendingPageNum, setTrendingPageNum] = useState(0);
     const [followingPageNum, setFollowingPageNum] = useState(0);
 
-    const [recentHasNextPage, setRecentHasNextPage] = useState(true);
-    const [popularHasNextPage, setPopularHasNextPage] = useState(true);
+    const [allHasNextPage, setAllHasNextPage] = useState(true);
+    const [trendingHasNextPage, setTrendingHasNextPage] = useState(true);
     const [followingHasNextPage, setFollowingHasNextPage] = useState(true);
 
     const [doneFetching, setDoneFetching] = useState(false);
@@ -34,31 +35,39 @@ function Home() {
 
     const switchFeeds = (feed: Feed) => {
         setFeedSelected(feed);
-        setDoneFetching(false)
-        setSearchParams({ feed: feed === Feed.Recent ? "recent" : feed === Feed.Popular ? "popular" : "following" })
+        setDoneFetching(false);
+        setSearchParams({ feed: feed === Feed.All ? "all" : feed === Feed.Trending ? "trending" : "following" })
     }
 
     useEffect(() => {
-        if (feedSelected !== Feed.None)
-            getMoreChirps();
+        if (feedSelected === Feed.None) //inital page load
+            return;
+
+        if (feedSelected === Feed.All && allFeed.length == 0 ||
+            feedSelected === Feed.Trending && trendingFeed.length === 0 ||
+            feedSelected === Feed.Following && followingFeed && followingFeed.length === 0) {
+                getMoreChirps();
+            } else {
+                setDoneFetching(true)
+            }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [feedSelected])
 
     useEffect(() => {
-        //on load
+        //initial page load
         switch (searchParams.get("feed")) {
-            case "recent":
-                setFeedSelected(Feed.Recent)
+            case "all":
+                setFeedSelected(Feed.All)
                 return;
-            case "popular":
-                setFeedSelected(Feed.Popular)
+            case "trending":
+                setFeedSelected(Feed.Trending)
                 return;
             case "following":
                 setFeedSelected(Feed.Following)
                 return;
             default:
-                setFeedSelected(Feed.Recent);
+                setFeedSelected(Feed.All);
         }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps 
@@ -78,34 +87,38 @@ function Home() {
                 
             type = "following";
             pageNum = followingPageNum;
-        } else if (feedSelected === Feed.Popular) {
-            if (!popularHasNextPage)
+        } else if (feedSelected === Feed.Trending) {
+            if (!trendingHasNextPage)
                 return;
 
-            type = "popular";
-            pageNum = popularPageNum;
-        } else if (feedSelected === Feed.Recent) {
-            if (!recentHasNextPage)
+            type = "trending";
+            pageNum = trendingPageNum;
+        } else if (feedSelected === Feed.All) {
+            if (!allHasNextPage)
                 return;
 
-            type = "recent";
-            pageNum = recentPageNum;
+            type = "all";
+            pageNum = allPageNum;
         } else {
             return;
         }
 
         let usernameField = "";
-        if (feedSelected === Feed.Following)
+        if (feedSelected === Feed.Following) {
             usernameField = `, username: "${userInfo.state.username}"`
-        else if (userInfo.state.username)
-            usernameField = `, relatedUsername: "${userInfo.state.username}"`
+        } else if (userInfo.state.username)
+        usernameField = `, relatedUsername: "${userInfo.state.username}"`
+        
+        let sortField = "";
+        if (feedSelected === Feed.All || feedSelected === Feed.Following)
+            sortField = `, sortMethod: "${sortMethod}"`;
 
         
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const query =
             `query {
-            ${type}Posts(pageNum: ${pageNum}, size: 10${usernameField}) {
+            ${type}Posts(pageNum: ${pageNum}, size: 10${usernameField}${sortField}) {
                 posts {
                     id
                     text
@@ -131,7 +144,6 @@ function Home() {
         }).then(res => res.json())
         console.log(response)
 
-        setDoneFetching(true);
 
         const info = response.data[`${type}Posts`];
 
@@ -157,32 +169,35 @@ function Home() {
             />
         })
 
-        if (feedSelected === Feed.Recent) {
-            setRecentFeed([...recentFeed, ...newChirps]);
-            setRecentPageNum(recentPageNum + 1);
-            setRecentHasNextPage(info.hasNext);
-        } else if (feedSelected === Feed.Popular) {
-            setPopularFeed([...popularFeed, ...newChirps]);
-            setPopularPageNum(popularPageNum + 1);
-            setPopularHasNextPage(info.hasNext);
+        if (feedSelected === Feed.All) {
+            setAllFeed([...allFeed, ...newChirps]);
+            setAllPageNum(allPageNum + 1);
+            setAllHasNextPage(info.hasNext);
+        } else if (feedSelected === Feed.Trending) {
+            setTrendingFeed([...trendingFeed, ...newChirps]);
+            setTrendingPageNum(trendingPageNum + 1);
+            setTrendingHasNextPage(info.hasNext);
         } else if (feedSelected === Feed.Following && followingFeed !== null) {
             setFollowingFeed([...followingFeed, ...newChirps]);
             setFollowingPageNum(followingPageNum + 1);
             setFollowingHasNextPage(info.hasNext);
         }
+
+        setDoneFetching(true);
+
     }
 
-    let msg = "";
+    let msg = null;
     let feed = null;
     switch (feedSelected) {
-        case Feed.Recent:
-            feed = recentFeed;
+        case Feed.All:
+            feed = allFeed;
             break;
-        case Feed.Popular:
-            feed = popularFeed;
+        case Feed.Trending:
+            feed = trendingFeed;
             break;
         case Feed.Following:
-            if (followingFeed)
+            if (followingFeed !== null)
                 feed = followingFeed;
             else
                 msg = "You are not following any users";
@@ -191,18 +206,28 @@ function Home() {
             break;
     }
 
-    if (feed && feed.length === 0) {
-        msg = "No chirps... you can hear the crickets chirping!"
+    if (feed && feed.length === 0 && doneFetching) {
+        console.log(feedSelected)
+        msg = "No chirps... other than the crickets chirping!"
         feed = null
     }
-     
-    if (!feed && doneFetching)
-        feed = <div className = "text-center text-white text-lg mt-4">{msg}</div>
     
 
     useScrollBottom(getMoreChirps)
 
+    const [sortMethod, sortBubble] = useSort(doneFetching, getMoreChirps, () => {
+        setAllFeed([])
+        setFollowingFeed([])
+
+        setAllPageNum(0)
+        setFollowingPageNum(0)
+
+        setAllHasNextPage(true)
+        setFollowingHasNextPage(true)
+    })
+    
     return (<Layout>
+        
         {userInfo.state.username ?
             <div className = "w-full bg-black/20 shadow-md pt-8">
                 <div className="mx-auto w-5/6 lg:w-3/5 py-2">
@@ -212,15 +237,17 @@ function Home() {
         : <div />}
 
         <div className="mx-auto w-5/6 lg:w-3/5 py-2 mt-4">
+            {feedSelected !== Feed.Trending ? sortBubble : null}
+            
             <div className="grid grid-cols-3">
                 <FeedButton
-                    name={"Recent"}
-                    onClick={() => switchFeeds(Feed.Recent)}
-                    isActive={feedSelected === Feed.Recent} />
+                    name={"Trending"}
+                    onClick={() => switchFeeds(Feed.Trending)}
+                    isActive={feedSelected === Feed.Trending} />
                 <FeedButton
-                    name={"Popular"}
-                    onClick={() => switchFeeds(Feed.Popular)}
-                    isActive={feedSelected === Feed.Popular} />
+                    name={"All"}
+                    onClick={() => switchFeeds(Feed.All)}
+                    isActive={feedSelected === Feed.All} />
                 <FeedButton
                     name={"Following"}
                     onClick={() => switchFeeds(Feed.Following)}
@@ -229,6 +256,8 @@ function Home() {
 
             <ul className = "mt-6 w-[95%] mx-auto">
                 {feed}
+                
+                <div className = "text-center text-white text-lg mt-4">{msg}</div>
 
                 {!doneFetching ?
                     <SpinningCircle /> 

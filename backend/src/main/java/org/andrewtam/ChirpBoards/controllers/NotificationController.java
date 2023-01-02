@@ -58,7 +58,7 @@ public class NotificationController {
         if (!user.checkUserSession(userRepository, sessionToken))
             return null;
 
-        PageRequest pageRequest = PageRequest.of(pageNum, size, Sort.by("date").descending());
+        PageRequest pageRequest = PageRequest.of(pageNum, size, Sort.by("date", "id").descending());
 
         Page<Notification> page = notificationRepository.findAllById(user.getNotifications(), pageRequest);
         

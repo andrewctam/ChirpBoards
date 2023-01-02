@@ -54,7 +54,7 @@ public class UserController {
         if (relatedUsername != null)
             context.put("relatedUsername", relatedUsername);
 
-        PageRequest paging = PageRequest.of(pageNum, size, Sort.by("followerCount").descending());
+        PageRequest paging = PageRequest.of(pageNum, size, Sort.by("followerCount", "id").descending());
 
         Page<User> page = userRepository.findWithRegex(".*" + query + ".*", paging);
 
@@ -83,13 +83,13 @@ public class UserController {
         Sort sort;
         switch(sortMethod) {
             case "postDate":
-                sort = Sort.by("postDate").descending();
+                sort = Sort.by("postDate", "id").descending();
                 break;
             case "score":
-                sort = Sort.by("score", "postDate").descending();
+                sort = Sort.by("score", "postDate", "id").descending();
                 break;
             default:
-                sort = Sort.by("postDate").descending();
+                sort = Sort.by("postDate", "id").descending();
                 break;
         }
         
