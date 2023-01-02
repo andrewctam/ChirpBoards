@@ -2,6 +2,7 @@ import { editableInputTypes } from "@testing-library/user-event/dist/utils";
 import { useState, useContext, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { PostPayload, UserContext, UserPayload } from "../App";
+import Sort, { SortMethod } from "../boards/Sort";
 import Chirp from "../home/Chirp";
 import PostComposer from "../home/PostComposer";
 import useScrollBottom from "../hooks/useScrollBottom";
@@ -14,7 +15,7 @@ function Profile () {
     const params = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
     
-    const [loading, setLoading] = useState(true);
+    const [doneLoading, setDoneLoading] = useState(false);
 
     const [username, setUsername] = useState<string | null>("");
     const [displayName, setDisplayName] = useState<string>("");
@@ -27,7 +28,11 @@ function Profile () {
     const [pageNum, setPageNum] = useState(0);
     const [hasNextPage, setHasNextPage] = useState(true);
     
-    const [userColor, setUserColor] = useState<string>("#9590b7")
+
+    const [sortMethod, setSortMethod] = useState<SortMethod>(SortMethod.New);
+    const [reload, setReload] = useState(false);
+    
+    const [userColor, setUserColor] = useState<string>("#000000")
     const [editingColor, setEditingColor] = useState(false);
 
     const navigate = useNavigate();
@@ -41,17 +46,27 @@ function Profile () {
             setEditingColor(true);
             setSearchParams("")
         }
+        
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [] )
 
 
     useEffect(() => {
-        if (username && postCount > 0 && !editingColor) {
+        if ((username && postCount > 0 && !editingColor) || reload) {
             getMoreChirps(); // separate getting chirps to speed up initial load
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [username, editingColor])
+    }, [username, editingColor, reload])
 
+
+    useEffect(() => {
+        if (doneLoading) {
+            setChirps([])
+            setPageNum(0)
+            setHasNextPage(false)
+            setReload(true)
+        }
+    }, [sortMethod])
 
 
     const fetchUserInfo = async (username: string) => {
@@ -76,7 +91,7 @@ function Profile () {
             body: JSON.stringify({query})
         }).then(res => res.json())
 
-        setLoading(false)
+        setDoneLoading(true)
         console.log(response)
         const info: UserPayload = response.data.user
         if (info === null) {
@@ -100,6 +115,12 @@ function Profile () {
         if (chirps.length === postCount)
             return;
 
+        let sort = "postDate";
+        if (sortMethod === SortMethod.New)
+            sort = "postDate";
+        else if (sortMethod === SortMethod.Score)
+            sort = "score";
+
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
@@ -107,7 +128,7 @@ function Profile () {
             user(username: "${username}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
                 postCount
                 userColor
-                posts(pageNum: ${pageNum}, size:10) {
+                posts(pageNum: ${pageNum}, size:10, sortMethod: "${sort}") {
                     posts {
                         id
                         text
@@ -212,7 +233,7 @@ function Profile () {
         window.location.reload()
     }
 
-    if (loading)
+    if (!doneLoading)
         return <Layout><SpinningCircle /></Layout>
     else if (username === null) {
         return (<Layout>
@@ -227,6 +248,8 @@ function Profile () {
             backgroundColor: userColor,
             color: textColor()
         }}>
+            <Sort sortMethod = {sortMethod} setSortMethod = {setSortMethod} />
+
             <h1 className = "text-3xl break-words">{displayName}</h1>
             <h1 className = "text-sm">{`@${username}`}</h1>
 

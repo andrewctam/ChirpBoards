@@ -25,22 +25,22 @@ function Sort(props: SortProps) {
     }
 
     return (
-        <div className = "fixed bottom-2 left-2">
+        <div className = "fixed bottom-2 left-2 z-50">
             {showMenu ? 
             <div>
                 <div onClick = {() => {props.setSortMethod(SortMethod.New); setShowMenu(false)}} 
-                    className = {`w-fit bg-black/50 p-2 text-sm rounded-full my-2 cursor-pointer select-none ${props.sortMethod === SortMethod.New ? "text-rose-200" : "text-white"}`}>
+                    className = {`ml-auto mr-0 w-fit bg-black px-4 py-2 text-sm rounded-full my-2 cursor-pointer select-none ${props.sortMethod === SortMethod.New ? "text-rose-200" : "text-white"}`}>
                     New
                 </div>
                 <div onClick = {() => {props.setSortMethod(SortMethod.Score); setShowMenu(false)}} 
-                    className = {`w-fit bg-black/50 p-2 text-sm rounded-full my-2 cursor-pointer select-none ${props.sortMethod === SortMethod.Score ? "text-rose-200" : "text-white"}`}>
+                    className = {`ml-auto mr-0 w-fit bg-black px-4 py-2 text-sm rounded-full my-2 cursor-pointer select-none ${props.sortMethod === SortMethod.Score ? "text-rose-200" : "text-white"}`}>
                     Score
                 </div>
             </div>
             : null}
 
             
-            <div className = "px-4 py-2 rounded-full bg-black/50 text-white text-xs select-none cursor-pointer" onClick = {() => setShowMenu(!showMenu)}>
+            <div className = "px-4 py-2 rounded-full bg-black text-white text-xs select-none cursor-pointer" onClick = {() => setShowMenu(!showMenu)}>
                 Sorting by: 
                 <div className = "text-rose-200 inline mx-1">
                     {name}

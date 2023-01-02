@@ -7,6 +7,7 @@ import Chirp from "../home/Chirp";
 import FeedButton from "../home/FeedButton";
 import UserSearchResult from "./UserSearchResult";
 import SpinningCircle from "../SpinningCircle";
+import Sort, { SortMethod } from "../boards/Sort";
 
 export enum SearchFeed {
     Chirps,
@@ -24,27 +25,57 @@ function Search () {
     const [chirpPageNum, setChirpPageNum] = useState(0);
     const [chirpHasNextPage, setChirpHasNextPage] = useState(true);
 
+    const [sortMethod, setSortMethod] = useState<SortMethod>(SortMethod.New);
+    const [reload, setReload] = useState(false);
+
     const [userResults, setUserResults] = useState<JSX.Element[]>([]);
     const [userPageNum, setUserPageNum] = useState(0);
     const [userHasNextPage, setUserHasNextPage] = useState(true);
     const userInfo = useContext(UserContext);
 
+
+
     useEffect(() => {
         setSearchQuery(searchParams.get("query") ?? "");
         let feed = searchParams.get("feed") 
 
-        if (feed === "users") {
-            setFeedSelected(SearchFeed.Users);
-        } else if (feed === "chirps") {
-            setFeedSelected(SearchFeed.Chirps);
-        } else 
-            setFeedSelected(SearchFeed.Chirps);
+
+        switch(searchParams.get("sort")) {
+            case "new":
+                setSortMethod(SortMethod.New)
+                break;
+            case "score":
+                setSortMethod(SortMethod.Score)
+                break;
+            default:
+                setSortMethod(SortMethod.New)
+                break;
+        }
+
+
     }, [])
 
     useEffect(() => {
         setDoneFetching(false);
         search();
     }, [feedSelected])
+
+    useEffect(() => {
+        if (reload) {
+            setReload(false)
+            search()
+        }
+    }, [reload])
+
+    useEffect(() => {
+        if (doneFetching) {
+            setChirpResults([])
+            setChirpPageNum(0)
+            setChirpHasNextPage(true)
+            setReload(true);
+        }
+    }, [sortMethod])
+
 
     const search = () => {
         if (! (/[a-zA-Z0-9]/.test(searchQuery))) {
@@ -64,11 +95,18 @@ function Search () {
             return;
         }
 
+
+        let sort = "postDate";
+        if (sortMethod === SortMethod.New)
+            sort = "postDate";
+        else if (sortMethod === SortMethod.Score)
+            sort = "score";
+
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
-            searchPosts(query: "${searchQuery}", pageNum: ${chirpPageNum}, size: 10${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
+            searchPosts(query: "${searchQuery}", pageNum: ${chirpPageNum}, size: 10, sortMethod: "${sort}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
                 posts {
                     id
                     text
@@ -124,7 +162,6 @@ function Search () {
             return;
         }
             
-        const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
@@ -193,6 +230,10 @@ function Search () {
             <h1 className = "text-2xl text-white text-center py-4 bg-black/20 shadow-md">Search Results</h1>
             <div className="mt-2 mx-auto w-5/6 lg:w-3/5 py-2">                
 
+                {feedSelected === SearchFeed.Chirps ? 
+                    <Sort sortMethod = {sortMethod} setSortMethod = {setSortMethod} />
+                : null}
+                
                 <div className = "grid grid-cols-2">
                     <FeedButton
                         name = "Chirps"

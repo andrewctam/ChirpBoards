@@ -27,29 +27,31 @@ function Board() {
     const [pageNum, setPageNum] = useState(0); //start at 1 because the first page is already loaded
     const [hasNextPage, setHasNextPage] = useState(true);
     const [replying, setReplying] = useState(false)
-    const [sortMethod, setSortMethod] = useState<SortMethod>(SortMethod.New);
-
+    
     const params = useParams();
     const navigate = useNavigate();
-
+    
     const userInfo = useContext(UserContext);
+    
+    const [sortMethod, setSortMethod] = useState<SortMethod>(SortMethod.New);
+    const [reload, setReload] = useState(false);
 
     const [searchParams, setSearchParams] = useSearchParams();
 
     useEffect( () => {
-        if (searchParams && searchParams.get("sort") !== null) {
-            switch(searchParams.get("sort")) {
-                case "new":
-                    setSortMethod(SortMethod.New)
-                    break;
-                case "score":
-                    setSortMethod(SortMethod.Score)
-                    break;
-                default:
-                    setSortMethod(SortMethod.New)
-                    break;
-            }
+        //on load, get the params
+        switch(searchParams.get("sort")) {
+            case "new":
+                setSortMethod(SortMethod.New)
+                break;
+            case "score":
+                setSortMethod(SortMethod.Score)
+                break;
+            default:
+                setSortMethod(SortMethod.New)
+                break;
         }
+    
 
         if (params && params.id) {
             fetchPost(params.id);
@@ -58,13 +60,14 @@ function Board() {
 
     useEffect(() => {
         //get comments after the main post loads
-        if (mainPost && mainPost.commentCount > 0) {
+        if ((mainPost && mainPost.commentCount > 0) || reload) {
+            setReload(false);
             loadMoreComments();
         }
-    }, [mainPost])
+    }, [mainPost, reload])
 
     useEffect(() => {
-        //if the user updates sort method, reload to get the sorted board
+        //if the user updates sort method, reset comments
         if (mainPost) {
             switch(sortMethod) {
                 case SortMethod.New:
@@ -76,7 +79,11 @@ function Board() {
                 default: break;
             }
 
-            window.location.reload();
+            setComments([])
+            setLocalComments([])
+            setPageNum(0)
+            setHasNextPage(true);
+            setReload(true);
         }
     }, [sortMethod])
 
@@ -228,7 +235,7 @@ function Board() {
                         : null}
 
                         <p>
-                            <a href={`/board/${mainPost.parentPost}`} className = "text-blue-200">← Parent comment</a>
+                            <a href={`/board/${mainPost.parentPost}`} className = "text-blue-200">← Parent post</a>
                         </p>    
                     </div>
                 : null}
@@ -240,11 +247,11 @@ function Board() {
                                 {mainPost.authorDisplayName}
                             </a>
 
-                            <a href={`/profile/${mainPost.authorUsername}`} className = "text-xs">
+                            <a href={`/profile/${mainPost.authorUsername}`} className = "text-sm">
                                 {` • @${mainPost.authorUsername}`}
                             </a>
                             
-                            <div className = "text-xs inline">
+                            <div className = "text-sm inline">
                                 {` • ${mainPost.postDate}`}
                             </div>
                         </div>
