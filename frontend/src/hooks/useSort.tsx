@@ -46,11 +46,11 @@ function useSort(doneFetching: boolean,
             {showMenu ? 
             <div>
                 <div onClick = {() => {setSortMethod(SortMethod.New); setShowMenu(false)}} 
-                    className = {`ml-auto mr-0 w-fit bg-black px-4 py-2 text-sm rounded-full my-2 cursor-pointer select-none ${sortMethod === SortMethod.New ? "text-rose-200" : "text-white"}`}>
+                    className = {`ml-auto mr-0 w-fit bg-black px-4 py-2 text-xs rounded-full my-2 cursor-pointer select-none ${sortMethod === SortMethod.New ? "text-rose-200" : "text-white"}`}>
                     New
                 </div>
                 <div onClick = {() => {setSortMethod(SortMethod.Score); setShowMenu(false)}} 
-                    className = {`ml-auto mr-0 w-fit bg-black px-4 py-2 text-sm rounded-full my-2 cursor-pointer select-none ${sortMethod === SortMethod.Score ? "text-rose-200" : "text-white"}`}>
+                    className = {`ml-auto mr-0 w-fit bg-black px-4 py-2 text-xs rounded-full my-2 cursor-pointer select-none ${sortMethod === SortMethod.Score ? "text-rose-200" : "text-white"}`}>
                     Score
                 </div>
             </div>

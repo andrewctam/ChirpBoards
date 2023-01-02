@@ -76,7 +76,7 @@ function Signin() {
                 </button>
             </div>
             :
-            <form onSubmit = {signin} className = "mx-auto border border-black/10 w-5/6 md:w-3/4 lg:w-1/2 px-12 py-4 rounded-xl bg-slate-100/10 shadow-md">
+            <form onSubmit = {signin} className = "mx-auto border border-black/10 w-5/6 md:w-3/4 lg:w-1/2 px-12 py-4 rounded-xl bg-black/20 shadow-md">
                 <h1 className = "text-3xl text-center">Sign In</h1>
 
                 <a href = "/register">
@@ -90,6 +90,7 @@ function Signin() {
                     value = {usernameInput}
                     setValue = {setUsernameInput}
                     mt = "mt-4"
+                    valid = {usernameInput !== ""}
                 />
 
                 <FormInput
@@ -97,6 +98,7 @@ function Signin() {
                     value = {passwordInput}
                     setValue = {setPasswordInput}
                     password = {true}
+                    valid = {passwordInput !== ""}
                 />
 
                 <p className = "text-rose-200">{error}</p>

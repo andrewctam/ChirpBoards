@@ -46,7 +46,7 @@ function Board() {
         //get comments after the main post loads
         if (mainPost) {
             if (mainPost.commentCount > 0)
-                loadMoreComments();
+                getComments();
             else
                 setDoneFetching(true)
 
@@ -109,7 +109,7 @@ function Board() {
 
     }
 
-    const loadMoreComments = async () => {
+    const getComments = async () => {
         if (!mainPost || !hasNextPage) {
             setDoneFetching(true)
             return; 
@@ -181,7 +181,7 @@ function Board() {
     }
 
 
-    const [sortMethod, sortBubble] = useSort(mainPost !== null, loadMoreComments, () => {
+    const [sortMethod, sortBubble] = useSort(mainPost !== null, getComments, () => {
         setComments([])
         setLocalComments([])
         setPageNum(0)
@@ -190,7 +190,7 @@ function Board() {
 
     useScrollBottom(() => {
         setDoneFetching(false)
-        loadMoreComments()
+        getComments()
     })
 
     return (

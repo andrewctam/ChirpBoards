@@ -7,10 +7,10 @@ interface FormInputProps {
     setValue: (value: string) => void
     password?: boolean
     mt?: string
+    valid: boolean
 }
 
 function FormInput(props: FormInputProps) {
-    const [highlightLabel, setHighlightLabel] = useState(false);
     
     return (
     <div className = {`${props.mt ? props.mt : "mt-2"} text-left`}>
@@ -21,12 +21,10 @@ function FormInput(props: FormInputProps) {
             type = {props.password ? "password" : "text"}
             placeholder = {props.placeholder} 
 
-            onFocus = {() => setHighlightLabel(true)}
-            onBlur = {() => setHighlightLabel(false)}
-            className = "text-white bg-transparent rounded-t block p-1 w-full border-b border-b-white focus:outline-none"/>
+            className = "text-white bg-transparent rounded-t rounded-none block p-1 w-full border-b border-b-white focus:outline-none"/>
 
 
-        <label className = "text-xs ml-1 text-white/50" style = {highlightLabel ? {color: "white"} : undefined}>{props.name}</label>
+        <label className = {`text-xs ml-1 ${props.valid ? "text-white/90" : "text-rose-100/60"}`}>{props.name}</label>
 
     </div>
     )

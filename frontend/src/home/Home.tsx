@@ -45,8 +45,8 @@ function Home() {
 
         if ((feedSelected === Feed.All && allFeed.length) === 0 ||
             (feedSelected === Feed.Trending && trendingFeed.length) === 0 ||
-            (feedSelected === Feed.Following && followingFeed && followingFeed.length === 0)) {
-                getMoreChirps();
+            (feedSelected === Feed.Following && followingFeed !== null && followingFeed.length === 0)) {
+                getChirps();
             } else {
                 setDoneFetching(true)
             }
@@ -74,7 +74,7 @@ function Home() {
     }, [])
 
 
-    const getMoreChirps = async () => {
+    const getChirps = async () => {
         let type = "";
         let pageNum = 0
         if (feedSelected === Feed.Following) {
@@ -157,7 +157,6 @@ function Home() {
         if (!info) {
             if (feedSelected === Feed.Following)
                 setFollowingFeed(null);
-
             return;
         }
 
@@ -189,10 +188,9 @@ function Home() {
             setFollowingPageNum(followingPageNum + 1);
             setFollowingHasNextPage(info.hasNext);
         }
-
-        
-
     }
+
+    
 
     let msg = null;
     let feed = null;
@@ -243,10 +241,10 @@ function Home() {
 
     useScrollBottom(() => {
         setDoneFetching(false)
-        getMoreChirps()
+        getChirps()
     })
 
-    const [sortMethod, sortBubble] = useSort(doneFetching, getMoreChirps, () => {
+    const [sortMethod, sortBubble] = useSort(doneFetching, getChirps, () => {
         setAllFeed([])
         setFollowingFeed([])
 

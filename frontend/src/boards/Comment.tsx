@@ -26,10 +26,10 @@ function Comment(props: CommentProps) {
 
     useEffect(() => {
         if (props.autoLoadComments && props.commentCount > 0)
-            loadMoreReplies();
+            getReplies();
     }, [])
 
-    const loadMoreReplies = async () => {
+    const getReplies = async () => {
         if (!hasNextPage) 
             return;
 
@@ -124,7 +124,7 @@ function Comment(props: CommentProps) {
                     sortMethod = {props.sortMethod}
                 /> : null}
 
-                <div className = "absolute -bottom-3 right-16">
+                <div className = "absolute -bottom-3 right-12">
                     {props.commentCount > 0 ?
                     <button className = {`${showReplies ? "bg-rose-200" : "bg-gray-200"} text-black border border-black/20 rounded shadow-md text-xs mr-2 px-2 py-1`} 
                         onClick = {() => {setShowReplies(!showReplies)}}>
@@ -150,7 +150,7 @@ function Comment(props: CommentProps) {
                     {localReplies.length > 0 ? localReplies.concat(replies) : replies}
 
                     {replies.length < props.commentCount ?
-                        <p onClick = {loadMoreReplies} className = "cursor-pointer ml-[5%] text-sky-100">{`Load ${pageNum === 0 ? "" : "more"} replies`}</p>
+                        <p onClick = {getReplies} className = "cursor-pointer ml-[5%] text-sky-100">{`Load ${pageNum === 0 ? "" : "more"} replies`}</p>
                     : null}
                 </div>
              : null}

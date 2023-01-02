@@ -113,7 +113,7 @@ function Register() {
                 </button>
             </div>
             :
-            <form onSubmit={register} className = "mx-auto border border-black/10 w-5/6 md:w-3/4 lg:w-1/2 px-12 py-4 rounded-xl bg-slate-100/10 shadow-md">
+            <form onSubmit={register} className = "mx-auto border border-black/10 w-5/6 md:w-3/4 lg:w-1/2 px-12 py-4 rounded-xl bg-black/20 shadow-md">
                 <h1 className = "text-3xl text-center">Register</h1>
                 <a href = "/signin">
                     <p className = "text-sm text-sky-300 underline text-center">
@@ -126,6 +126,7 @@ function Register() {
                     value = {usernameInput}
                     setValue = {setUsernameInput}
                     mt = "mt-4"
+                    valid = {usernameInput.length >= 3 && usernameInput.length <= 16}
                 />
 
                 <FormInput
@@ -133,6 +134,8 @@ function Register() {
                     value = {displayNameInput}
                     setValue = {setDisplayNameInput}
                     placeholder = {usernameInput}
+                    valid = {(usernameInput.length >= 3 && usernameInput.length <= 16 && displayNameInput === "") ||
+                             (displayNameInput.length > 0 && displayNameInput.length <= 32)}
                 />
 
 
@@ -142,6 +145,7 @@ function Register() {
                     setValue = {setPasswordInput}
                     password = {true}
                     mt = "mt-8"
+                    valid = {passwordInput.length >= 8}
                 />
 
                 <FormInput
@@ -150,6 +154,7 @@ function Register() {
                     setValue = {setRepeatPasswordInput}
                     placeholder = ""
                     password = {true}
+                    valid = {repeatPasswordInput === passwordInput && repeatPasswordInput !== "" && passwordInput.length >= 8}
                 />
 
                 <p className = "text-rose-200 break-words">{error}</p>

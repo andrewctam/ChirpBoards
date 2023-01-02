@@ -44,8 +44,6 @@ function PostComposer() {
             }
         }`
 
-        console.log(JSON.stringify({ query }))
-
         const response = await fetch(url ?? '', {
             method: "POST",
             headers: {
@@ -63,19 +61,19 @@ function PostComposer() {
 
         navigate(`/board/${response.data.createPost.post.id}`)
     }
-    return (<form onSubmit={createChirp} className="w-full py-2 mb-12 bg-gray-100/20 border border-black/10 shadow-lg relative rounded">
+    return (<form onSubmit={createChirp} className="w-full mb-12 bg-black/20 border border-black/90 shadow-lg relative rounded">
         <textarea
             value={composedChirp}
             onChange={updateComposedChirp}
-            className="bg-sky-200 border border-black/10 shadow rounded-lg resize-none px-6 pt-2 mt-2 ml-[-2%] w-[104%] h-24 focus:outline-none placeholder:text-black/75"
+            className = "w-full h-40 bg-transparent p-2 resize-none focus:outline-none text-white"
             placeholder="Compose a chirp..." />
 
-        <p className="text-white mb-4 ml-4">
+        <p className="text-white/75 text-xs ml-2 mb-2">
             {errorMsg ? errorMsg
                 : `${composedChirp.length}/500 characters`}
         </p>
 
-        <button className="bg-sky-200 text-xs sm:text-base text-black border border-black/10 rounded shadow-md absolute -bottom-3 right-4 px-4 py-2"
+        <button className="bg-sky-300 text-xs sm:text-sm text-black border border-black rounded-xl shadow-md absolute -bottom-3 right-4 px-4 py-2"
             onClick={createChirp}>
             Post
         </button>

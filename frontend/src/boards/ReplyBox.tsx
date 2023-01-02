@@ -81,7 +81,7 @@ function ReplyBox(props: ReplyBoxProps) {
     }
 
     return (
-        <form onSubmit = {addComment} className = "w-[95%] mx-auto h-24 my-6 bg-gray-200/25 border border-black/25  shadow-lg relative rounded-xl">
+        <form onSubmit = {addComment} className = "w-[95%] mx-auto h-24 my-6 bg-black/25 border border-black/25  shadow-lg relative rounded-xl">
             <textarea 
                 value = {comment} 
                 onChange = {(e) => setComment(e.target.value)} 
@@ -90,12 +90,12 @@ function ReplyBox(props: ReplyBoxProps) {
 
 
             <div className = "absolute -bottom-3 right-4">
-                <button className = "bg-rose-200 text-black border border-black/20 rounded shadow-md px-2 py-1" 
+                <button className = "bg-rose-300 text-xs sm:text-sm text-black border border-black/20 rounded-xl shadow-md px-2 py-1" 
                     onClick = {props.close}>
                     Cancel
                 </button>
 
-                <button className = "bg-[#b9cfe2] text-black border border-black/20 rounded shadow-md -bottom-3 right-4 px-2 py-1 ml-2" 
+                <button className = "bg-[#b9cfe2] text-xs sm:text-sm text-black border border-black/20 rounded-xl shadow-md -bottom-3 right-4 px-2 py-1 ml-2" 
                     onClick = {addComment}>
                     Reply
                 </button>
