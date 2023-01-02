@@ -80,10 +80,21 @@ public class UserController {
 
     @SchemaMapping
     public PaginatedPosts posts(User user, @Argument int pageNum, @Argument int size, @Argument String sortMethod) {
-        if (!sortMethod.equals("postDate") && !sortMethod.equals("score"))
-            sortMethod = "postDate";
+        Sort sort;
+        switch(sortMethod) {
+            case "postDate":
+                sort = Sort.by("postDate").descending();
+                break;
+            case "score":
+                sort = Sort.by("score", "postDate").descending();
+                break;
+            default:
+                sort = Sort.by("postDate").descending();
+                break;
+        }
+        
 
-        PageRequest paging = PageRequest.of(pageNum, size, Sort.by(sortMethod).descending());
+        PageRequest paging = PageRequest.of(pageNum, size, sort);
 
         Page<Post> page = postRepository.findAllById(user.getPosts(), paging);
         return new PaginatedPosts(page);

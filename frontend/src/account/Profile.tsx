@@ -2,10 +2,10 @@ import { editableInputTypes } from "@testing-library/user-event/dist/utils";
 import { useState, useContext, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { PostPayload, UserContext, UserPayload } from "../App";
-import Sort, { SortMethod } from "../boards/Sort";
 import Chirp from "../home/Chirp";
 import PostComposer from "../home/PostComposer";
 import useScrollBottom from "../hooks/useScrollBottom";
+import useSort, { SortMethod } from "../hooks/useSort";
 import Layout from "../Layout";
 import SpinningCircle from "../SpinningCircle";
 
@@ -29,8 +29,7 @@ function Profile () {
     const [hasNextPage, setHasNextPage] = useState(true);
     
 
-    const [sortMethod, setSortMethod] = useState<SortMethod>(SortMethod.New);
-    const [reload, setReload] = useState(false);
+
     
     const [userColor, setUserColor] = useState<string>("#000000")
     const [editingColor, setEditingColor] = useState(false);
@@ -52,21 +51,13 @@ function Profile () {
 
 
     useEffect(() => {
-        if ((username && postCount > 0 && !editingColor) || reload) {
+        if (username && postCount > 0 && !editingColor) {
             getMoreChirps(); // separate getting chirps to speed up initial load
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [username, editingColor, reload])
+    }, [username, editingColor])
 
 
-    useEffect(() => {
-        if (doneLoading) {
-            setChirps([])
-            setPageNum(0)
-            setHasNextPage(false)
-            setReload(true)
-        }
-    }, [sortMethod])
 
 
     const fetchUserInfo = async (username: string) => {
@@ -111,15 +102,11 @@ function Profile () {
             setIsFollowing(info.isFollowing)
     }
 
+
+     
     const getMoreChirps = async () => {
         if (chirps.length === postCount)
             return;
-
-        let sort = "postDate";
-        if (sortMethod === SortMethod.New)
-            sort = "postDate";
-        else if (sortMethod === SortMethod.Score)
-            sort = "score";
 
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
@@ -128,7 +115,7 @@ function Profile () {
             user(username: "${username}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
                 postCount
                 userColor
-                posts(pageNum: ${pageNum}, size:10, sortMethod: "${sort}") {
+                posts(pageNum: ${pageNum}, size:10, sortMethod: "${sortMethod}") {
                     posts {
                         id
                         text
@@ -172,6 +159,15 @@ function Profile () {
                 />
         })))
     }
+
+
+
+    const [sortMethod, sortBubble] = useSort(doneLoading, getMoreChirps, () => {
+        setChirps([])
+        setPageNum(0)
+        setHasNextPage(true);
+        setDoneLoading(false)
+    })
 
     useScrollBottom(getMoreChirps);
 
@@ -248,7 +244,7 @@ function Profile () {
             backgroundColor: userColor,
             color: textColor()
         }}>
-            <Sort sortMethod = {sortMethod} setSortMethod = {setSortMethod} />
+            {sortBubble}
 
             <h1 className = "text-3xl break-words">{displayName}</h1>
             <h1 className = "text-sm">{`@${username}`}</h1>

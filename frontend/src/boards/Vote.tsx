@@ -56,14 +56,14 @@ function Vote(props: VoteProps) {
     }
 
     return (
-        <div className="absolute -right-5 my-auto h-fit top-0 bottom-0 text-black bg-[#c6e4e4] border border-black/20 py-1 px-1 w-12 rounded-xl text-center text-sm">
-            <button style = { {color: voteStatus === 1 ? "rgb(0, 180, 0)" : "black"} } className = "font-extrabold" onClick = {() => {vote("upvote")}}>
+        <div className="absolute right-1 top-0 h-fit bottom-0 text-white bg-transparent py-1 px-1 rounded-bl-xl text-center text-sm">
+            <button style = { {color: voteStatus === 1 ? "rgb(119 209 136)" : "white"} } className = "font-extrabold" onClick = {() => {vote("upvote")}}>
             ↑
             </button>
 
             <div> {formatScore(score)} </div>
 
-            <button style = { {color: voteStatus === -1 ? "red" : "black"} } className = "font-extrabold" onClick = {() => {vote("downvote")}}>
+            <button style = { {color: voteStatus === -1 ? "rgb(218 133 133)" : "white"} } className = "font-extrabold" onClick = {() => {vote("downvote")}}>
             ↓
             </button>
         </div>

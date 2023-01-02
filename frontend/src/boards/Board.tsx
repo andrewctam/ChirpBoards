@@ -2,11 +2,11 @@ import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { PostChirp, PostPayload, UserContext } from "../App"
 import useScrollBottom from "../hooks/useScrollBottom"
+import useSort, { SortMethod } from "../hooks/useSort"
 import Layout from "../Layout"
 import SpinningCircle from "../SpinningCircle"
 import Comment from "./Comment"
 import ReplyBox from "./ReplyBox"
-import Sort, { SortMethod } from "./Sort"
 import Vote from "./Vote"
 
 export interface Post extends PostChirp {
@@ -33,26 +33,9 @@ function Board() {
     
     const userInfo = useContext(UserContext);
     
-    const [sortMethod, setSortMethod] = useState<SortMethod>(SortMethod.New);
-    const [reload, setReload] = useState(false);
-
-    const [searchParams, setSearchParams] = useSearchParams();
 
     useEffect( () => {
         //on load, get the params
-        switch(searchParams.get("sort")) {
-            case "new":
-                setSortMethod(SortMethod.New)
-                break;
-            case "score":
-                setSortMethod(SortMethod.Score)
-                break;
-            default:
-                setSortMethod(SortMethod.New)
-                break;
-        }
-    
-
         if (params && params.id) {
             fetchPost(params.id);
         }
@@ -60,32 +43,11 @@ function Board() {
 
     useEffect(() => {
         //get comments after the main post loads
-        if ((mainPost && mainPost.commentCount > 0) || reload) {
-            setReload(false);
+        if (mainPost && mainPost.commentCount > 0) {
             loadMoreComments();
         }
-    }, [mainPost, reload])
+    }, [mainPost])
 
-    useEffect(() => {
-        //if the user updates sort method, reset comments
-        if (mainPost) {
-            switch(sortMethod) {
-                case SortMethod.New:
-                    setSearchParams({sort: "new"})
-                    break;
-                case SortMethod.Score:
-                    setSearchParams({sort: "score"})
-                    break;
-                default: break;
-            }
-
-            setComments([])
-            setLocalComments([])
-            setPageNum(0)
-            setHasNextPage(true);
-            setReload(true);
-        }
-    }, [sortMethod])
 
     
     const fetchPost = async (postId: string) => {
@@ -146,18 +108,13 @@ function Board() {
         if (!mainPost || !hasNextPage)
             return;
 
-        let sort = "postDate";
-        if (sortMethod === SortMethod.New)
-            sort = "postDate";
-        else if (sortMethod === SortMethod.Score)
-            sort = "score";
-
+    
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
             post(id: "${mainPost.id}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
-                comments(pageNum:${pageNum}, size:10, sortMethod: "${sort}") {
+                comments(pageNum:${pageNum}, size:10, sortMethod: "${sortMethod}") {
                     posts {
                         id
                         text
@@ -216,6 +173,12 @@ function Board() {
     }
 
 
+    const [sortMethod, sortBubble] = useSort(mainPost !== null, loadMoreComments, () => {
+        setComments([])
+        setLocalComments([])
+        setPageNum(0)
+        setHasNextPage(true);
+    })
 
     useScrollBottom(loadMoreComments);
 
@@ -223,7 +186,7 @@ function Board() {
         <Layout>
             {mainPost ? 
             <div className = "mx-auto w-11/12 md:w-4/5 lg:w-3/4">
-                <Sort sortMethod = {sortMethod} setSortMethod = {setSortMethod} />
+                {sortBubble}
 
                 {mainPost.parentPost ? 
                     <div className = "mt-6 mb-6 ml-4">
@@ -241,7 +204,7 @@ function Board() {
                 : null}
 
                 <div>
-                    <div className = "w-full mt-6 mb-6 p-6 border border-black rounded-bl-xl rounded-tr-xl bg-black/50 text-white relative break-all">
+                    <div className = "w-full mt-6 mb-6 p-6 border border-black rounded-bl-xl rounded-tr-xl bg-black/10 text-white relative break-all">
                         <div className = "mb-3">
                             <a href={`/profile/${mainPost.authorUsername}`} className = "text-lg" style = {{color: mainPost.userColor}}>
                                 {mainPost.authorDisplayName}

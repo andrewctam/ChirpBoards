@@ -2,13 +2,13 @@ import { useContext, useEffect, useState } from "react"
 import { UserContext, PostPayload } from "../App"
 import { Post } from "./Board"
 import ReplyBox from "./ReplyBox"
-import { SortMethod } from "./Sort"
+import { SortMethod } from "../hooks/useSort"
 import Vote from "./Vote"
 
 interface CommentProps extends Post {
     local: boolean
     autoLoadComments: boolean
-    sortMethod: SortMethod
+    sortMethod: string
 }
 
 function Comment(props: CommentProps) {
@@ -33,18 +33,12 @@ function Comment(props: CommentProps) {
         if (!hasNextPage) 
             return;
 
-        let sort = "postDate";
-        if (props.sortMethod === SortMethod.New)
-            sort = "postDate";
-        else if (props.sortMethod === SortMethod.Score)
-            sort = "score";
-
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
             post(id: "${props.id}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
-                comments(pageNum:${pageNum}, size:3, sortMethod: "${sort}") {
+                comments(pageNum:${pageNum}, size:3, sortMethod: "${props.sortMethod}") {
                     posts {
                         id
                         text
@@ -115,7 +109,7 @@ function Comment(props: CommentProps) {
                     <a className = "text-gray-200 ml-1" href = {`/board/${props.id}`}> ► </a>
                 </div>
                 
-                <div className = "whitespace-pre">
+                <div className = "whitespace-pre-line">
                     {props.text}
                 </div>
                 
@@ -130,7 +124,7 @@ function Comment(props: CommentProps) {
                     sortMethod = {props.sortMethod}
                 /> : null}
 
-                <div className = "absolute -bottom-3 right-12">
+                <div className = "absolute -bottom-3 right-16">
                     {props.commentCount > 0 ?
                     <button className = {`${showReplies ? "bg-rose-200" : "bg-gray-200"} text-black border border-black/20 rounded shadow-md text-xs mr-2 px-2 py-1`} 
                         onClick = {() => {setShowReplies(!showReplies)}}>

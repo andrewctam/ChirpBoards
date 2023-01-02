@@ -2,12 +2,13 @@ import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PostPayload, UserContext } from "../App";
 import Comment from "./Comment";
-import { SortMethod } from "./Sort";
+import { SortMethod } from "../hooks/useSort";
+
 interface ReplyBoxProps {
     close: () => void
     postId: string
     addReply: (reply: JSX.Element) => void
-    sortMethod: SortMethod
+    sortMethod: string
 }
 
 function ReplyBox(props: ReplyBoxProps) {
