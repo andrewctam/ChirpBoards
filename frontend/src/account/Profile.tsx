@@ -16,6 +16,7 @@ function Profile () {
     const [searchParams, setSearchParams] = useSearchParams();
     
     const [doneLoading, setDoneLoading] = useState(false);
+    const [doneFetching, setDoneFetching] = useState(false);
 
     const [username, setUsername] = useState<string | null>("");
     const [displayName, setDisplayName] = useState<string>("");
@@ -38,7 +39,7 @@ function Profile () {
 
     useEffect( () => {
         if (params && params.username) {
-            fetchUserInfo(params.username);
+            getUserInfo(params.username);
         }
         
         if (searchParams && searchParams.get("editColor")) {
@@ -58,9 +59,7 @@ function Profile () {
     }, [username, editingColor])
 
 
-
-
-    const fetchUserInfo = async (username: string) => {
+    const getUserInfo = async (username: string) => {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
 
         const query =
@@ -105,7 +104,7 @@ function Profile () {
 
      
     const getMoreChirps = async () => {
-        if (chirps.length === postCount)
+        if (!hasNextPage)
             return;
 
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
@@ -113,8 +112,6 @@ function Profile () {
         const query =
         `query {    
             user(username: "${username}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
-                postCount
-                userColor
                 posts(pageNum: ${pageNum}, size:10, sortMethod: "${sortMethod}") {
                     posts {
                         id
@@ -137,14 +134,11 @@ function Profile () {
         
         console.log(response)
 
-        
         setPageNum(pageNum + 1)
+        setDoneFetching(true);
 
         const info = response.data.user;
-
-        setPostCount(info.postCount)
         setHasNextPage(info.posts.hasNext)
-        
         setChirps(chirps.concat(info.posts.posts.map((post: PostPayload) => {
             return <Chirp
                     authorUsername={username ?? ""}
@@ -162,14 +156,18 @@ function Profile () {
 
 
 
-    const [sortMethod, sortBubble] = useSort(doneLoading, getMoreChirps, () => {
+    const [sortMethod, sortBubble] = useSort(doneFetching, getMoreChirps, () => {
         setChirps([])
         setPageNum(0)
         setHasNextPage(true);
-        setDoneLoading(false)
+        setDoneFetching(false)
     })
 
-    useScrollBottom(getMoreChirps);
+    useScrollBottom(() => {
+        setDoneFetching(false)
+        getMoreChirps()
+    })
+
 
     const textColor = (): "black" | "white" => {
         const r = parseInt(userColor.substring(1,3), 16);
@@ -201,6 +199,7 @@ function Profile () {
             body: JSON.stringify({query})
         }).then(res => res.json())
 
+        
         console.log(response)
 
         setFollowerCount(response.data.toggleFollow.msg)
@@ -229,9 +228,10 @@ function Profile () {
         window.location.reload()
     }
 
+
     if (!doneLoading)
         return <Layout><SpinningCircle /></Layout>
-    else if (username === null) {
+    else if (username === null && doneFetching) {
         return (<Layout>
             <div className = "text-center bg-red-200 py-8 shadow-md">
                 <h1>{`User ${params.username} not Found`}</h1>
@@ -273,7 +273,7 @@ function Profile () {
         <>
             <ul className = "mt-4 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
                 <Chirp
-                    authorUsername={username}
+                    authorUsername={username ?? ""}
                     authorDisplayName={displayName}
                     id = {"EXAMPLE_CHIRP"}
                     postDate = {new Date().toLocaleTimeString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', })}
@@ -316,9 +316,7 @@ function Profile () {
                     <ul className = "mt-4">
                         {chirps}
 
-                        {postCount > 0 && chirps.length === 0 ?
-                        <SpinningCircle /> 
-                        : null}
+                        {!doneFetching ? <SpinningCircle /> : null}
                     </ul>
             </div>
         </>}

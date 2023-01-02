@@ -43,9 +43,9 @@ function Home() {
         if (feedSelected === Feed.None) //inital page load
             return;
 
-        if (feedSelected === Feed.All && allFeed.length == 0 ||
-            feedSelected === Feed.Trending && trendingFeed.length === 0 ||
-            feedSelected === Feed.Following && followingFeed && followingFeed.length === 0) {
+        if ((feedSelected === Feed.All && allFeed.length) === 0 ||
+            (feedSelected === Feed.Trending && trendingFeed.length) === 0 ||
+            (feedSelected === Feed.Following && followingFeed && followingFeed.length === 0)) {
                 getMoreChirps();
             } else {
                 setDoneFetching(true)
@@ -82,20 +82,26 @@ function Home() {
                 navigate(`/signin?return=${window.location.pathname}`)
                 return;
             }
-            if (!followingHasNextPage)
+            if (!followingHasNextPage) {
+                setDoneFetching(true);
                 return;
+            }
                 
             type = "following";
             pageNum = followingPageNum;
         } else if (feedSelected === Feed.Trending) {
-            if (!trendingHasNextPage)
+            if (!trendingHasNextPage) {
+                setDoneFetching(true);
                 return;
+            }
 
             type = "trending";
             pageNum = trendingPageNum;
         } else if (feedSelected === Feed.All) {
-            if (!allHasNextPage)
+            if (!allHasNextPage) {
+                setDoneFetching(true);
                 return;
+            }
 
             type = "all";
             pageNum = allPageNum;
@@ -146,7 +152,8 @@ function Home() {
 
 
         const info = response.data[`${type}Posts`];
-
+        setDoneFetching(true);
+        
         if (!info) {
             if (feedSelected === Feed.Following)
                 setFollowingFeed(null);
@@ -183,7 +190,7 @@ function Home() {
             setFollowingHasNextPage(info.hasNext);
         }
 
-        setDoneFetching(true);
+        
 
     }
 
@@ -206,14 +213,38 @@ function Home() {
             break;
     }
 
-    if (feed && feed.length === 0 && doneFetching) {
-        console.log(feedSelected)
-        msg = "No chirps... other than the crickets chirping!"
-        feed = null
+    if (feed && doneFetching) {
+        if (feed.length === 0) {
+            msg = "No chirps... other than the crickets chirping!"
+            feed = null
+        } else {
+            switch (feedSelected) {
+                case Feed.All:
+                    if (!allHasNextPage) {
+                        msg = "You reached the end of the all feed. You saw all chirps ever made!"
+                    }
+                    break;
+                case Feed.Trending:
+                    if (!trendingHasNextPage) {
+                        msg = "You reached the end of the trending feed. Only chirps from the past 24 hours are here"
+                    }
+                    break;
+                case Feed.Following:
+                    if (!followingHasNextPage) {
+                        msg = "You reached the end of your following feed"
+                    }
+                    break;
+                default: 
+                    break;
+            }
+        }
     }
     
 
-    useScrollBottom(getMoreChirps)
+    useScrollBottom(() => {
+        setDoneFetching(false)
+        getMoreChirps()
+    })
 
     const [sortMethod, sortBubble] = useSort(doneFetching, getMoreChirps, () => {
         setAllFeed([])
@@ -257,11 +288,13 @@ function Home() {
             <ul className = "mt-6 w-[95%] mx-auto">
                 {feed}
                 
-                <div className = "text-center text-white text-lg mt-4">{msg}</div>
+                <div className = "text-center text-white text-lg my-4">{msg}</div>
 
                 {!doneFetching ?
                     <SpinningCircle /> 
                 : null}
+
+                
             </ul>
         </div>
     </Layout>)

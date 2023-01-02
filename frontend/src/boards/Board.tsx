@@ -21,6 +21,7 @@ function Board() {
     const [mainPost, setMainPost] = useState<Post | null>(null)
 
     const [comments, setComments] = useState<JSX.Element[]>([])
+    const [doneFetching, setDoneFetching] = useState(false);
     //local comments are sent to the server, but also store them here to avoid a 2nd fetch
     const [localComments, setLocalComments] = useState<JSX.Element[]>([])
 
@@ -43,8 +44,12 @@ function Board() {
 
     useEffect(() => {
         //get comments after the main post loads
-        if (mainPost && mainPost.commentCount > 0) {
-            loadMoreComments();
+        if (mainPost) {
+            if (mainPost.commentCount > 0)
+                loadMoreComments();
+            else
+                setDoneFetching(true)
+
         }
     }, [mainPost])
 
@@ -105,8 +110,10 @@ function Board() {
     }
 
     const loadMoreComments = async () => {
-        if (!mainPost || !hasNextPage)
-            return;
+        if (!mainPost || !hasNextPage) {
+            setDoneFetching(true)
+            return; 
+        }
 
     
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
@@ -170,6 +177,7 @@ function Board() {
                 />
             }))
         )
+        setDoneFetching(true);
     }
 
 
@@ -180,7 +188,10 @@ function Board() {
         setHasNextPage(true);
     })
 
-    useScrollBottom(loadMoreComments);
+    useScrollBottom(() => {
+        setDoneFetching(false)
+        loadMoreComments()
+    })
 
     return (
         <Layout>
@@ -246,10 +257,9 @@ function Board() {
                     {localComments.length > 0 ? localComments.concat(comments) : comments}
                 </div>                
 
-            </div> 
+            </div> : null}
 
-            :
-            <SpinningCircle />}
+            {!doneFetching ? <SpinningCircle /> : null}
         </Layout>
     )
 

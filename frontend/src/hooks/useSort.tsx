@@ -41,8 +41,8 @@ function useSort(doneFetching: boolean,
             break;
     }
 
-    let sortBubble = (
-        <div className = "fixed bottom-2 left-2 z-50">
+    const sortBubble = (
+        <div className = "fixed bottom-2 right-2 z-50">
             {showMenu ? 
             <div>
                 <div onClick = {() => {setSortMethod(SortMethod.New); setShowMenu(false)}} 

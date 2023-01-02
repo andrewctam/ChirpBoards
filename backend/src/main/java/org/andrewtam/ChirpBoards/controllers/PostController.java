@@ -123,21 +123,10 @@ public class PostController {
         }
 
         PageRequest paging = PageRequest.of(pageNum, size, sort);
-        switch(sortMethod) {
-            case "postDate":
-                sort = Sort.by("postDate", "id").descending();
-                break;
-            case "score":
-                sort = Sort.by("score", "postDate", "id").descending();
-                break;
-            default:
-                sort = Sort.by("postDate", "id").descending();
-                break;
-        }
         Page<Post> page;
 
         if (followingIds.size() == 0)
-            return new PaginatedPosts(null);
+            return null;
         else if (followingIds.size() == 1)
             page = postRepository.findBoardsByAuthor(followingIds.get(0), paging);        
         else

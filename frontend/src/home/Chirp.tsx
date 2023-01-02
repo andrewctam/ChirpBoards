@@ -20,8 +20,8 @@ function Chirp(props: ChirpProps) {
                 <div className="text-xs inline"> {` • ${props.postDate}`} </div>
             </div>
 
-            <a href={`/board/${props.id}`} className = "scroll">
-                <div className={`w-full max-h-96 overflow-y-auto whitespace-pre relative p-6 pt-3 border-black border border-t-0 rounded-bl-xl break-all text-white ${props.pinned ? "bg-rose-400/25" : "bg-black/10" }`}>
+            <a href={`/board/${props.id}`}>
+                <div className={`w-full max-h-96 overflow-y-hidden whitespace-pre relative p-6 pt-3 border-black border border-t-0 rounded-bl-xl break-all text-white ${props.pinned ? "bg-rose-400/25" : "bg-black/10" }`}>
                     {props.text}
                 </div>
             </a>

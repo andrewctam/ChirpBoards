@@ -186,7 +186,10 @@ function Search () {
         setDoneFetching(true)
     }
 
-    useScrollBottom(search)
+    useScrollBottom(() => {
+        setDoneFetching(false)
+        search()
+    })
 
     const [sortMethod, sortBubble] = useSort(doneFetching, search, () => {
         setChirpResults([]);

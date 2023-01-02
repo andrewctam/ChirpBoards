@@ -19,7 +19,7 @@ function Inbox () {
     const userInfo = useContext(UserContext);
     const [pageNum, setPageNum] = useState(0);
     const [hasNext, setHasNext] = useState(true);
-    const [doneLoading, setDoneLoading] = useState(false);
+    const [doneFetching, setDoneFetching] = useState(false);
     const [notificationsFeed, setNotificationsFeed] = useState<JSX.Element[]>([]);
 
     useEffect(() => {
@@ -82,7 +82,7 @@ function Inbox () {
             })
         ));
 
-        setDoneLoading(true)
+        setDoneFetching(true)
     }
 
     const clearNotifications = async () => {
@@ -107,7 +107,7 @@ function Inbox () {
 
     let center= null
 
-    if (!doneLoading)
+    if (!doneFetching)
         center = <SpinningCircle />
     else if (notificationsFeed.length == 0)
         center = <h1 className = "text-lg text-white text-center mt-2">No notifications</h1>
@@ -125,7 +125,10 @@ function Inbox () {
             </ul>
         </>
 
-    useScrollBottom(getNotifications);
+    useScrollBottom(() => {
+        setDoneFetching(false)
+        getNotifications()
+    })
 
     return (
         <Layout>

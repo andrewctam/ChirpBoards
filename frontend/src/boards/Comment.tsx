@@ -109,7 +109,7 @@ function Comment(props: CommentProps) {
                     <a className = "text-gray-200 ml-1" href = {`/board/${props.id}`}> ► </a>
                 </div>
                 
-                <div className = "whitespace-pre-line">
+                <div className = "whitespace-pre-line mt-3">
                     {props.text}
                 </div>
                 
