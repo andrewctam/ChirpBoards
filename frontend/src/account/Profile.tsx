@@ -1,11 +1,11 @@
-import { editableInputTypes } from "@testing-library/user-event/dist/utils";
+
 import { useState, useContext, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { PostPayload, UserContext, UserPayload } from "../App";
 import Chirp from "../home/Chirp";
 import PostComposer from "../home/PostComposer";
 import useScrollBottom from "../hooks/useScrollBottom";
-import useSort, { SortMethod } from "../hooks/useSort";
+import useSort from "../hooks/useSort";
 import Layout from "../Layout";
 import UserSearchResult from "../menus/UserSearchResult";
 import SpinningCircle from "../SpinningCircle";
@@ -90,6 +90,7 @@ function Profile () {
             setDoneFetching(false)
             getFollowerIng();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [viewSelected])
 
 
@@ -153,7 +154,7 @@ function Profile () {
                     userColor = {info.userColor}
                     isEdited = {info.pinnedPost.isEdited}
                     pinned = {true}
-                    isRechirp = {false}
+                    rechirper = {null}
             />)
            
         }
@@ -224,7 +225,7 @@ function Profile () {
                     userColor = {userColor}
                     isEdited = {post.isEdited}
                     pinned = {false}
-                    isRechirp = {username !== post.author.username}
+                    rechirper = {username !== post.author.username ? username : null}
                 />
         })))
     }
@@ -284,6 +285,7 @@ function Profile () {
 
         setDoneFetching(true)
         console.log(response)
+        
         const info = response.data.user[type];
         const fetchedUsers = info.users.map((user: UserPayload) => {
             return <UserSearchResult
@@ -403,18 +405,18 @@ function Profile () {
         setDoneFetching(false)
     })
 
-    useScrollBottom(() => {
+    useScrollBottom(async () => {
         setDoneFetching(false)
         
         switch(viewSelected) {
             case View.Followers:
             case View.Following:
-                getFollowerIng();
+                await getFollowerIng();
                 break;
                     
             case View.Chirps:
             default:
-                getChirps()
+                await  getChirps()
                 break;
         }
     })
@@ -424,16 +426,13 @@ function Profile () {
         return <Layout><SpinningCircle /></Layout>
     else if (doneFetching && username === null) { //first load done, but user not found
         return (<Layout>
-            <div className = "text-center bg-red-200 py-8 shadow-md">
-                <h1>{`User ${params.username} not Found`}</h1>
-            </div>
-        </Layout>)
+                    <div className = "text-center bg-red-200 py-8 shadow-md">
+                        <h1>{`User ${params.username} not Found`}</h1>
+                    </div>
+                </Layout>)
     } else
         return (<Layout>
-            <div className = "text-center p-2 shadow-md" style = {{
-                backgroundColor: userColor,
-                color: textColor()
-            }}>
+            <div className = "text-center p-2 shadow-md" style = {{ backgroundColor: userColor, color: textColor() }}>
                 {viewSelected === View.Chirps && !editingColor ? sortBubble : null}
 
                 <h1 className = "text-3xl break-words">{displayName}</h1>
@@ -482,7 +481,7 @@ function Profile () {
 
 
 
-        {editingColor ? 
+            {editingColor ? 
             <div className = "fixed bottom-2 right-2 w-fit text-center border border-black/30 bg-black/60 shadow-md rounded-xl p-4">
                 <p className = "text-white">Click below to select a new color</p>
                 <input type = "color" className = "bg-transparent block mx-auto w-16 h-16" value = {userColor} onChange = {(e) => setUserColor(e.target.value)} />

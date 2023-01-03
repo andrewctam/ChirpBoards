@@ -5,7 +5,7 @@ export enum SortMethod {
 }
 
 function useSort(doneFetching: boolean, 
-                fetchFunction: () => void, 
+                fetchFunction: () => void,
                 resetFunction: () => void): [sortMethod: string, sortBubble: JSX.Element] {
                     
     const [showMenu, setShowMenu] = useState(false);
@@ -16,15 +16,15 @@ function useSort(doneFetching: boolean,
 
     useEffect(() => {
         if (doneFetching) {
-            resetFunction()
-            setReload(true)
+            resetFunction() //reset the feeds
+            setReload(true) //trigger the below useEffect
         }
     }, [sortMethod])
 
     useEffect(() => {
         if (reload) {
             setReload(false)
-            fetchFunction();
+            fetchFunction(); //fetch new sorted feeds
         }
     }, [reload])
 

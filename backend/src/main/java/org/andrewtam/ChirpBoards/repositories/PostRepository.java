@@ -24,7 +24,7 @@ public interface PostRepository extends MongoRepository<Post, String> {
     Page<Post> findTrendingPosts(long timeframe, PageRequest pageable);
 
     @Query("{ author: ?0, isComment: false }")
-    Page<Post> findBoardsByAuthor(ObjectId authors, PageRequest pageable);
+    Page<Post> findBoardsByAuthor(ObjectId author, PageRequest pageable);
 
     @Query("{ author: { $in: ?0 } , isComment: false }")
     Page<Post> findBoardsByAuthors(List<ObjectId> authors, PageRequest pageable);

@@ -1,10 +1,8 @@
 
 import { useContext, useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { PostPayload, UserContext, UserPayload } from "../App";
 import useScrollBottom from "../hooks/useScrollBottom";
 import Layout from "../Layout";
-import UserSearchResult from "./UserSearchResult";
 import SpinningCircle from "../SpinningCircle";
 import Notification from "./Notification";
 
@@ -24,6 +22,7 @@ function Inbox () {
 
     useEffect(() => {
         getNotifications();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const getNotifications = async () => {
@@ -109,7 +108,7 @@ function Inbox () {
 
     if (!doneFetching)
         center = <SpinningCircle />
-    else if (notificationsFeed.length == 0)
+    else if (notificationsFeed.length === 0)
         center = <h1 className = "text-lg text-white text-center mt-2">No notifications</h1>
     else 
         center = <>
@@ -125,9 +124,9 @@ function Inbox () {
             </ul>
         </>
 
-    useScrollBottom(() => {
+    useScrollBottom(async () => {
         setDoneFetching(false)
-        getNotifications()
+        await getNotifications()
     })
 
     return (

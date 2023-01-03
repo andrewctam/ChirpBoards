@@ -24,6 +24,7 @@ const useOptions = (postId: string,
 
     useEffect(() => {
         setLocalIsRechirp(isRechirp ?? localIsRechirp)
+        // eslint-disable-next-line
     }, [isRechirp])
 
     useEffect(() => {

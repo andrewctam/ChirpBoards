@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from "react"
 import { UserContext, PostPayload } from "../App"
 import { Post } from "./Board"
 import ReplyBox from "./ReplyBox"
-import { SortMethod } from "../hooks/useSort"
 import Vote from "./Vote"
 import useOptions from "../hooks/useOptions"
 
@@ -28,6 +27,7 @@ function Comment(props: CommentProps) {
     useEffect(() => {
         if (props.autoLoadComments && props.commentCount > 0)
             getReplies();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const getReplies = async () => {

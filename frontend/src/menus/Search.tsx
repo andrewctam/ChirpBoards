@@ -7,7 +7,7 @@ import Chirp from "../home/Chirp";
 import FeedButton from "../home/FeedButton";
 import UserSearchResult from "./UserSearchResult";
 import SpinningCircle from "../SpinningCircle";
-import useSort, { SortMethod } from "../hooks/useSort";
+import useSort from "../hooks/useSort";
 
 export enum SearchFeed {
     Chirps,
@@ -47,6 +47,7 @@ function Search () {
                 setSearchParams({query: searchQuery, feed: "chirps"})
                 break;
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
 
@@ -56,22 +57,23 @@ function Search () {
     }
 
     useEffect(() => {
-        //if (feedSelected === SearchFeed.Chirps && chirpResults.length === 0 && chirpHasNextPage || 
-        //    feedSelected === SearchFeed.Users && userResults.length === 0 && userHasNextPage)
+        if ((feedSelected === SearchFeed.Chirps && chirpResults.length === 0 && chirpHasNextPage) ||
+            (feedSelected === SearchFeed.Users && userResults.length === 0 && userHasNextPage))
             search();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [feedSelected])
 
-    const search = () => {
+    const search = async () => {
         if (! (/[a-zA-Z0-9]/.test(searchQuery))) {
             return;
         }
 
         if (feedSelected === SearchFeed.Users) {
             setDoneFetching(false);
-            searchUsers();
+            await searchUsers();
         } else if (feedSelected === SearchFeed.Chirps) {
             setDoneFetching(false);
-            searchChirps();
+            await searchChirps();
         }
     }            
 
@@ -131,7 +133,7 @@ function Search () {
                     userColor={post.author.userColor}
                     isEdited = {post.isEdited}
                     pinned = {null}
-                    isRechirp = {false}
+                    rechirper = {null}
                 />
         })))
 
@@ -188,9 +190,9 @@ function Search () {
         setDoneFetching(true)
     }
 
-    useScrollBottom(() => {
+    useScrollBottom(async () => {
         setDoneFetching(false)
-        search()
+        await search()
     })
 
     const [sortMethod, sortBubble] = useSort(doneFetching, search, () => {

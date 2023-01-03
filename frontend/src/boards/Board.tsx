@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from "react"
-import { useNavigate, useParams, useSearchParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { PostChirp, PostPayload, UserContext } from "../App"
 import useOptions from "../hooks/useOptions"
 import useScrollBottom from "../hooks/useScrollBottom"
-import useSort, { SortMethod } from "../hooks/useSort"
+import useSort from "../hooks/useSort"
 import Layout from "../Layout"
 import SpinningCircle from "../SpinningCircle"
 import Comment from "./Comment"
@@ -33,8 +33,6 @@ function Board() {
     const params = useParams();
     const navigate = useNavigate();
     
-    const [showOptions, setShowOptions] = useState(false);
-
     const userInfo = useContext(UserContext);
     
 
@@ -43,6 +41,7 @@ function Board() {
         if (params && params.id) {
             fetchPost(params.id);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [] )
 
     useEffect(() => {
@@ -54,6 +53,7 @@ function Board() {
                 setDoneFetching(true)
 
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mainPost])
 
 
@@ -195,9 +195,9 @@ function Board() {
         setHasNextPage(true);
     })
 
-    useScrollBottom(() => {
+    useScrollBottom(async () => {
         setDoneFetching(false)
-        getComments()
+        await getComments()
     })
 
     const [dots, editor] = useOptions(
@@ -255,11 +255,11 @@ function Board() {
                             : null}     
                         </div>
 
-                        {editor 
-                        ? editor :
-                        <div className = "whitespace-pre">
+                        {editor ? editor :
+                        <div className = "whitespace-pre-line">
                             {mainPost.text}
                         </div>}
+
                         {dots}
 
                         <Vote postId = {mainPost.id} initialScore = {mainPost.score} initialVoteStatus = {mainPost.voteStatus}/>

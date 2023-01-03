@@ -175,7 +175,7 @@ function Home() {
                 userColor={post.author.userColor}
                 isEdited = {post.isEdited}
                 pinned = {null} //only shows on profile
-                isRechirp = {false} //only shows on profile
+                rechirper = {null} //only shows on profile
             />
         })
 
@@ -243,9 +243,9 @@ function Home() {
     }
     
 
-    useScrollBottom(() => {
+    useScrollBottom(async () => {
         setDoneFetching(false)
-        getChirps()
+        await getChirps()
     })
 
     const [sortMethod, sortBubble] = useSort(doneFetching, getChirps, () => {
