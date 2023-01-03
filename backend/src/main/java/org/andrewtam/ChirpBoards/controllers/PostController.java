@@ -347,6 +347,49 @@ public class PostController {
     }
 
     @MutationMapping
+    public BooleanResponse rechirp(@Argument String postId, @Argument String username, @Argument String sessionToken) {
+        username = username.toLowerCase();
+
+        if (postId == null || !ObjectId.isValid(postId) || username == "") {
+            return new BooleanResponse("Invalid inputs", null);
+        }
+
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return new BooleanResponse("User not found", null);
+        }
+
+        if (!user.checkUserSession(userRepository, sessionToken))
+            return new BooleanResponse("User not authenticated", null);
+
+        ObjectId id = new ObjectId(postId);
+
+        Post post = postRepository.findById(id);
+
+        if (post == null)
+            return new BooleanResponse("Post not found", null);
+
+        if (post.getAuthor().equals(user.getId()))
+            return new BooleanResponse("Can not rechirp own posts", null);
+
+            
+        if (user.getPosts().contains(id)) {
+            user.getPosts().remove(id);
+            user.setPostCount(user.getPostCount() - 1);
+        } else {
+            user.getPosts().add(id);
+            user.setPostCount(user.getPostCount() + 1);
+        }
+
+        userRepository.save(user);
+        
+        return new BooleanResponse("", true);
+    }
+
+
+
+
+    @MutationMapping
     public IntResponse upvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
         username = username.toLowerCase();
 

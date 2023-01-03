@@ -200,8 +200,13 @@ function Board() {
         getComments()
     })
 
-    const [dots, editor] = useOptions(true, mainPost ? mainPost.id : "", mainPost ? mainPost.text : "", null)
-
+    const [dots, editor] = useOptions(
+            mainPost ? mainPost.id : "",
+            mainPost ? mainPost.text : "", 
+            mainPost ? userInfo.state.username === mainPost.authorUsername : false,
+            null,
+            null)
+            
     return (
         <Layout>
             {mainPost ? 
@@ -239,10 +244,15 @@ function Board() {
                             </div>
 
                             {mainPost.isEdited ? 
-                            <div className = "text-xs inline italic">
-                                {` • edited`}
-                            </div>
-                            : null}
+                                <div className = "text-sm inline italics">
+                                    <span className = "text-white">
+                                        {` • `}
+                                    </span>
+                                    <span className = "text-yellow-300">
+                                        {`edited`}
+                                    </span>
+                                </div>
+                            : null}     
                         </div>
 
                         {editor 

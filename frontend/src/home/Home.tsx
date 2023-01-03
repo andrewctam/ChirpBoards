@@ -174,7 +174,8 @@ function Home() {
                 voteStatus={userInfo.state.username ? post.voteStatus : 0}
                 userColor={post.author.userColor}
                 isEdited = {post.isEdited}
-                pinned = {null}
+                pinned = {null} //only shows on profile
+                isRechirp = {false} //only shows on profile
             />
         })
 

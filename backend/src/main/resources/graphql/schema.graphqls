@@ -26,14 +26,26 @@ type Query {
 type Mutation {
     #No authentication required. Registers a user and returns a session token, or an error.
     register(username: String!, displayName: String!, password: String!): SigninRegisterResponse
+
     #No authentication required. Signs in and returns a session token, or an error.
     signin(username: String!, password: String!): SigninRegisterResponse
+
+    #Requires authentication. Clears the session token from the database. Returns true if successful, or null if unauthorized.
+    signout(username: String!, sessionToken: String!): BooleanResponse
+
+    #Requires authentication. Checks if session is still valid and requests notifications. Returns null if false, or the number of unread notifications if true.
+    verifySession(username: String!, sessionToken: String!): Int
+
 
     #Requires authentication. Creates and returns a post.
     createPost(text: String!, username: String!, sessionToken: String!): PostResponse
 
     #Requires authentication. Creates and returns a post (comment).
     comment(text: String!, parentPostId: String!, username: String!, sessionToken: String!): PostResponse
+
+    #Requires authentication. Rechirps (puts on profile) of a chirp or comment. Undo if already rechirped.
+    rechirp(postId: String!, username: String!, sessionToken: String!): BooleanResponse
+
     
     #Requires authentication. Adds or removes a user from the upvotes list of a post. Returns the ending upvote status as a boolean, or null if unauthorized.
     upvotePost(postId: String!, username: String!, sessionToken: String!): IntResponse
@@ -47,17 +59,9 @@ type Mutation {
     #Requires authentication. Edits a post
     editPost(newText: String!, postId: String!, username: String!, sessionToken: String!): BooleanResponse
 
+
     #Requires authentication. Pins or unpins a post
     pinPost(postId: String!, username: String!, sessionToken: String!): BooleanResponse
-
-    #Requires authentication. Clears the session token from the database. Returns true if successful, or null if unauthorized.
-    signout(username: String!, sessionToken: String!): BooleanResponse
-
-    #Requires authentication. Follows or unfollows a user. Returns the ending follow status as a boolean, or null if unauthorized.
-    toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): BooleanResponse
-
-    #Requires authentication. Checks if session is still valid and requests notifications. Returns null if false, or the number of unread notifications if true.
-    verifySession(username: String!, sessionToken: String!): Int
 
     #Requires authentication. Changes display name.
     changeDisplayName(newDisplayName: String!, username: String!, sessionToken: String!): BooleanResponse
@@ -70,6 +74,12 @@ type Mutation {
 
     #Requires authentication. Clears notifications
     clearNotifications(username: String!, sessionToken: String!): Boolean
+
+
+
+    #Requires authentication. Follows or unfollows a user. Returns the ending follow status as a boolean, or null if unauthorized.
+    toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): BooleanResponse
+
 
 }
 

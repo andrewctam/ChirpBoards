@@ -1,16 +1,19 @@
-import { PostChirp } from "../App"
+import { useContext } from "react"
+import { PostChirp, UserContext } from "../App"
 import Vote from "../boards/Vote"
 import useOptions from "../hooks/useOptions"
 
 
 interface ChirpProps extends PostChirp {
-    pinned?: boolean | null | undefined
+    pinned: boolean | null
+    isRechirp: boolean
     userColor: string
 }
 
 function Chirp(props: ChirpProps) {
-    const [dots, editor] = useOptions(true, props.id, props.text, props.pinned)
-    
+    const userInfo = useContext(UserContext);
+    const [dots, editor] = useOptions(props.id, props.text, userInfo.state.username === props.authorUsername, props.pinned, props.isRechirp)
+
     return (
     <li className={`w-full relative mb-8`}>
         <div className="block bg-black/10 text-white p-1 pr-6 border rounded-bl-xl rounded-tr-xl truncate border-black">
@@ -25,20 +28,35 @@ function Chirp(props: ChirpProps) {
             </div>
 
 
-
             {props.isEdited ? 
-                <div className = "text-xs inline italic">
-                    {` • edited `}
+                <div className = "text-xs inline italics">
+                    <span className = "text-white">
+                        {` • `}
+                    </span>
+                    <span className = "text-yellow-300">
+                        {`edited`}
+                    </span>
                 </div>
             : null}
 
             {props.pinned ? 
-                <div className = "text-xs inline">
+                <div className = "text-xs inline font-bold">
                     <span className = "text-white">
                         {` • `}
                     </span>
                     <span className = "text-rose-300">
                         {`pinned`}
+                    </span>
+                </div>
+            : null}
+
+            {props.isRechirp ? 
+                <div className = "text-xs inline font-bold">
+                    <span className = "text-white">
+                        {` • `}
+                    </span>
+                    <span className = "text-sky-300">
+                        {`rechirp`}
                     </span>
                 </div>
             : null}

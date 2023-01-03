@@ -95,7 +95,7 @@ function Comment(props: CommentProps) {
         )
     }
 
-    const [dots, editor] = useOptions(true, props.id, props.text, null)
+    const [dots, editor] = useOptions(props.id, props.text, userInfo.state.username === props.authorUsername, null, null)
 
     return (
         <div className = "w-[95%] ml-[5%]">
@@ -112,9 +112,14 @@ function Comment(props: CommentProps) {
                     </div>
 
                     {props.isEdited ? 
-                    <div className = "text-xs inline italic">
-                        {` • edited `}
-                    </div>
+                        <div className = "text-xs inline italics">
+                            <span className = "text-white">
+                                {` • `}
+                            </span>
+                            <span className = "text-yellow-300">
+                                {`edited`}
+                            </span>
+                        </div>
                     : null}
 
                     <a className = "text-gray-200 ml-1" href = {`/board/${props.id}`}> ► </a>

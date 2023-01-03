@@ -120,7 +120,7 @@ function Search () {
 
         setChirpResults(chirpResults.concat(info.posts.map((post: PostPayload) => {
             return <Chirp
-                    authorUsername={post.author.username ?? ""}
+                    authorUsername={post.author.username}
                     authorDisplayName={post.author.displayName}
                     id = {post.id}
                     postDate = {post.postDate}
@@ -131,6 +131,7 @@ function Search () {
                     userColor={post.author.userColor}
                     isEdited = {post.isEdited}
                     pinned = {null}
+                    isRechirp = {false}
                 />
         })))
 

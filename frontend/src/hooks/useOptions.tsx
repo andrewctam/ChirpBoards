@@ -1,18 +1,30 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { UserContext } from "../App";
 
-const useOptions = (isOwner: boolean, postId: string, oldText: string, isPinned: boolean | null | undefined): [dots: JSX.Element, editor: JSX.Element | null] => {
+const useOptions = (postId: string,
+                    oldText: string,
+                    isOwner: boolean, 
+                    isPinned: boolean | null,
+                    isRechirp: boolean | null): [dots: JSX.Element, editor: JSX.Element | null] => {
+
     const [showOptions, setShowOptions] = useState(false)
     const [showEditor, setShowEditor] = useState(false)
     const [showVerifyDelete, setShowVerifyDelete] = useState(false)
     const [editedText, setEditedText] = useState("");
+    const [localIsRechirp, setLocalIsRechirp] = useState(false);
 
     const userInfo = useContext(UserContext);
     const dotsRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate()
     
     useEffect(() => {
         setEditedText(oldText)
     }, [oldText])
+
+    useEffect(() => {
+        setLocalIsRechirp(isRechirp ?? localIsRechirp)
+    }, [isRechirp])
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -27,6 +39,39 @@ const useOptions = (isOwner: boolean, postId: string, oldText: string, isPinned:
         };
         // eslint-disable-next-line
     }, [dotsRef]);
+
+
+    const rechirp = async (e: React.MouseEvent<HTMLElement>) => {
+        e.preventDefault();
+
+        if (!userInfo.state.username) {
+            navigate("/signin")
+        }
+
+        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const query =
+            `mutation {
+                rechirp(postId: "${postId}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
+                    msg
+                    endRes
+                }
+            }`
+
+        const response = await fetch(url ?? '', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ query })
+        }).then(res => res.json())
+
+        console.log(response)
+
+        if (!response.data.rechirp) {
+            alert("Error!")
+        } else
+            setLocalIsRechirp(!localIsRechirp)
+    }
 
     const editPost = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
@@ -62,6 +107,7 @@ const useOptions = (isOwner: boolean, postId: string, oldText: string, isPinned:
         window.location.reload();
 
     }
+
 
     const pinPost = async (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
@@ -171,7 +217,7 @@ const useOptions = (isOwner: boolean, postId: string, oldText: string, isPinned:
                                 : <li onClick = {() => setShowVerifyDelete(!showVerifyDelete)} className = "mt-1">Delete</li>}
                             </> 
                             :
-                            <li className = "mt-1">Mention</li>
+                            <li onClick = {rechirp}>{localIsRechirp ? "Undo Rechirp" : "Rechirp"}</li>
                         }
                     </ul> : null}
                 </div>

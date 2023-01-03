@@ -153,6 +153,7 @@ function Profile () {
                     userColor = {info.userColor}
                     isEdited = {info.pinnedPost.isEdited}
                     pinned = {true}
+                    isRechirp = {false}
             />)
            
         }
@@ -177,6 +178,10 @@ function Profile () {
             user(username: "${username}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
                 posts(pageNum: ${chirpsPageNum}, size:10, sortMethod: "${sortMethod}") {
                     posts {
+                        author {
+                            username
+                            displayName
+                        }
                         id
                         text
                         isEdited
@@ -208,8 +213,8 @@ function Profile () {
                 return null;
 
             return <Chirp
-                    authorUsername={username ?? ""}
-                    authorDisplayName={displayName}
+                    authorUsername={post.author.username}
+                    authorDisplayName={post.author.displayName}
                     id = {post.id}
                     postDate = {post.postDate}
                     text = {post.text}
@@ -219,6 +224,7 @@ function Profile () {
                     userColor = {userColor}
                     isEdited = {post.isEdited}
                     pinned = {false}
+                    isRechirp = {username !== post.author.username}
                 />
         })))
     }
