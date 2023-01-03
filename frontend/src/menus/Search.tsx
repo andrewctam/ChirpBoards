@@ -90,6 +90,7 @@ function Search () {
                 posts {
                     id
                     text
+                    isEdited
                     author {
                         username
                         displayName
@@ -129,7 +130,7 @@ function Search () {
                     voteStatus = {userInfo.state.username ? post.voteStatus : 0}
                     pinned = {false}
                     userColor={post.author.userColor}
-
+                    isEdited = {post.isEdited}
                 />
         })))
 

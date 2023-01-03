@@ -27,6 +27,8 @@ public class Post implements Comparable<Post> {
     private int commentCount;
     private LinkedList<ObjectId> comments; //references to posts
 
+    private boolean isEdited;
+
 
     public Post(String text, ObjectId author) {
         this.text = text;
@@ -45,6 +47,8 @@ public class Post implements Comparable<Post> {
 
         this.commentCount = 0;
         this.comments = new LinkedList<ObjectId>();
+
+        this.isEdited = false;
     }
 
     public void declareComment(Post parentPost) {
@@ -66,6 +70,7 @@ public class Post implements Comparable<Post> {
     public ObjectId getRootPost() { return rootPost; }
 
     public String getText() { return text; }
+    public String setText(String text) { return this.text = text; }
 
     public int getScore() { return score; }
 
@@ -86,6 +91,9 @@ public class Post implements Comparable<Post> {
     public LinkedList<ObjectId> getDownvotes() { return downvotes; }
 
     public LinkedList<ObjectId> getComments() { return comments; }
+
+    public boolean isEdited() { return isEdited; }
+    public boolean setEdited(boolean isEdited) { return this.isEdited = isEdited; }
 
     public int getCommentCount() { return commentCount; }
     public int adjustCommentCount(int change) {

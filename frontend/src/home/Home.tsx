@@ -128,6 +128,7 @@ function Home() {
                 posts {
                     id
                     text
+                    isEdited
                     author {
                         username
                         displayName
@@ -172,19 +173,20 @@ function Home() {
                 score={post.score}
                 voteStatus={userInfo.state.username ? post.voteStatus : 0}
                 userColor={post.author.userColor}
+                isEdited = {post.isEdited}
             />
         })
 
         if (feedSelected === Feed.All) {
-            setAllFeed([...allFeed, ...newChirps]);
+            setAllFeed(allFeed.concat(newChirps));
             setAllPageNum(allPageNum + 1);
             setAllHasNextPage(info.hasNext);
         } else if (feedSelected === Feed.Trending) {
-            setTrendingFeed([...trendingFeed, ...newChirps]);
+            setTrendingFeed(trendingFeed.concat(newChirps));
             setTrendingPageNum(trendingPageNum + 1);
             setTrendingHasNextPage(info.hasNext);
         } else if (feedSelected === Feed.Following && followingFeed !== null) {
-            setFollowingFeed([...followingFeed, ...newChirps]);
+            setFollowingFeed(followingFeed.concat(newChirps));
             setFollowingPageNum(followingPageNum + 1);
             setFollowingHasNextPage(info.hasNext);
         }

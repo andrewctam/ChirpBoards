@@ -22,6 +22,7 @@ export interface PostChirp {
     authorDisplayName: string
     score: number
     voteStatus: number | null
+    isEdited: boolean
 }
 
 type UserAction =  
@@ -59,6 +60,7 @@ export interface PostPayload {
     voteStatus: number
     commentCount: number
     comments: PostPayload[]
+    isEdited: boolean
 }
 
 

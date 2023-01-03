@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.andrewtam.ChirpBoards.GraphQLModels.BooleanResponse;
 import org.andrewtam.ChirpBoards.GraphQLModels.IntResponse;
 import org.andrewtam.ChirpBoards.GraphQLModels.PaginatedPosts;
 import org.andrewtam.ChirpBoards.GraphQLModels.PostResponse;
@@ -434,7 +435,7 @@ public class PostController {
 
             downvotes.add(user.getId());
             post.adjustScore(-1);
-            response =  new IntResponse("-1", post.getScore()); //downvoted
+            response = new IntResponse("-1", post.getScore()); //downvoted
         }
 
         
@@ -442,5 +443,82 @@ public class PostController {
         postRepository.save(post);
 
         return response;
+    }
+
+
+    @MutationMapping
+    public BooleanResponse editPost(@Argument String newText, @Argument String postId, @Argument String username, @Argument String sessionToken) {
+        username = username.toLowerCase();
+        if (newText == "" || username == "" || postId == null || !ObjectId.isValid(postId)) {
+            return new BooleanResponse("Invalid inputs", false);
+        }
+
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return new BooleanResponse("User not found", false);
+        }
+
+        if (!user.checkUserSession(userRepository, sessionToken))
+            return new BooleanResponse("User not authenticated", false);
+
+        Post post = postRepository.findById(new ObjectId(postId));
+        if (post == null) {
+            return new BooleanResponse("Post not found", false);
+        }
+
+        if (!post.getAuthor().equals(user.getId())) {
+            return new BooleanResponse("User not the author", false);
+        }
+
+        if (!post.isComment() && newText.length() > 500)
+            return new BooleanResponse("Post too long", false);
+
+
+        post.setText(newText);
+        post.setEdited(true);
+        postRepository.save(post);
+
+        return new BooleanResponse("", true);
+    }
+
+    @MutationMapping
+    public BooleanResponse deletePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
+        username = username.toLowerCase();
+        if (username == "" || postId == null || !ObjectId.isValid(postId)) {
+            return new BooleanResponse("Invalid inputs", false);
+        }
+
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return new BooleanResponse("User not found", false);
+        }
+
+        if (!user.checkUserSession(userRepository, sessionToken))
+            return new BooleanResponse("User not authenticated", false);
+
+        Post post = postRepository.findById(new ObjectId(postId));
+        if (post == null) {
+            return new BooleanResponse("Post not found", false);
+        }
+
+        if (!post.getAuthor().equals(user.getId())) {
+            return new BooleanResponse("User is not the author", false);
+        }
+
+
+        if (post.isComment()) {
+            Post parentPost = postRepository.findById(post.getParentPost());
+            parentPost.adjustCommentCount(-1);
+            parentPost.getComments().remove(post.getId());
+            postRepository.save(parentPost);
+        } else {
+            User author = userRepository.findById(post.getAuthor());
+            author.setPostCount(author.getPostCount() - 1);
+            author.getPosts().remove(post.getId());
+            userRepository.save(author);
+        }
+
+        postRepository.delete(post);
+        return new BooleanResponse("", true);
     }
 }

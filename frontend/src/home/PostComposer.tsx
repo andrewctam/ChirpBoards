@@ -74,7 +74,8 @@ function PostComposer() {
         </p>
 
         <button className="bg-sky-300 text-xs sm:text-sm text-black border border-black rounded-xl shadow-md absolute -bottom-3 right-4 px-4 py-2"
-            onClick={createChirp}>
+            onClick={createChirp}
+            disabled = {composedChirp.length === 0}>
             Post
         </button>
     </form>)

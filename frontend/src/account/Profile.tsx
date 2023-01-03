@@ -75,9 +75,9 @@ function Profile () {
 
 
     useEffect(() => {
-        if (username && postCount > 0 && !editingColor) {
+        if (username && postCount > 0) {
             setDoneFetching(false)
-            getChirps(); // separate getting chirps to speed up initial load, or after done editing color
+            getChirps(); // separate getting chirps to speed up initial load
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [username, editingColor])
@@ -148,6 +148,7 @@ function Profile () {
                     posts {
                         id
                         text
+                        isEdited
                         postDate(timezone: ${timezone})
                         score
                         ${userInfo.state.username ? "voteStatus" : ""}
@@ -182,6 +183,7 @@ function Profile () {
                     score = {post.score}
                     voteStatus = {userInfo.state.username ? post.voteStatus : 0}
                     userColor = {userColor}
+                    isEdited = {post.isEdited}
                 />
         })))
     }
@@ -256,11 +258,11 @@ function Profile () {
         if (type === "followers") {
             setFollowersHasNextPage(info.hasNext)
             setFollowersPageNum(followersPageNum + 1)
-            setFollowers([...followers, fetchedUsers])
+            setFollowers(followers.concat(fetchedUsers))
         } else if (type  === "following") {
             setFollowingHasNextPage(info.hasNext)
             setFollowingPageNum(followingPageNum + 1)
-            setFollowing([...following, fetchedUsers])
+            setFollowing(following.concat(fetchedUsers))
         }
         
     }
@@ -326,30 +328,33 @@ function Profile () {
 
 
     let feed = null;
-    let msg = ""
     switch (viewSelected) {
         case View.Chirps:
-            if (chirps.length === 0)
-                feed = <div className = "text-center text-white">No chirps...</div>
+            if (chirpsPageNum > 0 && chirps.length === 0)
+                feed = <div className = "text-center text-white text-lg">{`${username} has not made any chirps`}</div>
             else
                 feed = chirps
-            msg = `Chirps`
             break;
 
         case View.Followers:
-            feed = followers
-            msg = `Followers`
+            if (followersPageNum > 0 && followers.length === 0)
+                feed = <div className = "text-center text-white text-lg">{`${username} has no followers. Why not be the first one?`}</div>
+            else
+                feed = followers
             break;
 
-           
+        
         case View.Following:
-            feed = following
-            msg = `Following`
+            if (followingPageNum > 0 && following.length === 0)
+                feed = <div className = "text-center text-white text-lg">{`${username} is not following any users`}</div>
+            else
+                feed = following
             break;
 
         default:
-             break;
+            break;
     }
+
     const [sortMethod, sortBubble] = useSort(doneFetching, getChirps, () => {
         setChirps([])
         setChirpsPageNum(0)
@@ -396,15 +401,15 @@ function Profile () {
                 <div className = "mx-auto flex justify-center mt-3 w-fit">
 
                     <div className = "text-sm w-fit my-auto border border-white/10 text-black bg-slate-200/50 px-4 py-1 rounded-xl">
-                        <div className="w-fit mx-auto cursor-pointer select-none" onClick = {() => setViewSelected(View.Chirps)}>
-                            {`${postCount} chirps`}
+                        <div className={`w-fit mx-auto cursor-pointer select-none ${viewSelected === View.Chirps ?  "text-[#b22222]": "text-black"}`} onClick = {() => setViewSelected(View.Chirps)}>
+                            {`${postCount} chirp${postCount !== 1 ? "s" : ""}` }
                         </div>
 
-                        <div className="w-fit mx-auto cursor-pointer select-none" onClick = {() => setViewSelected(View.Followers)}>
+                        <div className={`w-fit mx-auto cursor-pointer select-none ${viewSelected === View.Followers ?  "text-[#b22222]": "text-black"}`} onClick = {() => setViewSelected(View.Followers)}>
                         {`${followerCount} follower${followerCount !== 1 ? "s" : ""}` }
                         </div>
 
-                        <div className="w-fit mx-auto cursor-pointer select-none" onClick = {() => setViewSelected(View.Following)}>
+                        <div className={`w-fit mx-auto cursor-pointer select-none ${viewSelected === View.Following ?  "text-[#b22222]": "text-black"}`} onClick = {() => setViewSelected(View.Following)}>
                             {`${followingCount} following`}
                         </div>
 
@@ -426,7 +431,6 @@ function Profile () {
                 </div> 
             : <div />}
 
-            <h1 className = "text-2xl text-white text-center py-4 bg-black/20 shadow-md">{msg}</h1>
             <div className = "mt-4 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
                 <ul className = "mt-4">
                     {feed}
@@ -439,14 +443,14 @@ function Profile () {
 
         {editingColor ? 
             <div className = "fixed bottom-2 right-2 w-fit text-center border border-black/30 bg-black/60 shadow-md rounded-xl p-4">
-                    <p className = "text-white">Click below to select a new color</p>
-                    <input type = "color" className = "bg-transparent block mx-auto w-16 h-16" value = {userColor} onChange = {(e) => setUserColor(e.target.value)} />
-                    <button onClick = {() => {navigate("/settings")}} className = "text-sm text-white px-4 py-2 mx-auto my-2 mr-2 bg-rose-700/30 rounded-xl border border-black/50">
-                        Cancel
-                    </button>
-                    <button onClick = {updateUserColor} className = "text-sm text-white px-4 py-2 mx-auto my-2 bg-white/10 rounded-xl border border-black/50">
-                        Save Changes
-                    </button>
+                <p className = "text-white">Click below to select a new color</p>
+                <input type = "color" className = "bg-transparent block mx-auto w-16 h-16" value = {userColor} onChange = {(e) => setUserColor(e.target.value)} />
+                <button onClick = {() => {navigate("/settings")}} className = "text-sm text-white px-4 py-2 mx-auto my-2 mr-2 bg-rose-700/30 rounded-xl border border-black/50">
+                    Cancel
+                </button>
+                <button onClick = {updateUserColor} className = "text-sm text-white px-4 py-2 mx-auto my-2 bg-white/10 rounded-xl border border-black/50">
+                    Save Changes
+                </button>
 
             </div> : null}
 

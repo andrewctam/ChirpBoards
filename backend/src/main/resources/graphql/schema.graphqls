@@ -41,6 +41,12 @@ type Mutation {
     #Requires authentication. Adds or removes a user from the downvotes list of a post. Returns the ending downvote status as a boolean, or null if unauthorized.
     downvotePost(postId: String!, username: String!, sessionToken: String!): IntResponse
 
+    #Requires authentication. Deletes a post
+    deletePost(postId: String!, username: String!, sessionToken: String!): BooleanResponse
+
+    #Requires authentication. Edits a post
+    editPost(newText: String!, postId: String!, username: String!, sessionToken: String!): BooleanResponse
+
     #Requires authentication. Clears the session token from the database. Returns true if successful, or null if unauthorized.
     signout(username: String!, sessionToken: String!): BooleanResponse
 
@@ -90,6 +96,7 @@ type Post {
     rootPost: Post
     postDate(timezone: Int!): String!
     score: Int!
+    isEdited: Boolean!
 
     #vote status (0, 1, or -1) of the relatedUsername argument passed in query.
     voteStatus: Int

@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { PostChirp, PostPayload, UserContext } from "../App"
+import useOptions from "../hooks/useOptions"
 import useScrollBottom from "../hooks/useScrollBottom"
 import useSort, { SortMethod } from "../hooks/useSort"
 import Layout from "../Layout"
@@ -32,6 +33,8 @@ function Board() {
     const params = useParams();
     const navigate = useNavigate();
     
+    const [showOptions, setShowOptions] = useState(false);
+
     const userInfo = useContext(UserContext);
     
 
@@ -75,6 +78,7 @@ function Board() {
                     id
                 }
                 isComment
+                isEdited
                 postDate(timezone: ${timezone})
                 score
                 commentCount
@@ -104,7 +108,8 @@ function Board() {
             score: info.score,
             parentPost: info.parentPost ? info.parentPost.id : null,
             rootPost: info.rootPost ? info.rootPost.id : null,
-            userColor: info.author.userColor
+            userColor: info.author.userColor,
+            isEdited: info.isEdited
         })
 
     }
@@ -128,6 +133,7 @@ function Board() {
                         commentCount
                         postDate(timezone: ${timezone})
                         score
+                        isEdited
                         ${userInfo.state.username ? "voteStatus" : ""}
                         author {
                             username
@@ -169,6 +175,7 @@ function Board() {
                     authorDisplayName = {comment.author.displayName}
                     commentCount = {comment.commentCount}
                     score = {comment.score}
+                    isEdited = {comment.isEdited}
                     voteStatus = {userInfo.state.username ? comment.voteStatus : 0}
                     local = {false}
                     autoLoadComments = {mainPost.commentCount < 10}
@@ -192,6 +199,8 @@ function Board() {
         setDoneFetching(false)
         getComments()
     })
+
+    const [dots, editor] = useOptions(true, mainPost ? mainPost.id : "", mainPost ? mainPost.text : "")
 
     return (
         <Layout>
@@ -228,13 +237,24 @@ function Board() {
                             <div className = "text-sm inline">
                                 {` • ${mainPost.postDate}`}
                             </div>
+
+                            {mainPost.isEdited ? 
+                            <div className = "text-xs inline italic">
+                                {` • edited`}
+                            </div>
+                            : null}
                         </div>
 
+                        {editor 
+                        ? editor :
                         <div className = "whitespace-pre">
                             {mainPost.text}
-                        </div>
+                        </div>}
+                        {dots}
+
                         <Vote postId = {mainPost.id} initialScore = {mainPost.score} initialVoteStatus = {mainPost.voteStatus}/>
 
+                        
                         {replying ?
                         <ReplyBox 
                             postId = {mainPost.id} 

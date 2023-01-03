@@ -25,6 +25,10 @@ function ReplyBox(props: ReplyBoxProps) {
             return;
         }
 
+        if (comment.length === 0) {
+            return;
+        }
+
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
 
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
@@ -73,6 +77,7 @@ function ReplyBox(props: ReplyBoxProps) {
                 autoLoadComments = {false}
                 userColor = {info.author.userColor}
                 sortMethod = {props.sortMethod}
+                isEdited = {false}
             />
         
         )
@@ -96,12 +101,11 @@ function ReplyBox(props: ReplyBoxProps) {
                 </button>
 
                 <button className = "bg-[#b9cfe2] text-xs sm:text-sm text-black border border-black/20 rounded-xl shadow-md -bottom-3 right-4 px-2 py-1 ml-2" 
-                    onClick = {addComment}>
+                    onClick = {addComment}
+                    disabled = {comment.length === 0}>
                     Reply
                 </button>
             </div>
-
-            
         </form>
     )
 }

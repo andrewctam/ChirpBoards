@@ -4,6 +4,7 @@ import { Post } from "./Board"
 import ReplyBox from "./ReplyBox"
 import { SortMethod } from "../hooks/useSort"
 import Vote from "./Vote"
+import useOptions from "../hooks/useOptions"
 
 interface CommentProps extends Post {
     local: boolean
@@ -45,6 +46,7 @@ function Comment(props: CommentProps) {
                         commentCount
                         postDate(timezone: ${timezone})
                         score
+                        isEdited
                         ${userInfo.state.username ? "voteStatus" : ""}
                         author {
                             username
@@ -87,11 +89,13 @@ function Comment(props: CommentProps) {
                     autoLoadComments = {false}
                     userColor = {comment.author.userColor}
                     sortMethod = {props.sortMethod}
+                    isEdited = {info.isEdited}
                 />
             }))
         )
     }
 
+    const [dots, editor] = useOptions(true, props.id, props.text)
 
     return (
         <div className = "w-[95%] ml-[5%]">
@@ -106,12 +110,21 @@ function Comment(props: CommentProps) {
                     <div className = "text-xs inline">
                         {` • ${props.postDate}`}
                     </div>
+
+                    {props.isEdited ? 
+                    <div className = "text-xs inline italic">
+                        {` • edited `}
+                    </div>
+                    : null}
+
                     <a className = "text-gray-200 ml-1" href = {`/board/${props.id}`}> ► </a>
                 </div>
                 
+                { editor ? editor :
                 <div className = "whitespace-pre-line mt-3">
                     {props.text}
                 </div>
+                }
                 
 
                 {replying ? 
@@ -142,6 +155,7 @@ function Comment(props: CommentProps) {
                     </button> : null}
                 </div>
 
+                {dots}
                 <Vote postId = {props.id} initialScore = {props.score} initialVoteStatus = {props.voteStatus}/>
             </div>
 

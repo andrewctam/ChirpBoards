@@ -12,8 +12,9 @@ import org.springframework.data.mongodb.repository.Query;
 
 public interface PostRepository extends MongoRepository<Post, String> {
     Post findById(ObjectId id);
+    Boolean existsById(ObjectId id);
 
-    @Query("{ text: { $regex: ?0, $options: 'i' } }")
+    @Query("{ text: { $regex: ?0, $options: 'i' }, isComment: false }")
     Page<Post> findWithRegex(String regex, PageRequest pageable);
 
     @Query("{ isComment: false }")
