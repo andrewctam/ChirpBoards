@@ -218,7 +218,7 @@ const useOptions = (postId: string,
                                 : <li onClick = {() => setShowVerifyDelete(!showVerifyDelete)} className = "mt-1">Delete</li>}
                             </> 
                             :
-                            <li onClick = {rechirp}>{isOwner && localIsRechirp ? "Undo Rechirp" : "Rechirp"}</li>
+                            <li onClick = {rechirp}>{localIsRechirp ? "Undo Rechirp" : "Rechirp"}</li>
                         }
                     </ul> : null}
                 </div>

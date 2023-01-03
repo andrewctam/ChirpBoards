@@ -6,6 +6,7 @@ import useOptions from "../hooks/useOptions"
 
 interface ChirpProps extends PostChirp {
     pinned: boolean | null
+    showRechirped: boolean //only show on profile
     rechirper: string | null
     userColor: string
 }
@@ -17,15 +18,19 @@ function Chirp(props: ChirpProps) {
     return (
     <li className={`w-full relative mb-8`}>
         <div className="block bg-black/10 text-white p-1 pr-6 border rounded-bl-xl rounded-tr-xl truncate border-black">
-             {editor ? editor :
+
+             {editor ? 
+                <div className = "m-8">
+                {editor}
+                </div> :
              <a href={`/board/${props.id}`}>
                 <div className={`w-full max-h-96 overflow-y-hidden whitespace-pre-line p-6 ${props.rechirper ? "pt-14" : "pt-10"} text-sm break-all text-white`}>
                     {props.text}
                 </div>
             </a>}
 
-            <div className = "absolute top-2 left-2 w-[90%] overflow-x-hidden">
-                {props.rechirper ? 
+            <div className = "absolute top-2 left-2 max-w-[90%] overflow-x-hidden">
+                {props.showRechirped && props.rechirper  ? 
                 <div className = "text-xs ml-2 " style = {{color: props.userColor}} >
                     <a href={`/profile/${props.rechirper}`}>
                         {props.rechirper}

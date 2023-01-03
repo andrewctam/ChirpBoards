@@ -58,6 +58,7 @@ export interface PostPayload {
     postDate: string
     score: number
     voteStatus: number
+    rechirpStatus: boolean
     commentCount: number
     comments: PostPayload[]
     isEdited: boolean

@@ -19,10 +19,10 @@ function FormInput(props: FormInputProps) {
             type = {props.password ? "password" : "text"}
             placeholder = {props.placeholder} 
 
-            className = "text-white bg-transparent rounded-t rounded-none block p-1 w-full border-b border-b-white focus:outline-none"/>
+            className = "text-white bg-transparent rounded-none block p-1 w-full border-b border-b-white focus:outline-none"/>
 
 
-        <label className = {`text-xs ml-1 ${props.valid ? "text-white/90" : "text-rose-100/60"}`}>{props.name}</label>
+        <label className = {`text-xs ml-1 ${props.valid ? "text-white/90" : "text-sky-100/60"}`}>{props.name}</label>
 
     </div>
     )

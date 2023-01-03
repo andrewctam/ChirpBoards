@@ -114,6 +114,7 @@ function Profile () {
                     postDate(timezone: ${timezone})
                     score
                     ${userInfo.state.username ? "voteStatus" : ""}
+                    ${userInfo.state.username ? "rechirpStatus" : ""}
                 }
                 ${userInfo.state.username ? `isFollowing(followeeUsername: "${userInfo.state.username}")` : ""}
             }
@@ -151,10 +152,11 @@ function Profile () {
                     key = {info.pinnedPost.id}
                     score = {info.pinnedPost.score}
                     voteStatus = {userInfo.state.username ? info.pinnedPost.voteStatus : 0}
+                    rechirper = {userInfo.state.username && info.pinnedPost.rechirpStatus ? userInfo.state.username : null}
+                    showRechirped = {false} //pinned post can not be a rechirp
                     userColor = {info.userColor}
                     isEdited = {info.pinnedPost.isEdited}
                     pinned = {true}
-                    rechirper = {null}
             />)
            
         }
@@ -189,6 +191,7 @@ function Profile () {
                         postDate(timezone: ${timezone})
                         score
                         ${userInfo.state.username ? "voteStatus" : ""}
+                        ${userInfo.state.username ? "rechirpStatus" : ""}
                     }
                     hasNext
                 }
@@ -222,10 +225,11 @@ function Profile () {
                     key = {post.id}
                     score = {post.score}
                     voteStatus = {userInfo.state.username ? post.voteStatus : 0}
+                    rechirper = {userInfo.state.username && post.rechirpStatus ? userInfo.state.username : null}
+                    showRechirped = {true}
                     userColor = {userColor}
                     isEdited = {post.isEdited}
                     pinned = {false}
-                    rechirper = {username !== post.author.username ? displayName : null}
                 />
         })))
     }

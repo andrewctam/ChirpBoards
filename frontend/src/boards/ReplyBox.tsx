@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PostPayload, UserContext } from "../App";
 import Comment from "./Comment";
@@ -17,15 +17,18 @@ function ReplyBox(props: ReplyBoxProps) {
     const navigate = useNavigate();
     const userInfo = useContext(UserContext);
 
-    const addComment = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault()
-
+    useEffect(() => {
+        //if user is not logged in when opened, redirect to signin page
         if (!userInfo.state.username) {
             navigate(`/signin?return=${window.location.pathname}`)
             return;
         }
+    }, [])
 
-        if (comment.length === 0) {
+    const addComment = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault()
+
+        if (comment.length === 0 || !userInfo.state.username) {
             return;
         }
 

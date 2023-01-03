@@ -137,6 +137,7 @@ function Home() {
                     postDate(timezone: ${timezone})
                     score
                     ${userInfo.state.username ? "voteStatus" : ""}
+                    ${userInfo.state.username ? "rechirpStatus" : ""}
                 }
                 hasNext
             }
@@ -172,11 +173,13 @@ function Home() {
                 text={post.text}
                 key={post.id}
                 score={post.score}
-                voteStatus={userInfo.state.username ? post.voteStatus : 0}
+                voteStatus = {userInfo.state.username ? post.voteStatus : 0}
+                rechirper = {userInfo.state.username && post.rechirpStatus ? userInfo.state.username : null}
+                showRechirped = {false}
                 userColor={post.author.userColor}
                 isEdited = {post.isEdited}
                 pinned = {null} //only shows on profile
-                rechirper = {null} //only shows on profile
+
             />
         })
 

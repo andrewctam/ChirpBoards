@@ -64,31 +64,34 @@ function Search () {
     }, [feedSelected])
 
     const search = async () => {
-        if (! (/[a-zA-Z0-9]/.test(searchQuery))) {
+        let regex = searchQuery;
+        if (regex === "*") {
+            regex = "[a-zA-Z0-9]"
+        } else if (! (/^[a-zA-Z0-9]*$/.test(regex))) {
+            setDoneFetching(true)
             return;
         }
 
         if (feedSelected === SearchFeed.Users) {
             setDoneFetching(false);
-            await searchUsers();
+            await searchUsers(regex);
         } else if (feedSelected === SearchFeed.Chirps) {
             setDoneFetching(false);
-            await searchChirps();
+            await searchChirps(regex);
         }
     }            
 
-    const searchChirps = async () => {
-        if (searchQuery === "" || !chirpHasNextPage) {
+    const searchChirps = async (regex: string) => {
+        if (regex === "" || !chirpHasNextPage) {
             setDoneFetching(true)
             return;
         }
-
 
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
-            searchPosts(query: "${searchQuery}", pageNum: ${chirpPageNum}, size: 10, sortMethod: "${sortMethod}", sortDirection: "${sortDirection}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
+            searchPosts(query: "${regex}", pageNum: ${chirpPageNum}, size: 10, sortMethod: "${sortMethod}", sortDirection: "${sortDirection}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
                 posts {
                     id
                     text
@@ -100,6 +103,7 @@ function Search () {
                     }
                     postDate(timezone: ${timezone})
                     score
+                    ${userInfo.state.username ? "rechirpStatus" : ""}
                     ${userInfo.state.username ? "voteStatus" : ""}
                 }
                 hasNext
@@ -130,18 +134,19 @@ function Search () {
                     key = {post.id}
                     score = {post.score}
                     voteStatus = {userInfo.state.username ? post.voteStatus : 0}
+                    rechirper = {userInfo.state.username && post.rechirpStatus ? userInfo.state.username : null}
+                    showRechirped = {false}
                     userColor={post.author.userColor}
                     isEdited = {post.isEdited}
                     pinned = {null}
-                    rechirper = {null}
                 />
         })))
 
         setDoneFetching(true);
     }
 
-    const searchUsers = async () => {
-        if (searchQuery === "" || !userHasNextPage) {
+    const searchUsers = async (regex: string) => {
+        if (regex === "" || !userHasNextPage) {
             setDoneFetching(true)
             return;
         }
@@ -149,7 +154,7 @@ function Search () {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
-            searchUsers(query: "${searchQuery}", pageNum: ${userPageNum}, size: 10) {
+            searchUsers(query: "${regex}", pageNum: ${userPageNum}, size: 10) {
                 users {
                     username
                     displayName
@@ -191,7 +196,6 @@ function Search () {
     }
 
     useScrollBottom(async () => {
-        setDoneFetching(false)
         await search()
     })
 

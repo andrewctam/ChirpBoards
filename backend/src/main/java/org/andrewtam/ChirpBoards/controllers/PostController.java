@@ -2,6 +2,7 @@ package org.andrewtam.ChirpBoards.controllers;
 
 import java.text.DateFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -287,6 +288,30 @@ public class PostController {
         }
 
         return statuses;
+    }
+
+    @BatchMapping
+    public Map<Post, Boolean> rechirpStatus(List<Post> posts, @ContextValue String relatedUsername) {
+        if (relatedUsername == null)
+            return null;
+
+    
+        User user = userRepository.findByUsername(relatedUsername);
+        if (user == null) {
+            return null;
+        }
+
+        Set<ObjectId> userPosts = new HashSet<ObjectId>(user.getPosts());
+
+        Set<Post> rechirps = posts.stream()
+                    .filter(post -> userPosts.contains(post.getId()) && !post.getAuthor().equals(user.getId()))
+                    .collect(Collectors.toSet());
+
+        return posts.stream().collect(Collectors.toMap(    
+            post -> post,
+            post -> rechirps.contains(post)
+        ));
+                
     }
 
     @SchemaMapping

@@ -47,42 +47,41 @@ function useSort(doneFetching: boolean,
 
     const sortBubble = (
         <div className = "fixed bottom-2 right-2 z-50">
-            {showMenu ? 
-            <div>
-                <div onClick = {() => {setSortMethod(SortMethod.New); setShowMenu(false)}} 
-                    className = {`ml-auto mr-0 w-fit bg-black px-4 py-2 text-xs rounded-full my-2 cursor-pointer select-none ${sortMethod === SortMethod.New ? "text-rose-200" : "text-white"}`}>
-                    New
-                </div>
-                <div onClick = {() => {setSortMethod(SortMethod.Score); setShowMenu(false)}} 
-                    className = {`ml-auto mr-0 w-fit bg-black px-4 py-2 text-xs rounded-full my-2 cursor-pointer select-none ${sortMethod === SortMethod.Score ? "text-rose-200" : "text-white"}`}>
-                    Score
-                </div>
-            </div>
-            : null}
+            <div className = "flex items-end">
+                <div>
+                    {showMenu ? 
+                    <div>
+                        <div onClick = {() => {setSortMethod(SortMethod.New); setShowMenu(false)}} 
+                            className = {`ml-auto mr-0 w-fit bg-black px-4 py-2 text-xs rounded-full my-2 cursor-pointer select-none ${sortMethod === SortMethod.New ? "text-rose-200" : "text-white"}`}>
+                            New
+                        </div>
+                        <div onClick = {() => {setSortMethod(SortMethod.Score); setShowMenu(false)}} 
+                            className = {`ml-auto mr-0 w-fit bg-black px-4 py-2 text-xs rounded-full my-2 cursor-pointer select-none ${sortMethod === SortMethod.Score ? "text-rose-200" : "text-white"}`}>
+                            Score
+                        </div>
+                    </div>
+                    : null}
 
-            
-            <div>
-                <div className = "mx-1 bg-black text-white text-xs p-2 px-3 select-none cursor-pointer rounded-full inline" onClick = {() => {
+                    <div className = "px-4 py-2 rounded-full bg-black text-white text-xs select-none cursor-pointer" onClick = {() => setShowMenu(!showMenu)}>
+                        Sorting by: 
+
+                        <div className = "text-rose-200 inline ml-1">
+                            {name}
+                        </div>
+                    </div>
+                </div>
+
+                <div className = "mx-1 bg-black text-white text-xs p-2 px-3 select-none cursor-pointer rounded-full w-fit h-fit" 
+                    onClick = {() => {
                         if (sortDirection === SortDirection.Ascending)
                             setSortDirection(SortDirection.Descending);
                         else
                             setSortDirection(SortDirection.Ascending);
                     }}>
-                        {sortDirection === SortDirection.Ascending ? "▲" : "▼"}
+
+                    {sortDirection === SortDirection.Ascending ? "▲" : "▼"}
                 </div>
-
-                <div className = "px-4 py-2 rounded-full bg-black text-white text-xs select-none cursor-pointer inline" onClick = {() => setShowMenu(!showMenu)}>
-                    Sorting by: 
-
-                    <div className = "text-rose-200 inline ml-1">
-                        {name}
-                    </div>
-                </div>
-
-                
             </div>
-
-
         </div>
     )
 

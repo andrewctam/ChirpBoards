@@ -107,7 +107,7 @@ const NavBar = () => {
                     <input
                         value = {searchInput}
                         onChange = {(e) => setSearchInput(e.target.value)}
-                        className = "p-2 mx-auto rounded-xl bg-white/20 text-white border border-black w-64" 
+                        className = "p-2 mx-auto rounded-xl bg-white/10 text-white border border-black w-64" 
                         placeholder="Search for a user or chirp" />
                 </form>
 
@@ -175,7 +175,7 @@ const NavBar = () => {
                 <input 
                     value = {searchInput}
                     onChange = {(e) => setSearchInput(e.target.value)}
-                    className = "p-2 w-full mx-auto rounded-xl bg-white/20 text-white border border-black mr-4" 
+                    className = "p-2 w-full mx-auto rounded-xl bg-black/10 text-white border border-black mr-4" 
                     placeholder="Search for a user or chirp" /> 
                 
                 <p className = "text-gray-50 mt-2 cursor-pointer text-center mr-4 my-auto" onClick={search}>
