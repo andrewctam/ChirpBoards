@@ -9,6 +9,7 @@ interface CommentProps extends Post {
     local: boolean
     autoLoadComments: boolean
     sortMethod: string
+    sortDirection: string
 }
 
 function Comment(props: CommentProps) {
@@ -39,7 +40,7 @@ function Comment(props: CommentProps) {
         const query =
         `query {    
             post(id: "${props.id}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
-                comments(pageNum:${pageNum}, size:3, sortMethod: "${props.sortMethod}") {
+                comments(pageNum:${pageNum}, size:3, sortMethod: "${props.sortMethod}", sortDirection: "${props.sortDirection}" ) {
                     posts {
                         id
                         text
@@ -89,6 +90,7 @@ function Comment(props: CommentProps) {
                     autoLoadComments = {false}
                     userColor = {comment.author.userColor}
                     sortMethod = {props.sortMethod}
+                    sortDirection = {props.sortDirection}
                     isEdited = {info.isEdited}
                 />
             }))
@@ -140,6 +142,7 @@ function Comment(props: CommentProps) {
                         setLocalReplies([reply, ...localReplies]); 
                     }}
                     sortMethod = {props.sortMethod}
+                    sortDirection = {props.sortDirection}
                 /> : null}
 
                 <div className = "absolute -bottom-3 right-12">

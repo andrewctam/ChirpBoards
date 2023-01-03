@@ -4,13 +4,18 @@ export enum SortMethod {
     New, Score
 }
 
+export enum SortDirection {
+    Ascending, Descending
+}
+
 function useSort(doneFetching: boolean, 
                 fetchFunction: () => void,
-                resetFunction: () => void): [sortMethod: string, sortBubble: JSX.Element] {
+                resetFunction: () => void): [sortMethod: string, sortDirection: string, sortBubble: JSX.Element] {
                     
     const [showMenu, setShowMenu] = useState(false);
     
     const [sortMethod, setSortMethod] = useState<SortMethod>(SortMethod.New);
+    const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.Descending);
     const [reload, setReload] = useState(false);
 
 
@@ -19,7 +24,7 @@ function useSort(doneFetching: boolean,
             resetFunction() //reset the feeds
             setReload(true) //trigger the below useEffect
         }
-    }, [sortMethod])
+    }, [sortMethod, sortDirection])
 
     useEffect(() => {
         if (reload) {
@@ -56,23 +61,42 @@ function useSort(doneFetching: boolean,
             : null}
 
             
-            <div className = "px-4 py-2 rounded-full bg-black text-white text-xs select-none cursor-pointer" onClick = {() => setShowMenu(!showMenu)}>
-                Sorting by: 
-                <div className = "text-rose-200 inline mx-1">
-                    {name}
+            <div>
+                <div className = "mx-1 bg-black text-white text-xs p-2 px-3 select-none cursor-pointer rounded-full inline" onClick = {() => {
+                        if (sortDirection === SortDirection.Ascending)
+                            setSortDirection(SortDirection.Descending);
+                        else
+                            setSortDirection(SortDirection.Ascending);
+                    }}>
+                        {sortDirection === SortDirection.Ascending ? "▲" : "▼"}
                 </div>
-                ▲
+
+                <div className = "px-4 py-2 rounded-full bg-black text-white text-xs select-none cursor-pointer inline" onClick = {() => setShowMenu(!showMenu)}>
+                    Sorting by: 
+
+                    <div className = "text-rose-200 inline ml-1">
+                        {name}
+                    </div>
+                </div>
+
+                
             </div>
+
+
         </div>
     )
 
-    let sort = "postDate";
-    if (sortMethod === SortMethod.New)
-        sort = "postDate";
-    else if (sortMethod === SortMethod.Score)
-        sort = "score";
+    let methodName = "postDate";
+    
+    if (sortMethod === SortMethod.Score)
+        methodName = "score";
 
-    return [sort, sortBubble]
+    let directionName = "descending";
+    if (sortDirection === SortDirection.Ascending)
+        directionName = "ascending"
+
+
+    return [methodName, directionName, sortBubble]
 }
 
 

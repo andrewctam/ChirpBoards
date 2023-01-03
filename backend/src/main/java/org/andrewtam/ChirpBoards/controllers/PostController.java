@@ -59,22 +59,31 @@ public class PostController {
     }
 
     @QueryMapping
-    public PaginatedPosts allPosts(@Argument int pageNum, @Argument int size, @Argument String sortMethod, @Argument String relatedUsername, GraphQLContext context) {        
+    public PaginatedPosts allPosts(@Argument int pageNum, @Argument int size, @Argument String sortMethod, @Argument String sortDirection, @Argument String relatedUsername, GraphQLContext context) {        
         if (relatedUsername != null)
             context.put("relatedUsername", relatedUsername.toLowerCase());
 
         Sort sort;
         switch(sortMethod) {
-            case "postDate":
-                sort = Sort.by("postDate", "id").descending();
-                break;
             case "score":
-                sort = Sort.by("score", "postDate", "id").descending();
+                sort = Sort.by("score", "postDate", "id");
                 break;
+            case "postDate":
             default:
-                sort = Sort.by("postDate", "id").descending();
+                sort = Sort.by("postDate", "id");
                 break;
         }
+
+        switch(sortDirection) {
+            case "ascending":
+                sort = sort.ascending();
+                break;
+            case "descending":
+            default:
+                sort = sort.descending();
+                break;
+        }
+
         
 
         PageRequest paging = PageRequest.of(pageNum, size, sort);
@@ -98,7 +107,7 @@ public class PostController {
     }
 
     @QueryMapping
-    public PaginatedPosts followingPosts(@Argument int pageNum, @Argument int size, @Argument String username, @Argument String sortMethod, GraphQLContext context) {
+    public PaginatedPosts followingPosts(@Argument int pageNum, @Argument int size, @Argument String username, @Argument String sortMethod, @Argument String sortDirection, GraphQLContext context) {
         if (username == null)
             return null;
 
@@ -112,14 +121,22 @@ public class PostController {
 
         Sort sort;
         switch(sortMethod) {
-            case "postDate":
-                sort = Sort.by("postDate", "id").descending();
-                break;
             case "score":
-                sort = Sort.by("score", "postDate", "id").descending();
+                sort = Sort.by("score", "postDate", "id");
                 break;
+            case "postDate":
             default:
-                sort = Sort.by("postDate", "id").descending();
+                sort = Sort.by("postDate", "id");
+                break;
+        }
+
+        switch(sortDirection) {
+            case "ascending":
+                sort = sort.ascending();
+                break;
+            case "descending":
+            default:
+                sort = sort.descending();
                 break;
         }
 
@@ -137,25 +154,33 @@ public class PostController {
     }
 
     @QueryMapping
-    public PaginatedPosts searchPosts(@Argument String query, @Argument int pageNum, @Argument int size, @Argument String sortMethod, @Argument String relatedUsername, GraphQLContext context) {
+    public PaginatedPosts searchPosts(@Argument String query, @Argument int pageNum, @Argument int size, @Argument String sortMethod, @Argument String sortDirection, @Argument String relatedUsername, GraphQLContext context) {
         if (query == null || query == "")
             return new PaginatedPosts(null);
 
         if (relatedUsername != null)
             context.put("relatedUsername", relatedUsername.toLowerCase());
 
-        Sort sort;
-        switch(sortMethod) {
-            case "postDate":
-                sort = Sort.by("postDate", "id").descending();
-                break;
-            case "score":
-                sort = Sort.by("score", "postDate", "id").descending();
-                break;
-            default:
-                sort = Sort.by("postDate", "id").descending();
-                break;
-        }
+            Sort sort;
+            switch(sortMethod) {
+                case "score":
+                    sort = Sort.by("score", "postDate", "id");
+                    break;
+                case "postDate":
+                default:
+                    sort = Sort.by("postDate", "id");
+                    break;
+            }
+    
+            switch(sortDirection) {
+                case "ascending":
+                    sort = sort.ascending();
+                    break;
+                case "descending":
+                default:
+                    sort = sort.descending();
+                    break;
+            }
 
         PageRequest paging = PageRequest.of(pageNum, size, sort);
 
@@ -265,17 +290,25 @@ public class PostController {
     }
 
     @SchemaMapping
-    public PaginatedPosts comments(Post post, @Argument int pageNum, @Argument int size, @Argument String sortMethod) {
+    public PaginatedPosts comments(Post post, @Argument int pageNum, @Argument int size, @Argument String sortMethod, @Argument String sortDirection) {
         Sort sort;
         switch(sortMethod) {
-            case "postDate":
-                sort = Sort.by("postDate", "id").descending();
-                break;
             case "score":
-                sort = Sort.by("score", "postDate", "id").descending();
+                sort = Sort.by("score", "postDate", "id");
                 break;
+            case "postDate":
             default:
-                sort = Sort.by("postDate", "id").descending();
+                sort = Sort.by("postDate", "id");
+                break;
+        }
+
+        switch(sortDirection) {
+            case "ascending":
+                sort = sort.ascending();
+                break;
+            case "descending":
+            default:
+                sort = sort.descending();
                 break;
         }
 

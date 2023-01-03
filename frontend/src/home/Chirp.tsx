@@ -1,5 +1,4 @@
 import { useContext } from "react"
-import { useNavigate } from "react-router-dom"
 import { PostChirp, UserContext } from "../App"
 import Vote from "../boards/Vote"
 import useOptions from "../hooks/useOptions"
@@ -16,33 +15,32 @@ function Chirp(props: ChirpProps) {
     const [dots, editor] = useOptions(props.id, props.text, userInfo.state.username === props.authorUsername, props.pinned, props.rechirper !== null)
 
     return (
-        <li className={`w-full relative mb-8`}>
+    <li className={`w-full relative mb-8`}>
         <div className="block bg-black/10 text-white p-1 pr-6 border rounded-bl-xl rounded-tr-xl truncate border-black">
              {editor ? editor :
              <a href={`/board/${props.id}`}>
-                <div className={`w-full max-h-96 overflow-y-hidden whitespace-pre-line p-6 pt-10 text-sm break-all text-white`}>
+                <div className={`w-full max-h-96 overflow-y-hidden whitespace-pre-line p-6 ${props.rechirper ? "pt-14" : "pt-10"} text-sm break-all text-white`}>
                     {props.text}
                 </div>
             </a>}
 
-            <div className = "absolute top-2 left-2">
+            <div className = "absolute top-2 left-2 w-[90%] overflow-x-hidden">
                 {props.rechirper ? 
-                    <div className = "text-xs" style = {{color: props.userColor}} >
-                        <a href={`/profile/${props.rechirper}`}>
-                            {props.rechirper}
-                        </a>
+                <div className = "text-xs ml-2 " style = {{color: props.userColor}} >
+                    <a href={`/profile/${props.rechirper}`}>
+                        {props.rechirper}
+                    </a>
 
-                        <span className = "text-sky-300">
-                            {` rechirped`}
-                        </span>
-                    </div>
-                : null}
+                    <span className = "text-sky-300">
+                        {` rechirped`}
+                    </span>
+                </div> : null}
 
                 <a href={`/profile/${props.authorUsername}`} className="text-xs ml-2 inline" style = {{color: props.userColor}}>
                     {props.authorDisplayName}
                 </a>
                 <a href={`/profile/${props.authorUsername}`} className="text-xs m-0 inline h-fit"> 
-                    {` • @${props.authorUsername}`} 
+                    {` • @${props.authorUsername}`}
                 </a>
                 <div className="text-xs inline"> 
                     {` • ${props.postDate}`} 

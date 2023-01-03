@@ -177,7 +177,7 @@ function Profile () {
         const query =
         `query {    
             user(username: "${username}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
-                posts(pageNum: ${chirpsPageNum}, size:10, sortMethod: "${sortMethod}") {
+                posts(pageNum: ${chirpsPageNum}, size:10, sortMethod: "${sortMethod}", sortDirection: "${sortDirection}") {
                     posts {
                         author {
                             username
@@ -225,7 +225,7 @@ function Profile () {
                     userColor = {userColor}
                     isEdited = {post.isEdited}
                     pinned = {false}
-                    rechirper = {username !== post.author.username ? username : null}
+                    rechirper = {username !== post.author.username ? displayName : null}
                 />
         })))
     }
@@ -398,7 +398,7 @@ function Profile () {
             break;
     }
 
-    const [sortMethod, sortBubble] = useSort(doneFetching, getChirps, () => {
+    const [sortMethod, sortDirection, sortBubble] = useSort(doneFetching, getChirps, () => {
         setChirps([])
         setChirpsPageNum(0)
         setChirpsHasNextPage(true);

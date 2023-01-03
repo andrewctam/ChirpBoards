@@ -126,7 +126,7 @@ function Board() {
         const query =
         `query {    
             post(id: "${mainPost.id}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
-                comments(pageNum:${pageNum}, size:10, sortMethod: "${sortMethod}") {
+                comments(pageNum:${pageNum}, size:10, sortMethod: "${sortMethod}", sortDirection: "${sortDirection}") {
                     posts {
                         id
                         text
@@ -181,6 +181,7 @@ function Board() {
                     autoLoadComments = {mainPost.commentCount < 10}
                     userColor = {comment.author.userColor}
                     sortMethod = {sortMethod}
+                    sortDirection = {sortDirection}
                 />
             }))
         )
@@ -188,7 +189,7 @@ function Board() {
     }
 
 
-    const [sortMethod, sortBubble] = useSort(mainPost !== null, getComments, () => {
+    const [sortMethod, sortDirection, sortBubble] = useSort(mainPost !== null, getComments, () => {
         setComments([])
         setLocalComments([])
         setPageNum(0)
@@ -270,6 +271,7 @@ function Board() {
                             postId = {mainPost.id} 
                             close = {() => {setReplying(false)}} 
                             sortMethod = {sortMethod}
+                            sortDirection = {sortDirection}
                             addReply = {(reply) => {
                                 setLocalComments([reply, ...localComments])
                             }}/> 

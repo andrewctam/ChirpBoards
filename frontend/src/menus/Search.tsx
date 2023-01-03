@@ -88,7 +88,7 @@ function Search () {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
         `query {    
-            searchPosts(query: "${searchQuery}", pageNum: ${chirpPageNum}, size: 10, sortMethod: "${sortMethod}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
+            searchPosts(query: "${searchQuery}", pageNum: ${chirpPageNum}, size: 10, sortMethod: "${sortMethod}", sortDirection: "${sortDirection}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
                 posts {
                     id
                     text
@@ -195,7 +195,7 @@ function Search () {
         await search()
     })
 
-    const [sortMethod, sortBubble] = useSort(doneFetching, search, () => {
+    const [sortMethod, sortDirection, sortBubble] = useSort(doneFetching, search, () => {
         setChirpResults([]);
         setChirpPageNum(0);
         setChirpHasNextPage(true);

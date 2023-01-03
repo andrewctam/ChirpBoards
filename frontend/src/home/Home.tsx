@@ -117,7 +117,7 @@ function Home() {
         
         let sortField = "";
         if (feedSelected === Feed.All || feedSelected === Feed.Following)
-            sortField = `, sortMethod: "${sortMethod}"`;
+            sortField = `, sortMethod: "${sortMethod}", sortDirection: "${sortDirection}"`;
 
         
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
@@ -141,6 +141,7 @@ function Home() {
                 hasNext
             }
         }`
+        console.log(query)
 
         const response = await fetch(url ?? '', {
             method: "POST",
@@ -248,7 +249,7 @@ function Home() {
         await getChirps()
     })
 
-    const [sortMethod, sortBubble] = useSort(doneFetching, getChirps, () => {
+    const [sortMethod, sortDirection, sortBubble] = useSort(doneFetching, getChirps, () => {
         setAllFeed([])
         setFollowingFeed([])
 

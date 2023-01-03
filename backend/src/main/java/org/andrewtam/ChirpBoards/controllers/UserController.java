@@ -88,20 +88,27 @@ public class UserController {
         
 
     @SchemaMapping
-    public PaginatedPosts posts(User user, @Argument int pageNum, @Argument int size, @Argument String sortMethod) {
+    public PaginatedPosts posts(User user, @Argument int pageNum, @Argument int size, @Argument String sortMethod, @Argument String sortDirection) {
         Sort sort;
         switch(sortMethod) {
-            case "postDate":
-                sort = Sort.by("postDate", "id").descending();
-                break;
             case "score":
-                sort = Sort.by("score", "postDate", "id").descending();
+                sort = Sort.by("score", "postDate", "id");
                 break;
+            case "postDate":
             default:
-                sort = Sort.by("postDate", "id").descending();
+                sort = Sort.by("postDate", "id");
                 break;
         }
-        
+
+        switch(sortDirection) {
+            case "ascending":
+                sort = sort.ascending();
+                break;
+            case "descending":
+            default:
+                sort = sort.descending();
+                break;
+        }
 
         PageRequest paging = PageRequest.of(pageNum, size, sort);
 

@@ -5,19 +5,19 @@ type Query {
     post(id: String!, relatedUsername: String = null): Post
     
     #No authentication required. Retrieves any posts. Include relatedUsername to get information for certain queries.
-    allPosts(pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate", relatedUsername: String = null): PaginatedPosts
+    allPosts(pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate", sortDirection: String = "descending", relatedUsername: String = null): PaginatedPosts
 
     #No authentication required. Retrieves trending posts, sorted by score in the last 24 hours. Include relatedUsername to get information for certain queries.
     trendingPosts(pageNum: Int = 0, size: Int = 10, relatedUsername: String = null): PaginatedPosts
     
     #No authentication required. Retrieves the most recent posts from a user's following list. username is also relatedUsername.
-    followingPosts(pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate", username: String!): PaginatedPosts
+    followingPosts(pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate", sortDirection: String = "descending", username: String!): PaginatedPosts
 
     #No authentication required. Retrieves posts from a user. Include relatedUsername to get information for certain queries.
     searchUsers(query: String!, pageNum: Int = 0, size: Int = 10, relatedUsername: String = null): PaginatedUsers
 
     #No authentication required. Retrieves posts from a user. Include relatedUsername to get information for certain queries.
-    searchPosts(query: String!, pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate", relatedUsername: String = null): PaginatedPosts
+    searchPosts(query: String!, pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate", sortDirection: String = "descending", relatedUsername: String = null): PaginatedPosts
 
     #Authentication required. Retrieves notifications for a user.
     notifications(pageNum: Int = 0, size: Int = 10, username: String!, sessionToken: String!, relatedUsername: String = null): PaginatedNotifications
@@ -95,7 +95,7 @@ type User {
     isFollowing(followeeUsername: String!): Boolean
     followers(pageNum: Int = 0, size: Int = 10): PaginatedUsers
     following(pageNum: Int = 0, size: Int = 10): PaginatedUsers
-    posts(pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate"): PaginatedPosts
+    posts(pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate", sortDirection: String = "descending"): PaginatedPosts
     postCount: Int!
 }
 
@@ -114,7 +114,7 @@ type Post {
     #vote status (0, 1, or -1) of the relatedUsername argument passed in query.
     voteStatus: Int
     commentCount: Int!
-    comments(pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate"): PaginatedPosts
+    comments(pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate", sortDirection: String = "descending"): PaginatedPosts
 }
 
 type SigninRegisterResponse {

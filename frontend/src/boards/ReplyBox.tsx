@@ -2,13 +2,13 @@ import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PostPayload, UserContext } from "../App";
 import Comment from "./Comment";
-import { SortMethod } from "../hooks/useSort";
 
 interface ReplyBoxProps {
     close: () => void
     postId: string
     addReply: (reply: JSX.Element) => void
     sortMethod: string
+    sortDirection: string
 }
 
 function ReplyBox(props: ReplyBoxProps) {
@@ -77,6 +77,7 @@ function ReplyBox(props: ReplyBoxProps) {
                 autoLoadComments = {false}
                 userColor = {info.author.userColor}
                 sortMethod = {props.sortMethod}
+                sortDirection = {props.sortDirection}
                 isEdited = {false}
             />
         

@@ -97,22 +97,22 @@ const NavBar = () => {
     }
 
     return (<>
-        <div className = 'w-full sticky top-0 z-50 bg-stone-800 shadow-lg p-4 text-sky-200 flex justify-between items-center'>
-            <h1 className = "font-semibold text-2xl inline">
+        <header className = 'w-full sticky top-0 z-50 bg-stone-800 shadow-lg p-4 text-sky-200 flex justify-between items-center'>
+            <h1 className = "font-semibold text-xl sm:text-2xl inline my-auto">
                 <a href = "/">Chirp Boards</a>
             </h1>
 
-            <div className = "">
-                <form onSubmit = {search} className = "hidden sm:inline-block  mr-4">
+            <div>
+                <form onSubmit = {search} className = "hidden sm:inline-block mr-4">
                     <input
                         value = {searchInput}
                         onChange = {(e) => setSearchInput(e.target.value)}
-                        className = "p-2 mx-auto rounded-xl bg-white/20 text-white border border-black w-80" 
+                        className = "p-2 mx-auto rounded-xl bg-white/20 text-white border border-black w-64" 
                         placeholder="Search for a user or chirp" />
                 </form>
 
                 {windowWidth < 640 ?
-                <p className = "text-white cursor-pointer text-center inline mr-6" 
+                <p className = "text-white cursor-pointer text-center inline mr-3" 
                     onClick={() =>  {
                         setSearchInput("");
                         setShowMobileSearch(!showMobileSearch);
@@ -121,56 +121,54 @@ const NavBar = () => {
                     {showMobileSearch ? "Close" : "Search"}
                 </p> : null}
 
+                { !userInfo.state.username ? 
+                <>
+                    <a className = "text-sky-100" href = "/signin">Sign In</a>
+                    <a className = "ml-3 text-sky-300" href = "/register">Register</a>
+                </>
+                :
+                <div className = "inline-block">
+                    <div onClick = {() => setShowDropdown(!showDropdown)} className = "cursor-pointer relative select-none inline-block ">
+                        {`@${userInfo.state.username} ▼`}
 
-                { userInfo.state.username ? 
-                    <div className = "inline-block">
-                        <div onClick = {() => setShowDropdown(!showDropdown)} className = "cursor-pointer relative select-none inline-block ">
-                            {`@${userInfo.state.username} ▼`}
-
-                            { unreadNotifs > 0 && window.location.pathname !== "/inbox" ?
-                                <div className = "absolute bg-rose-400 top-0 -right-2 p-1  rounded-full" />
-                            : null  }
-                        </div>
-                        
-
-                        {showDropdown ?
-                            <div className = "relative">
-                                <div className = "absolute -right-1 top-4 px-8 py-2 w-fit z-20 bg-sky-200 lg:bg-sky-200/80 border border-black lg:border-black/10 rounded-b-xl rounded-tl-xl text-center">
-                                    <p className = "text-black cursor-pointer text-center"><a href={`/profile/${[userInfo.state.username]}`}>
-                                        Profile
-                                    </a></p>
-
-                                    <p className = "my-2 text-black cursor-pointer text-center whitespace-nowrap"><a href="/inbox">
-                                        Inbox
-                                         
-                                        {unreadNotifs > 0 && window.location.pathname !== "/inbox" ? 
-                                        <span className = "text-red-900">
-                                            {` (${unreadNotifs > 99 ? "99+" : unreadNotifs})`}
-                                        </span>
-
-                                        : null}
-                                    </a></p>
-
-                                    <p className="my-2 text-black cursor-pointer text-center"><a href={`/settings`}>
-                                        Settings
-                                    </a></p>
-                                    
-                                    <p className = "text-black cursor-pointer w-fit whitespace-nowrap text-center" onClick = {signOut}>
-                                        Sign Out
-                                    </p>
-                                </div> 
-                            </div>
-                        : null}
+                        { unreadNotifs > 0 && window.location.pathname !== "/inbox" ?
+                            <div className = "absolute bg-rose-400 top-0 -right-2 p-1  rounded-full" />
+                        : null  }
                     </div>
-                    :
-                    <>
-                        <a className = "text-sky-100" href = "/signin">Sign In</a>
-                        <a className = "ml-6 text-sky-300" href = "/register">Register</a>
-                    </>
+                    
 
-                }
+                    {showDropdown ?
+                        <div className = "relative">
+                            <div className = "absolute -right-1 top-4 px-8 py-2 w-fit z-20 bg-sky-200 lg:bg-sky-200/80 border border-black lg:border-black/10 rounded-b-xl rounded-tl-xl text-center">
+                                <p className = "text-black cursor-pointer text-center"><a href={`/profile/${[userInfo.state.username]}`}>
+                                    Profile
+                                </a></p>
+
+                                <p className = "my-2 text-black cursor-pointer text-center whitespace-nowrap"><a href="/inbox">
+                                    Inbox
+                                        
+                                    {unreadNotifs > 0 && window.location.pathname !== "/inbox" ? 
+                                    <span className = "text-red-900">
+                                        {` (${unreadNotifs > 99 ? "99+" : unreadNotifs})`}
+                                    </span>
+
+                                    : null}
+                                </a></p>
+
+                                <p className="my-2 text-black cursor-pointer text-center"><a href={`/settings`}>
+                                    Settings
+                                </a></p>
+                                
+                                <p className = "text-black cursor-pointer w-fit whitespace-nowrap text-center" onClick = {signOut}>
+                                    Sign Out
+                                </p>
+                            </div> 
+                        </div>
+                    : null}
+                </div>}
+
             </div>
-        </div>
+        </header>
 
         {showMobileSearch && windowWidth < 640 ?
             <form onSubmit = {search} className = 'w-full bg-stone-800 shadow-lg p-4 text-white flex justify-between items-center'>
