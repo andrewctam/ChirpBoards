@@ -95,7 +95,7 @@ function Comment(props: CommentProps) {
         )
     }
 
-    const [dots, editor] = useOptions(true, props.id, props.text)
+    const [dots, editor] = useOptions(true, props.id, props.text, null)
 
     return (
         <div className = "w-[95%] ml-[5%]">

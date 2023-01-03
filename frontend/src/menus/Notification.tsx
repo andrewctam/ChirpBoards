@@ -14,7 +14,7 @@ function Notification(props: NotificationProps)  {
     let msg = ""
     switch (props.type) {
         case "reply":
-            msg = `${props.pingerDisplayName} (@${props.pingerUsername}) replied to your post`
+            msg = `${props.pingerDisplayName} (@${props.pingerUsername}) replied to your chirp`
             break;
         default:
             break;

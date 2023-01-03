@@ -200,7 +200,7 @@ function Board() {
         getComments()
     })
 
-    const [dots, editor] = useOptions(true, mainPost ? mainPost.id : "", mainPost ? mainPost.text : "")
+    const [dots, editor] = useOptions(true, mainPost ? mainPost.id : "", mainPost ? mainPost.text : "", null)
 
     return (
         <Layout>

@@ -174,6 +174,7 @@ function Home() {
                 voteStatus={userInfo.state.username ? post.voteStatus : 0}
                 userColor={post.author.userColor}
                 isEdited = {post.isEdited}
+                pinned = {null}
             />
         })
 

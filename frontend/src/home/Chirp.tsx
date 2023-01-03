@@ -4,12 +4,12 @@ import useOptions from "../hooks/useOptions"
 
 
 interface ChirpProps extends PostChirp {
-    pinned?: boolean
+    pinned?: boolean | null | undefined
     userColor: string
 }
 
 function Chirp(props: ChirpProps) {
-    const [dots, editor] = useOptions(true, props.id, props.text)
+    const [dots, editor] = useOptions(true, props.id, props.text, props.pinned)
     
     return (
     <li className={`w-full relative mb-8`}>
@@ -24,9 +24,22 @@ function Chirp(props: ChirpProps) {
                 {` • ${props.postDate}`} 
             </div>
 
+
+
             {props.isEdited ? 
                 <div className = "text-xs inline italic">
                     {` • edited `}
+                </div>
+            : null}
+
+            {props.pinned ? 
+                <div className = "text-xs inline">
+                    <span className = "text-white">
+                        {` • `}
+                    </span>
+                    <span className = "text-rose-300">
+                        {`pinned`}
+                    </span>
                 </div>
             : null}
 

@@ -128,9 +128,9 @@ function Search () {
                     key = {post.id}
                     score = {post.score}
                     voteStatus = {userInfo.state.username ? post.voteStatus : 0}
-                    pinned = {false}
                     userColor={post.author.userColor}
                     isEdited = {post.isEdited}
+                    pinned = {null}
                 />
         })))
 

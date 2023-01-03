@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { UserContext } from "../App";
 
-const useOptions = (isOwner: boolean, postId: string, oldText: string): [dots: JSX.Element, editor: JSX.Element | null] => {
+const useOptions = (isOwner: boolean, postId: string, oldText: string, isPinned: boolean | null | undefined): [dots: JSX.Element, editor: JSX.Element | null] => {
     const [showOptions, setShowOptions] = useState(false)
     const [showEditor, setShowEditor] = useState(false)
     const [showVerifyDelete, setShowVerifyDelete] = useState(false)
@@ -63,8 +63,33 @@ const useOptions = (isOwner: boolean, postId: string, oldText: string): [dots: J
 
     }
 
-    const pinPost = () => {
-        
+    const pinPost = async (e: React.MouseEvent<HTMLElement>) => {
+        e.preventDefault();
+
+        if (!userInfo.state.username) {
+            return;
+        }
+
+        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const query =
+            `mutation {
+                pinPost(postId: "${postId}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
+                    msg
+                    endRes
+                }
+            }`
+
+        const response = await fetch(url ?? '', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ query })
+        }).then(res => res.json())
+
+        console.log(response)
+
+        window.location.reload();
     }
     
     const deletePost = async (e: React.MouseEvent<HTMLDivElement>) => {
@@ -134,8 +159,11 @@ const useOptions = (isOwner: boolean, postId: string, oldText: string): [dots: J
                         {isOwner ? 
                             <>
                                 <li onClick = {() => {setShowEditor(true); setShowOptions(false)}}>Edit</li>
-                                <li onClick = {undefined} className = "mt-1">Pin</li>
-                                
+
+                                {isPinned !== null ? 
+                                    <li onClick = {pinPost} className = "mt-1">{isPinned ? "Unpin" : "Pin"}</li>
+                                : null}
+
                                 {showVerifyDelete ? 
                                 <li>
                                     <div onClick = {deletePost} className = "text-rose-500 mt-2 sm:mt-1">Confirm</div>

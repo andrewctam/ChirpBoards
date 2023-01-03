@@ -28,6 +28,9 @@ function Profile () {
     const [followerCount, setFollowerCount] = useState<number>(0);
     const [followingCount, setFollowingCount] = useState<number>(0);
 
+    const [pinnedPostId, setPinnedPostId] = useState("")
+    const [pinnedPost, setPinnedPost] = useState<JSX.Element | null>(null);
+
     const [userColor, setUserColor] = useState<string>("#000000")
     const [editingColor, setEditingColor] = useState(false);
     
@@ -92,16 +95,25 @@ function Profile () {
 
     const getUserInfo = async (username: string) => {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
 
         const query =
         `query {    
-            user(username: "${username}") {
+            user(username: "${username}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
                 username
                 displayName
                 followerCount
                 followingCount
                 postCount
                 userColor
+                pinnedPost {
+                    id
+                    text
+                    isEdited
+                    postDate(timezone: ${timezone})
+                    score
+                    ${userInfo.state.username ? "voteStatus" : ""}
+                }
                 ${userInfo.state.username ? `isFollowing(followeeUsername: "${userInfo.state.username}")` : ""}
             }
         }`
@@ -125,6 +137,25 @@ function Profile () {
         setFollowingCount(info.followingCount)
         setPostCount(info.postCount)
         setUserColor(info.userColor)
+
+        if (info.pinnedPost !== null) {
+            setPinnedPostId(info.pinnedPost.id)
+            setPinnedPost(
+                <Chirp
+                    authorUsername={info.username}
+                    authorDisplayName={info.displayName}
+                    id = {info.pinnedPost.id}
+                    postDate = {info.pinnedPost.postDate}
+                    text = {info.pinnedPost.text}
+                    key = {info.pinnedPost.id}
+                    score = {info.pinnedPost.score}
+                    voteStatus = {userInfo.state.username ? info.pinnedPost.voteStatus : 0}
+                    userColor = {info.userColor}
+                    isEdited = {info.pinnedPost.isEdited}
+                    pinned = {true}
+            />)
+           
+        }
 
         
         if (userInfo.state.username)
@@ -173,6 +204,9 @@ function Profile () {
         const info = response.data.user;
         setChirpsHasNextPage(info.posts.hasNext)
         setChirps(chirps.concat(info.posts.posts.map((post: PostPayload) => {
+            if (post.id === pinnedPostId)
+                return null;
+
             return <Chirp
                     authorUsername={username ?? ""}
                     authorDisplayName={displayName}
@@ -184,6 +218,7 @@ function Profile () {
                     voteStatus = {userInfo.state.username ? post.voteStatus : 0}
                     userColor = {userColor}
                     isEdited = {post.isEdited}
+                    pinned = {false}
                 />
         })))
     }
@@ -333,7 +368,7 @@ function Profile () {
             if (chirpsPageNum > 0 && chirps.length === 0)
                 feed = <div className = "text-center text-white text-lg">{`${username} has not made any chirps`}</div>
             else
-                feed = chirps
+                feed = <>{pinnedPost}{chirps}</>
             break;
 
         case View.Followers:

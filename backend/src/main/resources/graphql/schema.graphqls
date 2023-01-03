@@ -47,6 +47,9 @@ type Mutation {
     #Requires authentication. Edits a post
     editPost(newText: String!, postId: String!, username: String!, sessionToken: String!): BooleanResponse
 
+    #Requires authentication. Pins or unpins a post
+    pinPost(postId: String!, username: String!, sessionToken: String!): BooleanResponse
+
     #Requires authentication. Clears the session token from the database. Returns true if successful, or null if unauthorized.
     signout(username: String!, sessionToken: String!): BooleanResponse
 

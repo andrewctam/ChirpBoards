@@ -13,6 +13,7 @@ import org.andrewtam.ChirpBoards.MongoDBModels.Post;
 import org.andrewtam.ChirpBoards.MongoDBModels.User;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -61,6 +62,14 @@ public class UserController {
         return new PaginatedUsers(page);
     }
 
+
+    @SchemaMapping
+    public Post pinnedPost(User user) {
+        if (user.getPinnedPost() == null)
+            return null;
+
+        return postRepository.findById(user.getPinnedPost());
+    }
     @SchemaMapping
     public PaginatedUsers following(User user, @Argument int pageNum, @Argument int size) {
         PageRequest paging = PageRequest.of(pageNum, size);
@@ -333,6 +342,47 @@ public class UserController {
         userRepository.save(user);
 
         return new BooleanResponse("Successfully changed color to " + newUserColor, true);
+    }
+
+    @MutationMapping
+    public BooleanResponse pinPost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
+        username = username.toLowerCase();
+
+        if (username == "" || sessionToken == "" || postId == "" || postId == null || !ObjectId.isValid(postId))
+            return new BooleanResponse("Invalid inputs", null);
+
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return new BooleanResponse("Username not found", null);
+        }
+
+        if (!user.checkUserSession(userRepository, sessionToken))
+            return new BooleanResponse("User not authenticated", null);
+
+
+        ObjectId id = new ObjectId(postId);
+        Post post = postRepository.findById(id);
+        if (post == null) {
+            return new BooleanResponse("Post not found", null);
+        }
+
+        if (post.isComment())
+            return new BooleanResponse("Can only pin posts", null);
+
+        if (!post.getAuthor().equals(user.getId()))
+            return new BooleanResponse("You can only pin your own posts", null);
+
+        boolean result;
+        if (user.getPinnedPost() != null && user.getPinnedPost().equals(id)) {
+            user.setPinnedPost(null); //toggle
+            result = false;
+        } else {
+            user.setPinnedPost(id);
+            result = true;
+        }
+
+        userRepository.save(user);
+        return new BooleanResponse("Success", result);
     }
     
 

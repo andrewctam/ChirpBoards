@@ -4,7 +4,6 @@ export enum SortMethod {
     New, Score
 }
 
-
 function useSort(doneFetching: boolean, 
                 fetchFunction: () => void, 
                 resetFunction: () => void): [sortMethod: string, sortBubble: JSX.Element] {
@@ -68,10 +67,10 @@ function useSort(doneFetching: boolean,
     )
 
     let sort = "postDate";
-        if (sortMethod === SortMethod.New)
-            sort = "postDate";
-        else if (sortMethod === SortMethod.Score)
-            sort = "score";
+    if (sortMethod === SortMethod.New)
+        sort = "postDate";
+    else if (sortMethod === SortMethod.Score)
+        sort = "score";
 
     return [sort, sortBubble]
 }
