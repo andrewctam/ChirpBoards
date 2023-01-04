@@ -43,8 +43,11 @@ type Mutation {
     #Requires authentication. Creates and returns a post (comment).
     comment(text: String!, parentPostId: String!, username: String!, sessionToken: String!): PostResponse
 
-    #Requires authentication. Rechirps (puts on profile) of a chirp or comment. Undo if already rechirped.
+    #Requires authentication. Rechirps a chirp or comment.
     rechirp(postId: String!, username: String!, sessionToken: String!): BooleanResponse
+
+    #Requires authentication. Undoes a rechirp if only the original chirp id is known. Can use deletePost is the rechirp's id is known.
+    undoRechirp(postId: String!, username: String!, sessionToken: String!): BooleanResponse
 
     
     #Requires authentication. Adds or removes a user from the upvotes list of a post. Returns the ending upvote status as a boolean, or null if unauthorized.
@@ -105,6 +108,7 @@ type Post {
     author: User!
     text: String!
     isComment: Boolean!
+    isRechirp: Boolean!
     parentPost: Post
     rootPost: Post
     postDate(timezone: Int!): String!

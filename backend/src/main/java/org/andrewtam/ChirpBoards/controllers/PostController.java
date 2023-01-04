@@ -301,15 +301,13 @@ public class PostController {
             return null;
         }
 
-        Set<ObjectId> userPosts = new HashSet<ObjectId>(user.getPosts());
 
-        Set<Post> rechirps = posts.stream()
-                    .filter(post -> userPosts.contains(post.getId()) && !post.getAuthor().equals(user.getId()))
-                    .collect(Collectors.toSet());
+        Set<Post> rechirps = postRepository.findUsersRechirps(user.getId());
+        Set<ObjectId> originalChirps = rechirps.stream().map(post -> post.getParentPost()).collect(Collectors.toSet());
 
-        return posts.stream().collect(Collectors.toMap(    
+        return posts.stream().collect(Collectors.toMap(
             post -> post,
-            post -> rechirps.contains(post)
+            post -> originalChirps.contains(post.getId())
         ));
                 
     }
@@ -430,20 +428,48 @@ public class PostController {
         if (post.getAuthor().equals(user.getId()))
             return new BooleanResponse("Can not rechirp own posts", null);
 
-            
-        if (user.getPosts().contains(id)) {
-            user.getPosts().remove(id);
-            user.setPostCount(user.getPostCount() - 1);
-        } else {
-            user.getPosts().add(id);
-            user.setPostCount(user.getPostCount() + 1);
-        }
+        Post rechirp = new Post("This is a rechirp of " + postId, user.getId());
+        rechirp.declareRechirp(post);
+        rechirp = postRepository.save(rechirp);
 
+        user.getPosts().add(rechirp.getId());
+        user.setPostCount(user.getPostCount() + 1);
         userRepository.save(user);
         
         return new BooleanResponse("", true);
     }
 
+    @MutationMapping
+    public BooleanResponse undoRechirp(@Argument String postId, @Argument String username, @Argument String sessionToken) {
+        if (postId == null || !ObjectId.isValid(postId) || username == "") {
+            return new BooleanResponse("Invalid inputs", null);
+        }
+
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return new BooleanResponse("User not found", null);
+        }
+
+        if (!user.checkUserSession(userRepository, sessionToken))
+            return new BooleanResponse("User not authenticated", null);
+
+        Post post = postRepository.findById(new ObjectId(postId));
+        if (!post.isRechirp()) {
+            post = postRepository.findRechirp(post.getId(), user.getId());
+            
+            if (post == null)
+                return new BooleanResponse("Rechirp not found or already deleted", null);
+        }
+
+
+        user.setPostCount(user.getPostCount() - 1);
+        user.getPosts().remove(post.getId());
+        userRepository.save(user);
+    
+        postRepository.delete(post);
+
+        return new BooleanResponse("Deleted", true);
+    }
 
 
 

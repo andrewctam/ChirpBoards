@@ -14,6 +14,7 @@ public class Post implements Comparable<Post> {
     private ObjectId id;
     
     private boolean isComment;
+    private boolean isRechirp;
     private ObjectId parentPost;
     private ObjectId rootPost;
 
@@ -35,6 +36,7 @@ public class Post implements Comparable<Post> {
         this.author = author;
 
         this.isComment = false;
+        this.isRechirp = false;
         this.parentPost = null;
         this.rootPost = null;
 
@@ -61,9 +63,16 @@ public class Post implements Comparable<Post> {
             this.rootPost = parentPost.id;
     }
 
+    public void declareRechirp(Post originalPost) {
+        this.isRechirp = true;
+        this.parentPost = originalPost.id;
+        this.rootPost = originalPost.id;
+    }
+
     public ObjectId getId() { return id; }
 
     public boolean isComment() { return isComment; }
+    public boolean isRechirp() { return isRechirp; }
 
     public ObjectId getParentPost() { return parentPost; }
 

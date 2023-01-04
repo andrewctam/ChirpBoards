@@ -76,6 +76,7 @@ function ReplyBox(props: ReplyBoxProps) {
                 commentCount = {0}
                 score = {0}
                 voteStatus = {0}
+                rechirpStatus = {false}
                 local = {true}
                 autoLoadComments = {false}
                 userColor = {info.author.userColor}

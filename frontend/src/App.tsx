@@ -22,6 +22,7 @@ export interface PostChirp {
     authorDisplayName: string
     score: number
     voteStatus: number | null
+    rechirpStatus: boolean
     isEdited: boolean
 }
 
@@ -62,6 +63,7 @@ export interface PostPayload {
     commentCount: number
     comments: PostPayload[]
     isEdited: boolean
+    isRechirp: boolean
 }
 
 

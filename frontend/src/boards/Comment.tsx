@@ -49,6 +49,7 @@ function Comment(props: CommentProps) {
                         score
                         isEdited
                         ${userInfo.state.username ? "voteStatus" : ""}
+                        ${userInfo.state.username ? "rechirpStatus" : ""}
                         author {
                             username
                             displayName
@@ -86,6 +87,7 @@ function Comment(props: CommentProps) {
                     commentCount = {comment.commentCount}
                     score = {comment.score}
                     voteStatus = {userInfo.state.username ? comment.voteStatus : 0}
+                    rechirpStatus = {userInfo.state.username ? comment.rechirpStatus : false}
                     local = {false}
                     autoLoadComments = {false}
                     userColor = {comment.author.userColor}
@@ -97,7 +99,7 @@ function Comment(props: CommentProps) {
         )
     }
 
-    const [dots, editor] = useOptions(props.id, props.text, userInfo.state.username === props.authorUsername, null, null)
+    const [dots, editor] = useOptions(props.id, props.text, userInfo.state.username === props.authorUsername, null, props.rechirpStatus)
 
     return (
         <div className = "w-[95%] ml-[5%]">

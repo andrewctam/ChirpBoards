@@ -83,6 +83,7 @@ function Board() {
                 score
                 commentCount
                 ${userInfo.state.username ? "voteStatus" : ""}
+                ${userInfo.state.username ? "rechirpStatus" : ""}
             }
         }`
 
@@ -101,6 +102,7 @@ function Board() {
             id: postId,
             text: info.text,
             voteStatus: userInfo.state.username ? info.voteStatus : 0,
+            rechirpStatus: userInfo.state.username ? info.rechirpStatus : false,
             postDate: info.postDate,
             authorUsername: info.author.username,
             authorDisplayName: info.author.displayName,
@@ -109,7 +111,7 @@ function Board() {
             parentPost: info.parentPost ? info.parentPost.id : null,
             rootPost: info.rootPost ? info.rootPost.id : null,
             userColor: info.author.userColor,
-            isEdited: info.isEdited
+            isEdited: info.isEdited,
         })
 
     }
@@ -135,6 +137,7 @@ function Board() {
                         score
                         isEdited
                         ${userInfo.state.username ? "voteStatus" : ""}
+                        ${userInfo.state.username ? "rechirpStatus" : ""}
                         author {
                             username
                             displayName
@@ -182,6 +185,7 @@ function Board() {
                     userColor = {comment.author.userColor}
                     sortMethod = {sortMethod}
                     sortDirection = {sortDirection}
+                    rechirpStatus = {userInfo.state.username ? comment.rechirpStatus : false}
                 />
             }))
         )
@@ -206,7 +210,7 @@ function Board() {
             mainPost ? mainPost.text : "", 
             mainPost ? userInfo.state.username === mainPost.authorUsername : false,
             null,
-            null)
+            mainPost ? mainPost.rechirpStatus :false)
             
     return (
         <Layout>

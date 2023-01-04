@@ -3,17 +3,25 @@ import { PostChirp, UserContext } from "../App"
 import Vote from "../boards/Vote"
 import useOptions from "../hooks/useOptions"
 
+export type Rechirper = {
+    username: string
+    displayName: string
+    userColor: string
+    dateRechirped: string
+}   
 
 interface ChirpProps extends PostChirp {
     pinned: boolean | null
-    showRechirped: boolean //only show on profile
-    rechirper: string | null
     userColor: string
+
+    //user who rechirped, only relevant on profile where they are displayed. 
+    //different from rechirpStatus (which is if the current user rechirped this post)
+    rechirper?: Rechirper | undefined 
 }
 
 function Chirp(props: ChirpProps) {
     const userInfo = useContext(UserContext);
-    const [dots, editor] = useOptions(props.id, props.text, userInfo.state.username === props.authorUsername, props.pinned, props.rechirper !== null)
+    const [dots, editor] = useOptions(props.id, props.text, userInfo.state.username === props.authorUsername, props.pinned, props.rechirpStatus)
 
     return (
     <li className={`w-full relative mb-8`}>
@@ -30,14 +38,14 @@ function Chirp(props: ChirpProps) {
             </a>}
 
             <div className = "absolute top-2 left-2 max-w-[90%] overflow-x-hidden">
-                {props.showRechirped && props.rechirper  ? 
-                <div className = "text-xs ml-2 " style = {{color: props.userColor}} >
-                    <a href={`/profile/${props.rechirper}`}>
-                        {props.rechirper}
+                {props.rechirper  ? 
+                <div className = "text-xs ml-2">
+                    <a href={`/profile/${props.rechirper.username}`} style = {{color: props.rechirper.userColor ?? "white"}}>
+                        {props.rechirper.displayName}
                     </a>
 
-                    <span className = "text-sky-300">
-                        {` rechirped`}
+                    <span className = "text-sky-200">
+                        {` rechirped on ${props.rechirper.dateRechirped}`}
                     </span>
                 </div> : null}
 

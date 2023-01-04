@@ -134,8 +134,7 @@ function Search () {
                     key = {post.id}
                     score = {post.score}
                     voteStatus = {userInfo.state.username ? post.voteStatus : 0}
-                    rechirper = {userInfo.state.username && post.rechirpStatus ? userInfo.state.username : null}
-                    showRechirped = {false}
+                    rechirpStatus = {userInfo.state.username ? post.rechirpStatus : false}
                     userColor={post.author.userColor}
                     isEdited = {post.isEdited}
                     pinned = {null}

@@ -6,13 +6,13 @@ const useOptions = (postId: string,
                     oldText: string,
                     isOwner: boolean, 
                     isPinned: boolean | null,
-                    isRechirp: boolean | null): [dots: JSX.Element, editor: JSX.Element | null] => {
+                    userRechirped: boolean | null): [dots: JSX.Element, editor: JSX.Element | null] => {
 
     const [showOptions, setShowOptions] = useState(false)
     const [showEditor, setShowEditor] = useState(false)
     const [showVerifyDelete, setShowVerifyDelete] = useState(false)
     const [editedText, setEditedText] = useState("");
-    const [localIsRechirp, setLocalIsRechirp] = useState(false);
+    const [localRechirped, setLocalRechirped] = useState(false);
 
     const userInfo = useContext(UserContext);
     const dotsRef = useRef<HTMLDivElement>(null);
@@ -23,9 +23,9 @@ const useOptions = (postId: string,
     }, [oldText])
 
     useEffect(() => {
-        setLocalIsRechirp(isRechirp ?? localIsRechirp)
+        setLocalRechirped(userRechirped ?? localRechirped)
         // eslint-disable-next-line
-    }, [isRechirp])
+    }, [userRechirped])
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -44,15 +44,19 @@ const useOptions = (postId: string,
 
     const rechirp = async (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
-
+        
         if (!userInfo.state.username) {
             navigate("/signin")
         }
 
+        let type = "rechirp"
+        if (localRechirped)
+            type = "undoRechirp"
+
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
             `mutation {
-                rechirp(postId: "${postId}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
+                ${type}(postId: "${postId}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
                     msg
                     endRes
                 }
@@ -68,11 +72,12 @@ const useOptions = (postId: string,
 
         console.log(response)
 
-        if (!response.data.rechirp) {
+        if (!response.data[type]) {
             alert("Error!")
-        } else
-            setLocalIsRechirp(!localIsRechirp)
+        } else 
+            setLocalRechirped(!localRechirped)
     }
+
 
     const editPost = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
@@ -218,7 +223,7 @@ const useOptions = (postId: string,
                                 : <li onClick = {() => setShowVerifyDelete(!showVerifyDelete)} className = "mt-1">Delete</li>}
                             </> 
                             :
-                            <li onClick = {rechirp}>{localIsRechirp ? "Undo Rechirp" : "Rechirp"}</li>
+                            <li onClick = {rechirp}>{localRechirped ? "Undo Rechirp" : "Rechirp"}</li>
                         }
                     </ul> : null}
                 </div>

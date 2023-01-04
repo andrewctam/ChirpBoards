@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import Layout from "../Layout";
 import FeedButton from "./FeedButton";
-import Chirp from "./Chirp";
+import Chirp, { Rechirper } from "./Chirp";
 import { UserContext } from "../App";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import SpinningCircle from "../SpinningCircle";
@@ -124,24 +124,43 @@ function Home() {
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const query =
             `query {
-            ${type}Posts(pageNum: ${pageNum}, size: 10${usernameField}${sortField}) {
-                posts {
-                    id
-                    text
-                    isEdited
-                    author {
-                        username
-                        displayName
-                        userColor
+                ${type}Posts(pageNum: ${pageNum}, size: 10${usernameField}${sortField}) {
+                    hasNext
+                    posts {
+                        id
+                        text
+                        isEdited
+                        author {
+                            username
+                            displayName
+                            userColor
+                        }
+                        postDate(timezone: ${timezone})
+                        score
+                        ${userInfo.state.username ? "voteStatus" : ""}
+                        ${userInfo.state.username ? "rechirpStatus" : ""}
+
+                        ${feedSelected !== Feed.Following ? "" :
+                        `isRechirp
+                        rootPost {
+                            author {
+                                username
+                                displayName
+                                userColor
+                            }
+                            id
+                            text
+                            isEdited
+                            
+                            postDate(timezone: ${timezone})
+                            score
+                            ${userInfo.state.username ? "voteStatus" : ""}
+                            ${userInfo.state.username ? "rechirpStatus" : ""}
+                        }`
+                        }
                     }
-                    postDate(timezone: ${timezone})
-                    score
-                    ${userInfo.state.username ? "voteStatus" : ""}
-                    ${userInfo.state.username ? "rechirpStatus" : ""}
                 }
-                hasNext
-            }
-        }`
+            }`
 
         const response = await fetch(url ?? '', {
             method: "POST",
@@ -162,8 +181,19 @@ function Home() {
             return;
         }
 
-
         const newChirps = info.posts.map((post: PostPayload) => {
+            let rechirper: Rechirper | undefined = undefined
+            if (feedSelected === Feed.Following && post.isRechirp && post.rootPost !== null) {
+                rechirper = {
+                    username: post.author.username,
+                    displayName: post.author.displayName,
+                    userColor: post.author.userColor,
+                    dateRechirped: post.postDate
+                } 
+
+                post = post.rootPost;
+            }
+            
             return <Chirp
                 authorUsername={post.author.username}
                 authorDisplayName={post.author.displayName}
@@ -173,11 +203,12 @@ function Home() {
                 key={post.id}
                 score={post.score}
                 voteStatus = {userInfo.state.username ? post.voteStatus : 0}
-                rechirper = {userInfo.state.username && post.rechirpStatus ? userInfo.state.username : null}
-                showRechirped = {false}
+                rechirpStatus = {userInfo.state.username ? post.rechirpStatus : false}
                 userColor={post.author.userColor}
                 isEdited = {post.isEdited}
                 pinned = {null} //only shows on profile
+
+                rechirper = {rechirper}
 
             />
         })

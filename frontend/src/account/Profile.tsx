@@ -2,7 +2,7 @@
 import { useState, useContext, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { PostPayload, UserContext, UserPayload } from "../App";
-import Chirp from "../home/Chirp";
+import Chirp, { Rechirper } from "../home/Chirp";
 import PostComposer from "../home/PostComposer";
 import useScrollBottom from "../hooks/useScrollBottom";
 import useSort from "../hooks/useSort";
@@ -152,8 +152,7 @@ function Profile () {
                     key = {info.pinnedPost.id}
                     score = {info.pinnedPost.score}
                     voteStatus = {userInfo.state.username ? info.pinnedPost.voteStatus : 0}
-                    rechirper = {userInfo.state.username && info.pinnedPost.rechirpStatus ? userInfo.state.username : null}
-                    showRechirped = {false} //pinned post can not be a rechirp
+                    rechirpStatus = {userInfo.state.username ? info.pinnedPost.rechirpStatus : false}
                     userColor = {info.userColor}
                     isEdited = {info.pinnedPost.isEdited}
                     pinned = {true}
@@ -184,14 +183,34 @@ function Profile () {
                         author {
                             username
                             displayName
+                            userColor
                         }
                         id
                         text
                         isEdited
+                        
                         postDate(timezone: ${timezone})
                         score
                         ${userInfo.state.username ? "voteStatus" : ""}
                         ${userInfo.state.username ? "rechirpStatus" : ""}
+
+                        isRechirp
+                        rootPost {
+                            author {
+                                username
+                                displayName
+                                userColor
+                            }
+                            id
+                            text
+                            isEdited
+                            
+                            postDate(timezone: ${timezone})
+                            score
+                            ${userInfo.state.username ? "voteStatus" : ""}
+                            ${userInfo.state.username ? "rechirpStatus" : ""}
+                        }
+
                     }
                     hasNext
                 }
@@ -212,9 +231,21 @@ function Profile () {
 
         const info = response.data.user;
         setChirpsHasNextPage(info.posts.hasNext)
+        
         setChirps(chirps.concat(info.posts.posts.map((post: PostPayload) => {
+            let rechirper: Rechirper | undefined = undefined
             if (post.id === pinnedPostId)
                 return null;
+            else if (post.isRechirp && post.rootPost !== null) {
+                rechirper = {
+                    username: post.author.username,
+                    displayName: post.author.displayName,
+                    userColor: post.author.userColor,
+                    dateRechirped: post.postDate
+                } 
+
+                post = post.rootPost;
+            }
 
             return <Chirp
                     authorUsername={post.author.username}
@@ -225,11 +256,12 @@ function Profile () {
                     key = {post.id}
                     score = {post.score}
                     voteStatus = {userInfo.state.username ? post.voteStatus : 0}
-                    rechirper = {userInfo.state.username && post.rechirpStatus ? userInfo.state.username : null}
-                    showRechirped = {true}
-                    userColor = {userColor}
+                    rechirpStatus = {userInfo.state.username ? post.rechirpStatus : false}
+                    userColor = {post.author.userColor}
                     isEdited = {post.isEdited}
                     pinned = {false}
+
+                    rechirper = {rechirper}
                 />
         })))
     }

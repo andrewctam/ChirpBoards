@@ -14,13 +14,20 @@ public interface PostRepository extends MongoRepository<Post, String> {
     Post findById(ObjectId id);
     Boolean existsById(ObjectId id);
 
-    @Query("{ text: { $regex: ?0, $options: 'i' }, isComment: false }")
+    @Query("{ text: { $regex: ?0, $options: 'i' }, isComment: false, isRechirp: false }")
     Page<Post> findWithRegex(String regex, PageRequest pageable);
 
-    @Query("{ isComment: false }")
+    @Query("{ isComment: false, isRechirp: false }")
     Page<Post> findAllBoards(PageRequest pageable);
 
-    @Query("{ isComment: false, postDate: {$gt: ?0 } }")
+    @Query("{ author: ?0, isRechirp: true }")
+    Set<Post> findUsersRechirps(ObjectId user);
+
+    @Query(" { parentPost: ?0, author: ?1, isRechirp: true }")
+    Post findRechirp(ObjectId originalPost, ObjectId author);
+
+
+    @Query("{ isComment: false, postDate: {$gt: ?0 }, isRechirp: false }")
     Page<Post> findTrendingPosts(long timeframe, PageRequest pageable);
 
     @Query("{ author: ?0, isComment: false }")
