@@ -2,6 +2,7 @@ package org.andrewtam.ChirpBoards.repositories;
 
 
 import java.util.List;
+import java.util.Set;
 
 import org.andrewtam.ChirpBoards.MongoDBModels.User;
 import org.bson.types.ObjectId;
@@ -25,4 +26,7 @@ public interface UserRepository extends MongoRepository<User, String> {
 
     @Query("{ _id: ?0, followers: ?1 }")
     User userFollowing(ObjectId followed, ObjectId followee);
+
+    @Query("{ 'posts': { $in: ?0 } }")
+    List<User> findAuthors(Set<ObjectId> postIds);
 }

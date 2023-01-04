@@ -2,7 +2,6 @@ package org.andrewtam.ChirpBoards.controllers;
 
 import java.text.DateFormat;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -425,6 +424,9 @@ public class PostController {
         if (post == null)
             return new BooleanResponse("Post not found", null);
 
+        if (post.isRechirp())
+            return new BooleanResponse("Can not rechirp a rechirp", null);
+
         if (post.getAuthor().equals(user.getId()))
             return new BooleanResponse("Can not rechirp own posts", null);
 
@@ -455,7 +457,7 @@ public class PostController {
 
         Post post = postRepository.findById(new ObjectId(postId));
         if (!post.isRechirp()) {
-            post = postRepository.findRechirp(post.getId(), user.getId());
+            post = postRepository.findRechirpByAuthor(post.getId(), user.getId());
             
             if (post == null)
                 return new BooleanResponse("Rechirp not found or already deleted", null);
@@ -643,6 +645,31 @@ public class PostController {
             author.setPostCount(author.getPostCount() - 1);
             author.getPosts().remove(post.getId());
             userRepository.save(author);
+        }
+
+        
+        //delete rechirps and remove it from author's post
+        List<Post> rechirps = postRepository.findRechirpsOfPost(post.getId());
+        if (rechirps.size() > 0) {
+
+            Set<ObjectId> rechirpIds = rechirps.stream().map(p -> p.getId()).collect(Collectors.toSet());
+            List<User> authors = userRepository.findAuthors(rechirpIds);
+
+            for (User author : authors) {
+                //remove rechirps from author's posts
+                for (ObjectId p : author.getPosts())
+                    if (rechirpIds.contains(p)) {
+                        author.getPosts().remove(p);
+                        break;
+                    }
+
+                author.setPostCount(author.getPostCount() - 1);
+            }
+
+            userRepository.saveAll(authors);
+            postRepository.deleteAll(rechirps);
+
+            //remove rechirp and post count from authors
         }
 
         postRepository.delete(post);

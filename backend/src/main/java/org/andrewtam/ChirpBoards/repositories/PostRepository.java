@@ -24,8 +24,10 @@ public interface PostRepository extends MongoRepository<Post, String> {
     Set<Post> findUsersRechirps(ObjectId user);
 
     @Query(" { parentPost: ?0, author: ?1, isRechirp: true }")
-    Post findRechirp(ObjectId originalPost, ObjectId author);
+    Post findRechirpByAuthor(ObjectId originalPost, ObjectId author);
 
+    @Query(" { parentPost: ?0, isRechirp: true }")
+    List<Post> findRechirpsOfPost(ObjectId originalPost);
 
     @Query("{ isComment: false, postDate: {$gt: ?0 }, isRechirp: false }")
     Page<Post> findTrendingPosts(long timeframe, PageRequest pageable);

@@ -236,15 +236,19 @@ function Profile () {
             let rechirper: Rechirper | undefined = undefined
             if (post.id === pinnedPostId)
                 return null;
-            else if (post.isRechirp && post.rootPost !== null) {
-                rechirper = {
-                    username: post.author.username,
-                    displayName: post.author.displayName,
-                    userColor: post.author.userColor,
-                    dateRechirped: post.postDate
-                } 
-
-                post = post.rootPost;
+            else if (post.isRechirp) {
+                if (post.rootPost == null) {
+                    return null
+                } else {
+                    rechirper = {
+                        username: post.author.username,
+                        displayName: post.author.displayName,
+                        userColor: post.author.userColor,
+                        dateRechirped: post.postDate
+                    } 
+                    
+                    post = post.rootPost;
+                }
             }
 
             return <Chirp

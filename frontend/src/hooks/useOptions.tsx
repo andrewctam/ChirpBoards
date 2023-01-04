@@ -72,8 +72,8 @@ const useOptions = (postId: string,
 
         console.log(response)
 
-        if (!response.data[type]) {
-            alert("Error!")
+        if (response.data[type].endRes === null) {
+            return;
         } else 
             setLocalRechirped(!localRechirped)
     }
