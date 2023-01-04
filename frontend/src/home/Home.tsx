@@ -142,7 +142,6 @@ function Home() {
                 hasNext
             }
         }`
-        console.log(query)
 
         const response = await fetch(url ?? '', {
             method: "POST",
