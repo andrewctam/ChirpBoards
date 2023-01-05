@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.management.Notification;
-
 import org.andrewtam.ChirpBoards.MongoDBModels.User;
 import org.andrewtam.ChirpBoards.repositories.NotificationRepository;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
@@ -24,7 +22,7 @@ import org.springframework.graphql.test.tester.GraphQlTester.Response;
 public class PostTests {
 
     @Autowired
-	GraphQlTester graphQlTester;
+    GraphQlTester graphQlTester;
 
     @Autowired
     PostRepository postRepository;
