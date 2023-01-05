@@ -637,13 +637,20 @@ public class PostController {
 
         if (post.isComment()) {
             Post parentPost = postRepository.findById(post.getParentPost());
-            parentPost.adjustCommentCount(-1);
-            parentPost.getComments().remove(post.getId());
-            postRepository.save(parentPost);
+            if (parentPost != null) {
+                parentPost.adjustCommentCount(-1);
+                parentPost.getComments().remove(post.getId());
+                postRepository.save(parentPost);
+            } //else main post was deleted
         } else {
             User author = userRepository.findById(post.getAuthor());
             author.setPostCount(author.getPostCount() - 1);
             author.getPosts().remove(post.getId());
+
+            ObjectId pinned = author.getPinnedPost();
+            if (pinned != null && pinned.equals(post.getId()))
+                author.setPinnedPost(null);
+                
             userRepository.save(author);
         }
 

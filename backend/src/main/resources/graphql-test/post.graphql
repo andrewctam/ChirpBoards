@@ -1,0 +1,59 @@
+mutation createPost($text: String!, $username: String!, $sessionToken: String!) {
+    createPost(text: $text, username: $username, sessionToken: $sessionToken) {
+        post {
+            id
+        }
+    }
+}
+
+
+mutation comment($text: String!, $parentPostId: String!, $username: String!, $sessionToken: String!) {
+    comment(text: $text, parentPostId: $parentPostId, username: $username, sessionToken: $sessionToken) {
+        post {
+            id
+        }
+    }
+}
+
+
+mutation upvotePost($postId: String!, $username: String!, $sessionToken: String!) {
+    upvotePost(postId: $postId, username: $username, sessionToken: $sessionToken) {
+        msg
+    }
+}
+
+mutation downvotePost($postId: String!, $username: String!, $sessionToken: String!) {
+    downvotePost(postId: $postId, username: $username, sessionToken: $sessionToken) {
+        msg
+    }
+}
+
+mutation rechirp($postId: String!, $username: String!, $sessionToken: String!) {
+    rechirp(postId: $postId, username: $username, sessionToken: $sessionToken) {
+        msg
+    }
+}
+
+mutation undoRechirp($postId: String!, $username: String!, $sessionToken: String!) {
+    undoRechirp(postId: $postId, username: $username, sessionToken: $sessionToken) {
+        msg
+    }
+}
+
+mutation editPost($newText: String!, $postId: String!, $username: String!, $sessionToken: String!) {
+    editPost(newText: $newText, postId: $postId, username: $username, sessionToken: $sessionToken) {
+        msg
+    }
+}
+
+mutation deletePost($postId: String!, $username: String!, $sessionToken: String!) {
+    deletePost(postId: $postId, username: $username, sessionToken: $sessionToken) {
+        msg
+    }
+}
+
+mutation pinPost($postId: String!, $username: String!, $sessionToken: String!) {
+    pinPost(postId: $postId, username: $username, sessionToken: $sessionToken) {
+        msg
+    }
+}

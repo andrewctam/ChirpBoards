@@ -1,0 +1,49 @@
+mutation register($username: String!, $displayName: String!, $password: String!) {
+    register(username: $username, displayName: $displayName, password: $password) {
+        msg
+        sessionToken
+    }
+}
+mutation signin($username: String!, $password: String!) {
+    signin(username: $username, password: $password) {
+        msg
+        sessionToken
+    }
+}
+mutation signout($username: String!, $sessionToken: String!) {
+    signout(username: $username, sessionToken: $sessionToken) {
+        msg
+    }
+}
+
+mutation verifySession($username: String!, $sessionToken: String!) {
+    verifySession(username: $username, sessionToken: $sessionToken)
+}
+
+mutation toggleFollow($userToFollow: String!, $username: String!, $sessionToken: String!) {
+    toggleFollow(userToFollow: $userToFollow, username: $username, sessionToken: $sessionToken) {
+        msg
+        endRes
+    }
+}
+
+
+mutation changeDisplayName($newDisplayName: String!, $username: String!, $sessionToken: String!) {
+    changeDisplayName(newDisplayName: $newDisplayName, username: $username, sessionToken: $sessionToken) {
+        msg
+        endRes
+    }
+}
+mutation changePassword($oldPassword: String!, $newPassword: String!, $username: String!) {
+    changePassword(oldPassword: $oldPassword, newPassword: $newPassword, username: $username) {
+        msg
+        endRes
+    }
+}
+
+mutation changeUserColor($newUserColor: String!, $username: String!, $sessionToken: String!) {
+    changeUserColor(newUserColor: $newUserColor, username: $username, sessionToken: $sessionToken) {
+        msg
+        endRes
+    }
+}

@@ -164,7 +164,7 @@ public class UserController {
         
         userRepository.save(user);
 
-        return new SigninRegisterResponse(null, sessionToken);
+        return new SigninRegisterResponse("Success", sessionToken);
     }
 
     @MutationMapping
@@ -187,7 +187,7 @@ public class UserController {
 
         userRepository.save(user);
 
-        return new SigninRegisterResponse(null, sessionToken);
+        return new SigninRegisterResponse("Success", sessionToken);
     }
 
 
