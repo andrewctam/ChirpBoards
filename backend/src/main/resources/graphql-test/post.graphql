@@ -57,3 +57,25 @@ mutation pinPost($postId: String!, $username: String!, $sessionToken: String!) {
         msg
     }
 }
+
+
+query notifications($username: String!, $sessionToken: String!) {
+    notifications(username: $username, sessionToken: $sessionToken, pageNum: 0, size: 10) {
+        notifications {
+            pinger {
+                username
+            }
+            post {
+                id
+            }
+        }
+        hasNext
+        unread
+    }
+}
+
+mutation clearNotifications($username: String!, $sessionToken: String!) {
+    clearNotifications(username: $username, sessionToken: $sessionToken)
+}
+
+

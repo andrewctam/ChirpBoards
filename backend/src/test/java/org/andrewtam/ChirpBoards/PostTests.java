@@ -6,7 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.management.Notification;
+
 import org.andrewtam.ChirpBoards.MongoDBModels.User;
+import org.andrewtam.ChirpBoards.repositories.NotificationRepository;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -28,6 +31,9 @@ public class PostTests {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    NotificationRepository notificationRepository;
 
     String randomString(int low, int high) {
         String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
@@ -66,6 +72,7 @@ public class PostTests {
     @Test
     void testPost() {
         long postCount = postRepository.count();
+        long notificationCount = notificationRepository.count();
 
         String[] payload = register();
         String user1 = payload[0].toLowerCase();
@@ -130,7 +137,6 @@ public class PostTests {
         .execute()
         .path("comment.post.id")
         .entity(String.class).get();
-
 
 
         String commentId2 = graphQlTester.documentName("post")
@@ -205,6 +211,30 @@ public class PostTests {
         assertEquals(user3, res.path("post.comments.posts[1].comments.posts[0].author.username").entity(String.class).get());
 
 
+
+        //check notifications
+        res = graphQlTester.documentName("post")
+        .variable("username", user1)
+        .variable("sessionToken", sessionToken1)
+        .operationName("notifications")
+        .execute();
+
+        assertEquals(user3, res.path("notifications.notifications[0].pinger.username").entity(String.class).get());
+        assertEquals(commentId3, res.path("notifications.notifications[0].post.id").entity(String.class).get());
+
+        assertEquals(user2, res.path("notifications.notifications[1].pinger.username").entity(String.class).get());
+        assertEquals(commentId2, res.path("notifications.notifications[1].post.id").entity(String.class).get());
+
+
+        assertEquals(false, res.path("notifications.hasNext").entity(Boolean.class).get());
+        assertEquals(2, res.path("notifications.unread").entity(Integer.class).get());
+
+        //clear
+        res = graphQlTester.documentName("post")
+        .variable("username", user1)
+        .variable("sessionToken", sessionToken1)
+        .operationName("clearNotifications")
+        .execute();
         //test voting and rechirp
 
         //user1 upvotes
@@ -435,6 +465,8 @@ public class PostTests {
         assertEquals(true, res.path("user.posts.posts[0].isRechirp").entity(Boolean.class).get());
         assertEquals(mainPost1, res.path("user.posts.posts[0].rootPost.id").entity(String.class).get());
 
+        assertEquals(false, res.path("user.posts.posts[1].isRechirp").entity(Boolean.class).get());
+        
         graphQlTester.documentName("post")
         .variable("postId", mainPost1)
         .variable("username", user3)
@@ -518,6 +550,11 @@ public class PostTests {
         assertEquals(userObj1.getPostCount(), 0);
         assertEquals(userObj1.getPosts().size(), 0);
         assertNull(userObj1.getPinnedPost());
+        assertEquals(0, userObj1.getNotifications().size());
+        assertEquals(0, userObj1.getUnreadNotifications());
+
+        assertEquals(notificationCount, notificationRepository.count());
+
 
         User userObj2 = userRepository.findByUsername(user2);
         assertEquals(userObj2.getPostCount(), 0);
