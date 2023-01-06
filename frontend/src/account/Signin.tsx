@@ -40,8 +40,9 @@ function Signin() {
             },
             body: JSON.stringify({query})
         }).then(res => res.json())
+        console.log(response)
 
-        if (response.data.signin.msg) {
+        if (response.data.signin.msg !== "Success") {
             setError(response.data.signin.msg);
             return;
         }
@@ -77,7 +78,7 @@ function Signin() {
             </div>
             :
             <form onSubmit = {signin} className = "mx-auto border border-black/10 w-5/6 md:w-3/4 lg:w-1/2 px-12 py-4 rounded-xl bg-black/20 shadow-md">
-                <h1 className = "text-3xl text-center">Sign In</h1>
+                <h1 className = "text-2xl text-center">Sign In</h1>
 
                 <a href = "/register">
                     <p className = "text-sm text-sky-300 underline text-center">
@@ -89,7 +90,7 @@ function Signin() {
                     name = "Username"
                     value = {usernameInput}
                     setValue = {setUsernameInput}
-                    mt = "mt-4"
+                    mt = "mt-6"
                     valid = {usernameInput !== ""}
                 />
 

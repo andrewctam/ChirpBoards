@@ -226,7 +226,7 @@ function Search () {
 
                 {feedSelected === SearchFeed.Chirps ? sortBubble : null}
 
-                <div className = "grid grid-cols-2">
+                <div className = "grid grid-cols-2 mb-6">
                     <FeedButton
                         name = "Chirps"
                         isActive = {feedSelected === SearchFeed.Chirps}

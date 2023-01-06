@@ -1,5 +1,5 @@
 import Layout from "../Layout";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import FormInput from "./FormInput";
 import { UserContext } from "../App";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -77,7 +77,7 @@ function Register() {
 
         console.log(response)
 
-        if (response.data.register.msg) {
+        if (response.data.register.msg !== "Success") {
             setError(response.data.register.msg);
             return;
         }
@@ -97,7 +97,7 @@ function Register() {
         localStorage.setItem("username", usernameInput.toLowerCase());
         localStorage.setItem("sessionToken", sessionToken);
 
-
+        
         navigate(searchParams.get("redirect") ?? "/")
     }
 
@@ -114,18 +114,19 @@ function Register() {
             </div>
             :
             <form onSubmit={register} className = "mx-auto border border-black/10 w-5/6 md:w-3/4 lg:w-1/2 px-12 py-4 rounded-xl bg-black/20 shadow-md">
-                <h1 className = "text-3xl text-center">Register</h1>
+                <h1 className = "text-2xl text-center">Register</h1>
                 <a href = "/signin">
                     <p className = "text-sm text-sky-300 underline text-center">
                         or sign in here
                     </p>
                 </a>
 
+
                 <FormInput
                     name = "Username"
                     value = {usernameInput}
                     setValue = {setUsernameInput}
-                    mt = "mt-4"
+                    mt = "mt-6"
                     valid = {usernameInput.length >= 3 && usernameInput.length <= 16}
                 />
 

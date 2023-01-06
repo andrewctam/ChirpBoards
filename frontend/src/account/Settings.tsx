@@ -14,7 +14,6 @@ function Settings() {
     const [oldPasswordInput, setOldPasswordInput] = useState("");
     const [newPasswordInput, setNewPasswordInput] = useState("");
     const [displayNameInput, setDisplayNameInput] = useState("");
-    const [colorInput, setColorInput] = useState("#9590b7");
     const [editing, setEditing] = useState(Setting.None);
     
     const [msg, setMsg] = useState("");
@@ -104,16 +103,6 @@ function Settings() {
         setMsg(response.data.changePassword.msg);        
         setOldPasswordInput("");
         setNewPasswordInput("");
-    }
-
-
-    const textColor = (): "black" | "white" => {
-        const r = parseInt(colorInput.substring(1,3), 16);
-        const g = parseInt(colorInput.substring(3,5), 16);
-        const b = parseInt(colorInput.substring(5,7), 16);
-        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-
-        return brightness > 125 ? "black" : "white";
     }
 
 

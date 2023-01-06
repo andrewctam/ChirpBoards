@@ -310,7 +310,7 @@ function Home() {
         <div className="mx-auto w-5/6 lg:w-3/5 py-2 mt-4">
             {feedSelected !== Feed.Trending ? sortBubble : null}
             
-            <div className="grid grid-cols-3">
+            <div className="grid grid-cols-3  mb-6">
                 <FeedButton
                     name={"Trending"}
                     onClick={() => switchFeeds(Feed.Trending)}
