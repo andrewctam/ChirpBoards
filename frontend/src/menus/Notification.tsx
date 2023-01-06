@@ -4,7 +4,7 @@ interface NotificationProps {
     pingerUsername: string
     pingerDisplayName: string
     date: string
-    postId: string    
+    postId: string | null
     unread: boolean
 }
 
@@ -16,12 +16,18 @@ function Notification(props: NotificationProps)  {
         case "reply":
             msg = `${props.pingerDisplayName} (@${props.pingerUsername}) replied to your chirp`
             break;
+        case "ping":
+            if (props.postId === null)
+                msg = `${props.pingerDisplayName} (@${props.pingerUsername}) pinged you (in a deleted post)`
+            else
+                msg = `${props.pingerDisplayName} (@${props.pingerUsername}) pinged you`
+            break;
         default:
             break;
     }
 
     return (
-        <a href = {`/board/${props.postId}`}>
+        <a href = {props.postId ? `/board/${props.postId}` : ""}>
             <li className = "border border-black p-4 text-white bg-black/20 rounded my-3 relative">
                 <div className = "inline text-sm">{props.date}</div>
                 <div> {msg} </div>

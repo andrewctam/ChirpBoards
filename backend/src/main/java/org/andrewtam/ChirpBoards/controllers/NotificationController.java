@@ -104,11 +104,13 @@ public class NotificationController {
         for (Post post : posts) 
             idToPost.put(post.getId(), post);
 
-        return notifications.stream()   
-                .collect(Collectors.toMap(
-                    notif -> notif,
-                    notif -> idToPost.get(notif.getPost())
-                ));
+        Map<Notification, Post> notifToPost = new HashMap<>();
+        for (Notification notif : notifications) {
+            Post post = idToPost.get(notif.getPost());
+            notifToPost.put(notif, post);
+        }
+
+        return notifToPost;
     }
 
     @MutationMapping

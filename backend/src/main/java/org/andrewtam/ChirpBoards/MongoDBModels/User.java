@@ -158,4 +158,9 @@ public class User {
         userRepository.save(this);
     }
 
+    public void notifyPing(Notification notif) {
+        this.unreadNotifications++;
+        this.notifications.add(notif.getId());
+    }
+
 }

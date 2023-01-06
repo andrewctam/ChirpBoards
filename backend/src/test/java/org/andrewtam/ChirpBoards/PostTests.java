@@ -149,7 +149,7 @@ public class PostTests {
 
 
         String commentId3 = graphQlTester.documentName("post")
-        .variable("text", "1 -> 3")
+        .variable("text", "1 -> 3 @" + user1)
         .variable("parentPostId", commentId1) //nested
         .variable("username", user3)
         .variable("sessionToken", sessionToken3)
@@ -205,7 +205,7 @@ public class PostTests {
         assertEquals("1", res.path("post.comments.posts[1].text").entity(String.class).get());
         assertEquals(user1, res.path("post.comments.posts[1].author.username").entity(String.class).get());
 
-        assertEquals("1 -> 3", res.path("post.comments.posts[1].comments.posts[0].text").entity(String.class).get());
+        assertEquals("1 -> 3 @" + user1, res.path("post.comments.posts[1].comments.posts[0].text").entity(String.class).get());
         assertEquals(user3, res.path("post.comments.posts[1].comments.posts[0].author.username").entity(String.class).get());
 
 
@@ -219,13 +219,19 @@ public class PostTests {
 
         assertEquals(user3, res.path("notifications.notifications[0].pinger.username").entity(String.class).get());
         assertEquals(commentId3, res.path("notifications.notifications[0].post.id").entity(String.class).get());
+        assertEquals("reply", res.path("notifications.notifications[0].type").entity(String.class).get());
 
-        assertEquals(user2, res.path("notifications.notifications[1].pinger.username").entity(String.class).get());
-        assertEquals(commentId2, res.path("notifications.notifications[1].post.id").entity(String.class).get());
+        assertEquals(user3, res.path("notifications.notifications[1].pinger.username").entity(String.class).get());
+        assertEquals(commentId3, res.path("notifications.notifications[1].post.id").entity(String.class).get());
+        assertEquals("ping", res.path("notifications.notifications[1].type").entity(String.class).get());
+
+        assertEquals(user2, res.path("notifications.notifications[2].pinger.username").entity(String.class).get());
+        assertEquals(commentId2, res.path("notifications.notifications[2].post.id").entity(String.class).get());
+        assertEquals("reply", res.path("notifications.notifications[2].type").entity(String.class).get());
 
 
         assertEquals(false, res.path("notifications.hasNext").entity(Boolean.class).get());
-        assertEquals(2, res.path("notifications.unread").entity(Integer.class).get());
+        assertEquals(3, res.path("notifications.unread").entity(Integer.class).get());
 
         //clear
         res = graphQlTester.documentName("post")

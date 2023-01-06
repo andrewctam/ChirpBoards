@@ -24,9 +24,14 @@ public interface UserRepository extends MongoRepository<User, String> {
     @Query("{ 'id': { $in: ?0 } }")
     List<User> findAllById(List<ObjectId> ids);
 
+
+    @Query("{ 'username': { $in: ?0 } }")
+    List<User> findAllByUsername(List<String> usernames);
+
     @Query("{ _id: ?0, followers: ?1 }")
     User userFollowing(ObjectId followed, ObjectId followee);
 
     @Query("{ 'posts': { $in: ?0 } }")
     List<User> findAuthors(Set<ObjectId> postIds);
+
 }

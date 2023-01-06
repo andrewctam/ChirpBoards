@@ -157,7 +157,7 @@ type PaginatedUsers {
 type Notification {
     type: String!
     pinger: User!
-    post: Post!
+    post: Post
     date(timezone: Int!): String!
 } 
 

@@ -1,18 +1,22 @@
 package org.andrewtam.ChirpBoards.controllers;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 
 import org.andrewtam.ChirpBoards.GraphQLModels.BooleanResponse;
 import org.andrewtam.ChirpBoards.GraphQLModels.IntResponse;
 import org.andrewtam.ChirpBoards.GraphQLModels.PaginatedPosts;
 import org.andrewtam.ChirpBoards.GraphQLModels.PostResponse;
-
+import org.andrewtam.ChirpBoards.MongoDBModels.Notification;
 import org.andrewtam.ChirpBoards.MongoDBModels.Post;
 import org.andrewtam.ChirpBoards.MongoDBModels.User;
 import org.andrewtam.ChirpBoards.repositories.NotificationRepository;
@@ -357,6 +361,8 @@ public class PostController {
             return new PostResponse("User not authenticated", null);
 
         Post created = postRepository.save(new Post(text, user.getId()));
+
+        pingUsers(text, created);
             
         user.getPosts().addFirst(created.getId());
         user.setPostCount(user.getPostCount() + 1);
@@ -385,9 +391,10 @@ public class PostController {
             return new PostResponse("Post not found", null);
             
         Post created = new Post(text, user.getId());
-
         created.declareComment(parentPost);
         created = postRepository.save(created);
+        
+        pingUsers(text, created);
         
         parentPost.getComments().addFirst(created.getId());
         parentPost.adjustCommentCount(1);
@@ -681,5 +688,55 @@ public class PostController {
 
         postRepository.delete(post);
         return new BooleanResponse("", true);
+    }
+
+
+
+
+    private void pingUsers(String text, Post post) {
+        if (text == "")
+            return;
+
+        ObjectId postId = post.getId();
+        ObjectId pinger = post.getAuthor();
+        
+        List<String> usernames = new ArrayList<String>();
+        Pattern pattern = Pattern.compile("@([a-zA-Z0-9_]+)");
+        Matcher matcher = pattern.matcher(text);
+
+        while (matcher.find()) {
+            usernames.add(matcher.group(1).toLowerCase());
+        }
+
+        if (usernames.size() == 0)
+            return;
+
+        List<User> users = userRepository.findAllByUsername(usernames);
+        List<Notification> pings = new ArrayList<Notification>();
+        
+        for (User user: users) {
+            if (user.getId().equals(pinger)) {
+                users.remove(user);
+
+                if (users.size() == 0)
+                    return;
+                else
+                    continue;
+            }
+            
+            pings.add(new Notification("ping", user.getId(), pinger, postId));
+        }
+        pings = notificationRepository.saveAll(pings);
+        
+        
+        HashMap<ObjectId, Notification> usersToNotif = new HashMap<>();
+        for (Notification ping : pings) {
+            usersToNotif.put(ping.getPinged(), ping);
+        }
+
+        for (User user : users) {
+            user.notifyPing(usersToNotif.get(user.getId()));
+        }
+        userRepository.saveAll(users);
     }
 }

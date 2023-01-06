@@ -69,13 +69,17 @@ function Inbox () {
         setNotificationsFeed(notificationsFeed.concat(
             info.notifications.map((notif: NotificationPayload, i: number) => {
                 unreadLeft -= 1
+                let postId = null
+                if (notif.post !== null) //in case post was deleted
+                    postId = notif.post.id
+                
                 return <Notification
                     key = {"notification" + i}
                     type = {notif.type}
                     pingerUsername = {notif.pinger.username}
                     pingerDisplayName = {notif.pinger.displayName}
                     date = {notif.date}
-                    postId = {notif.post.id}
+                    postId = {postId}
                     unread = {unreadLeft + 1 > 0} //since we subtracted one above
                 /> 
             })

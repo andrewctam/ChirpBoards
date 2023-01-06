@@ -62,6 +62,7 @@ mutation pinPost($postId: String!, $username: String!, $sessionToken: String!) {
 query notifications($username: String!, $sessionToken: String!) {
     notifications(username: $username, sessionToken: $sessionToken, pageNum: 0, size: 10) {
         notifications {
+            type
             pinger {
                 username
             }
