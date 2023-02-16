@@ -29,13 +29,15 @@ function Chirp(props: ChirpProps) {
 
              {editor ? 
                 <div className = "m-8">
-                {editor}
-                </div> :
-             <a href={`/board/${props.id}`}>
-                <div className={`w-full max-h-96 overflow-y-hidden whitespace-pre-line p-6 ${props.rechirper ? "pt-14" : "pt-10"} text-sm break-all text-white`}>
-                    {props.text}
-                </div>
-            </a>}
+                    {editor}
+                </div> 
+                :
+                <a href={`/board/${props.id}`}>
+                    <div className={`w-full max-h-96 overflow-y-hidden whitespace-pre-line p-6 ${props.rechirper ? "pt-14" : "pt-10"} text-sm break-all text-white`}>
+                        {props.text}
+                    </div>
+                </a>
+            }
 
             <div className = "absolute top-2 left-2 max-w-[90%] overflow-x-hidden">
                 {props.rechirper  ? 

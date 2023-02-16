@@ -100,12 +100,12 @@ function ReplyBox(props: ReplyBoxProps) {
 
 
             <div className = "absolute -bottom-3 right-4">
-                <button className = "bg-rose-300 text-xs sm:text-sm text-black border border-black/20 rounded-xl shadow-md px-2 py-1" 
+                <button className = "bg-rose-200 text-xs sm:text-sm text-black border border-black/20 rounded shadow-md px-2 py-1" 
                     onClick = {props.close}>
                     Cancel
                 </button>
 
-                <button className = "bg-[#b9cfe2] text-xs sm:text-sm text-black border border-black/20 rounded-xl shadow-md -bottom-3 right-4 px-2 py-1 ml-2" 
+                <button className = "bg-[#b9cfe2] disabled:bg-gray-200 disabled:text-black/50 text-xs sm:text-sm text-black border border-black/20 rounded shadow-md -bottom-3 right-4 px-2 py-1 ml-2" 
                     onClick = {addComment}
                     disabled = {comment.length === 0}>
                     Reply

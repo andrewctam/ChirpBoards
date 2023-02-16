@@ -73,7 +73,7 @@ function PostComposer() {
                 : `${composedChirp.length}/500 characters`}
         </p>
 
-        <button className="bg-sky-300 text-xs sm:text-sm text-black border border-black rounded-xl shadow-md absolute -bottom-3 right-4 px-4 py-2"
+        <button className="bg-gray-300 disabled:bg-gray-400 disabled:text-black/50 text-xs sm:text-sm text-black border border-black rounded shadow-md absolute -bottom-3 right-4 px-4 py-2"
             onClick={createChirp}
             disabled = {composedChirp.length === 0}>
             Post

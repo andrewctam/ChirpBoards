@@ -18,7 +18,7 @@ function Home() {
     const [allFeed, setAllFeed] = useState<JSX.Element[]>([]);
     const [trendingFeed, setTrendingFeed] = useState<JSX.Element[]>([]);
     const [followingFeed, setFollowingFeed] = useState<JSX.Element[] | null>([]);
-        
+
     const [allPageNum, setAllPageNum] = useState(0);
     const [trendingPageNum, setTrendingPageNum] = useState(0);
     const [followingPageNum, setFollowingPageNum] = useState(0);
@@ -29,13 +29,12 @@ function Home() {
 
     const [doneFetching, setDoneFetching] = useState(false);
     const userInfo = useContext(UserContext);
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
 
     const [searchParams, setSearchParams] = useSearchParams();
 
     const switchFeeds = (feed: Feed) => {
         setFeedSelected(feed);
-        setDoneFetching(false);
         setSearchParams({ feed: feed === Feed.All ? "all" : feed === Feed.Trending ? "trending" : "following" })
     }
 
@@ -47,11 +46,11 @@ function Home() {
             (feedSelected === Feed.Trending && trendingFeed.length) === 0 ||
             (feedSelected === Feed.Following && followingFeed !== null && followingFeed.length === 0)) {
                 getChirps();
-            } else {
-                setDoneFetching(true)
-            }
+        } else {
+            setDoneFetching(true)
+        }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [feedSelected])
 
     useEffect(() => {
@@ -70,13 +69,14 @@ function Home() {
                 setFeedSelected(Feed.All);
         }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps 
+        // eslint-disable-next-line react-hooks/exhaustive-deps 
     }, [])
 
 
     const getChirps = async () => {
         let type = "";
         let pageNum = 0
+        setDoneFetching(false);
         if (feedSelected === Feed.Following) {
             if (userInfo.state.username === "") {
                 navigate(`/signin?return=${window.location.pathname}`)
@@ -86,7 +86,7 @@ function Home() {
                 setDoneFetching(true);
                 return;
             }
-                
+
             type = "following";
             pageNum = followingPageNum;
         } else if (feedSelected === Feed.Trending) {
@@ -113,13 +113,13 @@ function Home() {
         if (feedSelected === Feed.Following) {
             usernameField = `, username: "${userInfo.state.username}"`
         } else if (userInfo.state.username)
-        usernameField = `, relatedUsername: "${userInfo.state.username}"`
-        
+            usernameField = `, relatedUsername: "${userInfo.state.username}"`
+
         let sortField = "";
         if (feedSelected === Feed.All || feedSelected === Feed.Following)
             sortField = `, sortMethod: "${sortMethod}", sortDirection: "${sortDirection}"`;
 
-        
+
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const query =
@@ -141,7 +141,7 @@ function Home() {
                         ${userInfo.state.username ? "rechirpStatus" : ""}
 
                         ${feedSelected !== Feed.Following ? "" :
-                        `isRechirp
+                `isRechirp
                         rootPost {
                             author {
                                 username
@@ -157,7 +157,7 @@ function Home() {
                             ${userInfo.state.username ? "voteStatus" : ""}
                             ${userInfo.state.username ? "rechirpStatus" : ""}
                         }`
-                        }
+            }
                     }
                 }
             }`
@@ -174,7 +174,7 @@ function Home() {
 
         const info = response.data[`${type}Posts`];
         setDoneFetching(true);
-        
+
         if (!info) {
             if (feedSelected === Feed.Following)
                 setFollowingFeed(null);
@@ -192,12 +192,12 @@ function Home() {
                         displayName: post.author.displayName,
                         userColor: post.author.userColor,
                         dateRechirped: post.postDate
-                    } 
+                    }
 
                     post = post.rootPost;
                 }
             }
-            
+
             return <Chirp
                 authorUsername={post.author.username}
                 authorDisplayName={post.author.displayName}
@@ -206,13 +206,13 @@ function Home() {
                 text={post.text}
                 key={post.id}
                 score={post.score}
-                voteStatus = {userInfo.state.username ? post.voteStatus : 0}
-                rechirpStatus = {userInfo.state.username ? post.rechirpStatus : false}
+                voteStatus={userInfo.state.username ? post.voteStatus : 0}
+                rechirpStatus={userInfo.state.username ? post.rechirpStatus : false}
                 userColor={post.author.userColor}
-                isEdited = {post.isEdited}
-                pinned = {null} //only shows on profile
+                isEdited={post.isEdited}
+                pinned={null} //only shows on profile
 
-                rechirper = {rechirper}
+                rechirper={rechirper}
 
             />
         })
@@ -232,7 +232,7 @@ function Home() {
         }
     }
 
-    
+
 
     let msg = null;
     let feed = null;
@@ -274,15 +274,14 @@ function Home() {
                         msg = "You reached the end of your following feed"
                     }
                     break;
-                default: 
+                default:
                     break;
             }
         }
     }
-    
+
 
     useScrollBottom(async () => {
-        setDoneFetching(false)
         await getChirps()
     })
 
@@ -296,20 +295,20 @@ function Home() {
         setAllHasNextPage(true)
         setFollowingHasNextPage(true)
     })
-    
+
     return (<Layout>
-        
+
         {userInfo.state.username ?
-            <div className = "w-full bg-black/20 shadow-md pt-8">
+            <div className="w-full bg-black/20 shadow-md pt-8">
                 <div className="mx-auto w-5/6 lg:w-3/5 py-2">
-                        <PostComposer />
+                    <PostComposer />
                 </div>
-            </div> 
-        : <div />}
+            </div>
+            : <div />}
 
         <div className="mx-auto w-5/6 lg:w-3/5 py-2 mt-4">
             {feedSelected !== Feed.Trending ? sortBubble : null}
-            
+
             <div className="grid grid-cols-3  mb-6">
                 <FeedButton
                     name={"Trending"}
@@ -325,16 +324,16 @@ function Home() {
                     isActive={feedSelected === Feed.Following} />
             </div>
 
-            <ul className = "mt-6 w-[95%] mx-auto">
+            <ul className="mt-6 w-[95%] mx-auto">
                 {feed}
-                
-                <div className = "text-center text-white text-lg my-4">{msg}</div>
+
+                <div className="text-center text-white text-lg my-4">{msg}</div>
 
                 {!doneFetching ?
-                    <SpinningCircle /> 
-                : null}
+                    <SpinningCircle />
+                    : null}
 
-                
+
             </ul>
         </div>
     </Layout>)
