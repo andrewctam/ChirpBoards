@@ -63,6 +63,20 @@ public class UserController {
     }
 
 
+    @QueryMapping
+    public User[] popularUsers(@Argument int num) {
+        PageRequest paging = PageRequest.of(0, num, Sort.by("followerCount", "id").descending());
+
+        Page<User> page = userRepository.findAll(paging);
+
+        User[] users = new User[page.getNumberOfElements()];
+        for (int i = 0; i < users.length; i++) {
+            users[i] = page.getContent().get(i);
+        }
+        return users;
+    }
+
+
     @SchemaMapping
     public Post pinnedPost(User user) {
         if (user.getPinnedPost() == null)
@@ -160,7 +174,7 @@ public class UserController {
 
         String sessionToken = UUID.randomUUID().toString();
         user.setSessionToken(sessionToken);
-        user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 900000 ));
+        user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 3600000 ));
         
         userRepository.save(user);
 
@@ -183,7 +197,7 @@ public class UserController {
 
         String sessionToken = UUID.randomUUID().toString();
         user.setSessionToken(sessionToken);
-        user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 900000 ));
+        user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 3600000 ));
 
         userRepository.save(user);
 

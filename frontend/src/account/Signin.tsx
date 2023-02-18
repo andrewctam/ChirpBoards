@@ -1,5 +1,5 @@
 import Layout from "../Layout";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import FormInput from "./FormInput";
 import { UserContext } from "../App";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -77,7 +77,7 @@ function Signin() {
                 </button>
             </div>
             :
-            <form onSubmit = {signin} className = "mx-auto border border-black/10 w-5/6 md:w-3/4 lg:w-1/2 px-12 py-4 rounded-xl bg-black/20 shadow-md">
+            <form onSubmit = {signin} className = "mx-auto border border-black/10 w-5/6 md:w-3/4 xl:w-1/2 px-12 py-4 rounded-xl bg-black/20 shadow-md">
                 <h1 className = "text-2xl text-center">Sign In</h1>
 
                 <a href = "/register">

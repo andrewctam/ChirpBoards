@@ -115,8 +115,8 @@ public class User {
             this.setSessionTokenExpiration(null);
             userRepository.save(this);
             return false;
-        } else if (timeDiff < 300000 ) { // 5 minutes
-            this.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 900000 )); // 15 minutes
+        } else if (timeDiff < 900000 ) { // 15 minutes
+            this.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 3600000 )); // 1 hour
             userRepository.save(this);
         }        
 

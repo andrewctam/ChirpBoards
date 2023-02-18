@@ -19,6 +19,9 @@ type Query {
     #No authentication required. Retrieves posts from a user. Include relatedUsername to get information for certain queries.
     searchPosts(query: String!, pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate", sortDirection: String = "descending", relatedUsername: String = null): PaginatedPosts
 
+    #No authentication required. Returns the most followed users
+    popularUsers(num: Int = 10): [User]
+
     #Authentication required. Retrieves notifications for a user.
     notifications(pageNum: Int = 0, size: Int = 10, username: String!, sessionToken: String!, relatedUsername: String = null): PaginatedNotifications
 }
