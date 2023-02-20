@@ -36,6 +36,7 @@ const SideInfo = () => {
                     userColor
                     followerCount
                     followingCount
+                    postCount
                     followers(pageNum: 0, size: 10) {
                         users {
                             username
@@ -188,10 +189,26 @@ const SideInfo = () => {
             <div className="text-white text-center mt-1 mx-8 p-6 h-fit border border-black bg-black/10 rounded-2xl">
                 {userInfo.state.username && currentUser ? 
                 <>
-                    Welcome back 
-                    <span style={{color: currentUser.userColor}}>
-                        {` ${currentUser.displayName}!`}
-                    </span>
+                    <div>
+                        Welcome back 
+                        <a style={{color: currentUser.userColor}} href={`./profile/${userInfo.state.username}`}>
+                            {` ${currentUser.displayName}`}
+                        </a>
+                    </div>
+                    <div className = "mt-2">
+                        Current Status:
+                        <div className="text-white">
+                            {` ${currentUser.followerCount} follower${determineS(currentUser.followerCount)}`}
+                        </div>
+
+                        <div className="text-white">
+                            {` ${currentUser.followingCount} following${determineS(currentUser.followingCount)}`}
+                        </div>
+
+                        <div className="text-white">
+                            {` ${currentUser.postCount} post${determineS(currentUser.postCount)}`}
+                        </div>
+                    </div>
                 </>
                 :
                 <>
@@ -232,6 +249,11 @@ const SideInfo = () => {
 }
 
 
+const determineS = (s: number) => {
+    if (s === 1)
+        return "";
+    return "s";
+}
 
 
 export default SideInfo

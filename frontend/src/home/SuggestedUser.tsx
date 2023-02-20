@@ -16,7 +16,7 @@ const SuggestedUser = (props: UserToFollow) => {
             break;
     }
     return (
-        <div className="text-white w-3/4 lg:w-1/2 mx-auto text-left rounded border border-black p-2 bg-black/10 mt-3 truncate">
+        <div className="text-white w-3/4 lg:w-1/2 mx-auto text-left rounded border border-black p-2 bg-black/5 mt-3 truncate">
             <a href = {`/profile/${props.username}`}>
                 <div>
                     <span style={{color: props.userColor}}>

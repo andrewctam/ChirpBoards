@@ -11,7 +11,7 @@ interface FormInputProps {
 function FormInput(props: FormInputProps) {
     
     return (
-    <div className = {`${props.mt ? props.mt : "mt-2"} text-left`}>
+    <div className = {`${props.mt ? props.mt : "mt-4"} text-left`}>
 
         <input 
             value = {props.value}
@@ -19,7 +19,7 @@ function FormInput(props: FormInputProps) {
             type = {props.password ? "password" : "text"}
             placeholder = {props.placeholder} 
 
-            className = "text-white bg-transparent rounded-none block p-1 w-full border-b border-b-white focus:outline-none"/>
+            className = "text-white rounded block p-1 w-full bg-white/10 border-b border-b-white focus:outline-none"/>
 
 
         <label className = {`text-xs ml-1 ${props.valid ? "text-white/90" : "text-sky-100/60"}`}>{props.name}</label>

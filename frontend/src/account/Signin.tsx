@@ -68,7 +68,7 @@ function Signin() {
 
     return (
     <Layout>
-        <div className = "text-white mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
+        <div className = "text-white mt-8 mx-auto w-11/12 md:w-3/4">
             {userInfo.state.username ?
             <div className = "mx-auto w-fit">
                 <p>Already signed in.</p>
