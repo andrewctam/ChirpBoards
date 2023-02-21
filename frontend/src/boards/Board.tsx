@@ -7,6 +7,7 @@ import useSort from "../hooks/useSort"
 import Layout from "../Layout"
 import SpinningCircle from "../SpinningCircle"
 import Comment from "./Comment"
+import CommentsPlaceholder from "./CommentsPlaceholder"
 import ReplyBox from "./ReplyBox"
 import Vote from "./Vote"
 
@@ -215,7 +216,7 @@ function Board() {
     return (
         <Layout>
             {mainPost ? 
-            <div className = "mx-auto w-11/12 md:w-4/5 lg:w-3/4">
+            <div className = "mx-auto w-11/12 md:w-4/5">
                 {sortBubble}
 
                 {mainPost.parentPost ? 
@@ -288,14 +289,24 @@ function Board() {
                     </div>
                 </div>
                 
-                
-                <div className = "w-full border-l mb-10 border-l-white">
-                    {localComments.length > 0 ? localComments.concat(comments) : comments}
-                </div>                
+                {!doneFetching ? <SpinningCircle /> : null}
+
+                { localComments.length == 0 && comments.length == 0 ?
+                <>
+                   <CommentsPlaceholder opacity = {"40%"} showNoComments = {doneFetching}/>
+                   <CommentsPlaceholder opacity = {"30%"} />
+                   <CommentsPlaceholder opacity = {"20%"} />
+                   <CommentsPlaceholder opacity = {"10%"} />
+                   <CommentsPlaceholder opacity = {"5%"} />
+                </>
+                :
+                    <div className = "w-full border-l mb-10 border-l-white">
+                        {localComments.length > 0 ? localComments.concat(comments) : comments}
+                    </div>                
+                }
 
             </div> : null}
 
-            {!doneFetching ? <SpinningCircle /> : null}
         </Layout>
     )
 

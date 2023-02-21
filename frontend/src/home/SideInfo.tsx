@@ -189,23 +189,24 @@ const SideInfo = () => {
             <div className="text-white text-center mt-1 mx-8 p-6 h-fit border border-black bg-black/10 rounded-2xl">
                 {userInfo.state.username && currentUser ? 
                 <>
-                    <div>
-                        Welcome back 
+                    <div className ="text-lg">
+                        Welcome Back 
                         <a style={{color: currentUser.userColor}} href={`./profile/${userInfo.state.username}`}>
                             {` ${currentUser.displayName}`}
                         </a>
+                        !
                     </div>
-                    <div className = "mt-2">
-                        Current Status:
-                        <div className="text-white">
+                    <div className = "mt-4">
+                        <span className="text-blue-200">Current Statistics:</span>
+                        <div className="text-white text-sm">
                             {` ${currentUser.followerCount} follower${determineS(currentUser.followerCount)}`}
                         </div>
 
-                        <div className="text-white">
+                        <div className="text-white text-sm">
                             {` ${currentUser.followingCount} following${determineS(currentUser.followingCount)}`}
                         </div>
 
-                        <div className="text-white">
+                        <div className="text-white text-sm">
                             {` ${currentUser.postCount} post${determineS(currentUser.postCount)}`}
                         </div>
                     </div>

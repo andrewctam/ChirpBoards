@@ -97,7 +97,7 @@ const NavBar = () => {
     }
 
     return (<>
-        <header className = 'w-full sticky top-0 z-50 bg-gradient-to-r from-stone-800/40 to-stone-800/95 shadow-lg p-4 text-sky-200 flex justify-between items-center'>
+        <header className = 'w-full sticky top-0 z-50 bg-gradient-to-r from-stone-800/60 to-stone-800/95 shadow-lg p-4 text-sky-200 flex justify-between items-center'>
             <h1 className = "text-xl font- sm:text-2xl inline my-auto">
                 <a href = "/">Chirp Boards</a>
             </h1>
@@ -171,14 +171,14 @@ const NavBar = () => {
         </header>
 
         {showMobileSearch && windowWidth < 640 ?
-            <form onSubmit = {search} className = 'w-full bg-stone-800 shadow-lg p-4 text-white flex justify-between items-center'>
+            <form onSubmit = {search} className = 'w-full bg-stone-800/50 shadow-lg p-4 text-white flex justify-between items-center'>
                 <input 
                     value = {searchInput}
                     onChange = {(e) => setSearchInput(e.target.value)}
-                    className = "p-2 w-full mx-auto rounded-xl bg-black/10 text-white border border-black mr-4" 
+                    className = "p-1 w-full mx-auto rounded-xl bg-black/10 text-white border border-black mr-4" 
                     placeholder="Search for a user or chirp" /> 
                 
-                <p className = "text-gray-50 mt-2 cursor-pointer text-center mr-4 my-auto" onClick={search}>
+                <p className = "text-gray-50 cursor-pointer text-center my-auto" onClick={search}>
                     Search
                 </p>
             </form>

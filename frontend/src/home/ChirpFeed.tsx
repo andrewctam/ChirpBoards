@@ -295,7 +295,7 @@ const ChirpFeed = () => {
     })
 
     return (
-        <div className="p-4 bg-black/20 min-h-screen">
+        <div className="p-4 bg-black/20 min-h-screen shadow-2xl">
             {feedSelected !== Feed.Trending ? sortBubble : null}
             
                 <div className="grid grid-cols-3 mb-6">

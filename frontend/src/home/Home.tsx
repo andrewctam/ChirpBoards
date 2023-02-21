@@ -20,8 +20,8 @@ function Home() {
         : null}
         
         <div className="mx-auto grid md:grid-cols-2">
-            <SideInfo />
             <ChirpFeed />
+            <SideInfo />
         </div>
     </Layout>)
 }
