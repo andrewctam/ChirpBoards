@@ -4,7 +4,7 @@ import { PostPayload, UserContext } from "../App";
 import Comment from "./Comment";
 
 interface ReplyBoxProps {
-    close: () => void
+    close?: () => void
     postId: string
     addReply: (reply: JSX.Element) => void
     sortMethod: string
@@ -86,12 +86,16 @@ function ReplyBox(props: ReplyBoxProps) {
             />
         
         )
-        props.close();
+        if (props.close)
+            props.close();
+        else {
+            setComment("");
+        }
         
     }
 
     return (
-        <form onSubmit = {addComment} className = "w-[95%] mx-auto h-24 my-6 bg-black/25 border border-black/25  shadow-lg relative rounded-xl">
+        <form onSubmit = {addComment} className = "mx-auto h-24 mb-6 bg-black/20 shadow-md relative rounded">
             <textarea 
                 value = {comment} 
                 onChange = {(e) => setComment(e.target.value)} 
@@ -100,10 +104,12 @@ function ReplyBox(props: ReplyBoxProps) {
 
 
             <div className = "absolute -bottom-3 right-4">
-                <button className = "bg-rose-200 text-xs sm:text-sm text-black border border-black/20 rounded shadow-md px-2 py-1" 
-                    onClick = {props.close}>
-                    Cancel
-                </button>
+                {props.close ? 
+                    <button className = "bg-rose-200 text-xs sm:text-sm text-black border border-black/20 rounded shadow-md px-2 py-1" 
+                        onClick = {props.close}>
+                        Cancel
+                    </button> 
+                : null}
 
                 <button className = "bg-[#b9cfe2] disabled:bg-gray-200 disabled:text-black/50 text-xs sm:text-sm text-black border border-black/20 rounded shadow-md -bottom-3 right-4 px-2 py-1 ml-2" 
                     onClick = {addComment}

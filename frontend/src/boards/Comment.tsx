@@ -102,8 +102,8 @@ function Comment(props: CommentProps) {
     const [dots, editor] = useOptions(props.id, props.text, userInfo.state.username === props.authorUsername, null, props.rechirpStatus)
 
     return (
-        <div className = "w-[95%] ml-[5%]">
-            <div className = {`my-6 px-8 py-4 border border-black rounded-bl-xl rounded-tr-xl relative break-all bg-black/10 text-gray-100 ${props.local ? "animate-fadeColor": ""} `} >
+        <div className = "w-[97.5%] ml-[2.5%]">
+            <div className = {`my-6 px-8 py-4 rounded-bl-xl rounded-tr-xl relative break-all bg-black/20 shadow-md text-gray-100 ${props.local ? "animate-fadeColor": ""} `} >
                 <div className = "inline mb-3 text-xs">
                     <a href={`/profile/${props.authorUsername}`} style = {{color: props.userColor}}>
                         {props.authorDisplayName}
@@ -137,14 +137,14 @@ function Comment(props: CommentProps) {
                 
 
                 {replying ? 
-                <ReplyBox 
-                    close = {() => {setReplying(false)}}
-                    postId = {props.id}
-                    addReply = {(reply) => {
-                        setLocalReplies([reply, ...localReplies]); 
-                    }}
-                    sortMethod = {props.sortMethod}
-                    sortDirection = {props.sortDirection}
+                    <ReplyBox 
+                        close = {() => {setReplying(false)}}
+                        postId = {props.id}
+                        addReply = {(reply) => {
+                            setLocalReplies([reply, ...localReplies]); 
+                        }}
+                        sortMethod = {props.sortMethod}
+                        sortDirection = {props.sortDirection}
                 /> : null}
 
                 <div className = "absolute -bottom-3 right-12">
@@ -170,11 +170,11 @@ function Comment(props: CommentProps) {
             </div>
 
             {showReplies ? 
-                <div className = "w-full border-l border-l-white">
+                <div className = "w-full border-l ml-[1px] border-l-gray-500">
                     {localReplies.length > 0 ? localReplies.concat(replies) : replies}
 
                     {replies.length < props.commentCount ?
-                        <p onClick = {getReplies} className = "cursor-pointer ml-[5%] text-sky-100">{`Load ${pageNum === 0 ? "" : "more"} replies`}</p>
+                        <p onClick = {getReplies} className = "cursor-pointer ml-[2.5%] text-xs text-sky-100">{`Load ${pageNum === 0 ? "" : "more"} replies`}</p>
                     : null}
                 </div>
              : null}

@@ -29,7 +29,6 @@ function Board() {
 
     const [pageNum, setPageNum] = useState(0); //start at 1 because the first page is already loaded
     const [hasNextPage, setHasNextPage] = useState(true);
-    const [replying, setReplying] = useState(false)
     
     const params = useParams();
     const navigate = useNavigate();
@@ -114,6 +113,8 @@ function Board() {
             userColor: info.author.userColor,
             isEdited: info.isEdited,
         })
+
+        setHasNextPage(info.commentCount > 10)
 
     }
 
@@ -215,12 +216,12 @@ function Board() {
             
     return (
         <Layout>
-            {mainPost ? 
+            {!mainPost ? null :
             <div className = "mx-auto w-11/12 md:w-4/5">
                 {sortBubble}
 
                 {mainPost.parentPost ? 
-                    <div className = "mt-6 mb-6 ml-4">
+                    <div className = "my-6 ml-4">
 
                         {mainPost.rootPost && mainPost.parentPost !== mainPost.rootPost ?
                         <p className = "mb-2">
@@ -235,7 +236,7 @@ function Board() {
                 : null}
 
                 <div>
-                    <div className = "w-full mt-6 mb-6 p-6 border border-black rounded-bl-xl rounded-tr-xl bg-black/10 text-white relative break-all">
+                    <div className = "w-full mt-6 mb-6 p-6 rounded-bl-xl rounded-tr-xl bg-black/20 text-white relative break-all shadow-md">
                         <div className = "mb-3">
                             <a href={`/profile/${mainPost.authorUsername}`} className = "text-lg" style = {{color: mainPost.userColor}}>
                                 {mainPost.authorDisplayName}
@@ -270,43 +271,33 @@ function Board() {
 
                         <Vote postId = {mainPost.id} initialScore = {mainPost.score} initialVoteStatus = {mainPost.voteStatus}/>
 
-                        
-                        {replying ?
-                        <ReplyBox 
-                            postId = {mainPost.id} 
-                            close = {() => {setReplying(false)}} 
-                            sortMethod = {sortMethod}
-                            sortDirection = {sortDirection}
-                            addReply = {(reply) => {
-                                setLocalComments([reply, ...localComments])
-                            }}/> 
-                        : 
-                        <button className = "px-2 py-1 absolute -bottom-3 right-12 bg-[#b9cfe2] text-black border border-black/20 rounded shadow-md text-xs" 
-                            onClick = {() => {setReplying(true)}}>
-                                Reply
-                        </button>
-                        }
                     </div>
                 </div>
                 
-                {!doneFetching ? <SpinningCircle /> : null}
+                <div className = "bg-black/20 p-4 my-2 rounded-xl shadow-md">
+                    <ReplyBox 
+                        postId = {mainPost.id} 
+                        sortMethod = {sortMethod}
+                        sortDirection = {sortDirection}
+                        addReply = {(reply) => {
+                            setLocalComments([reply, ...localComments])
+                        }}/> 
 
-                { localComments.length == 0 && comments.length == 0 ?
-                <>
-                   <CommentsPlaceholder opacity = {"40%"} showNoComments = {doneFetching}/>
-                   <CommentsPlaceholder opacity = {"30%"} />
-                   <CommentsPlaceholder opacity = {"20%"} />
-                   <CommentsPlaceholder opacity = {"10%"} />
-                   <CommentsPlaceholder opacity = {"5%"} />
-                </>
-                :
-                    <div className = "w-full border-l mb-10 border-l-white">
-                        {localComments.length > 0 ? localComments.concat(comments) : comments}
-                    </div>                
-                }
+                    {!doneFetching ? <SpinningCircle /> : null}
 
-            </div> : null}
-
+                    {localComments.length == 0 && comments.length == 0 ?
+                    <>
+                        <CommentsPlaceholder opacity = {"90%"} showNoComments = {doneFetching}/>
+                        <CommentsPlaceholder opacity = {"50%"} />
+                        <CommentsPlaceholder opacity = {"25%"} />
+                    </>
+                    :
+                        <div className = "w-full mb-10 border-l-white">
+                            {localComments.length > 0 ? localComments.concat(comments) : comments}
+                        </div>                
+                    }
+                </div>
+            </div>}
         </Layout>
     )
 

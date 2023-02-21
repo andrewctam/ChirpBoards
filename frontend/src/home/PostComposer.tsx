@@ -61,7 +61,7 @@ function PostComposer() {
 
         navigate(`/board/${response.data.createPost.post.id}`)
     }
-    return (<form onSubmit={createChirp} className="w-full mb-12 bg-black/20 border border-black/90 shadow-lg relative rounded">
+    return (<form onSubmit={createChirp} className="w-full mb-12 bg-black/20 p-1 shadow-lg relative rounded">
         <textarea
             value={composedChirp}
             onChange={updateComposedChirp}

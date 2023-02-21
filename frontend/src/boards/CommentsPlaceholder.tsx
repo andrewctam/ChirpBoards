@@ -7,9 +7,9 @@ const CommentsPlaceholder = (props: CommentsPlaceholderProps) => {
     
     return (
         <div style = {{opacity: props.opacity}}
-            className = {`w-[95%] ml-[5%] my-6 h-16 px-8 py-4 border border-black rounded-bl-xl rounded-tr-xl bg-black/5 text-gray-100`}>
+            className = "w-[95%] ml-[5%] my-6 h-24 rounded-bl-xl border border-black/10 rounded-tr-xl bg-black/5 shadow-md flex justify-center items-center">
             {props.showNoComments ?
-                <div className = "text-center text-white text-xl select-none">
+                <div className = "w-fit h-fit text-white/50 text-xl select-none flex">
                     No Comments Yet
                 </div>
             : null}

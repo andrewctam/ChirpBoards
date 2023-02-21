@@ -9,14 +9,24 @@ export type UserToFollow = {
     userColor: string;
     relation: "no display" | "popular" | "follower" | "distant following";
     distant?: string;
+    isFollowing?: boolean;
 } 
+
+interface CurrentUser {
+    username: string;
+    displayName: string;
+    userColor: string;
+    followerCount: number;
+    followingCount: number;
+    postCount: number;
+}
 
 const SideInfo = () => {
     const userInfo = useContext(UserContext);
     const [popularUsers, setPopularUsers] = useState<UserToFollow[]>([]);
     const [followersUsers, setFollowersUsers] = useState<UserToFollow[]>([]);
     const [distantFollowingUsers, setDistantFollowingUsers] = useState<UserToFollow[]>([]);
-    const [currentUser, setCurrentUser] = useState<UserPayload | null>(null);
+    const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
     const [doneLoading, setDoneLoading] = useState(false);
 
     useEffect(() => {
@@ -42,6 +52,7 @@ const SideInfo = () => {
                             username
                             displayName
                             userColor
+                            isFollowing(followeeUsername: "${userInfo.state.username}")
                         }
                     }
                     following(pageNum: 0, size: 3) {
@@ -52,6 +63,7 @@ const SideInfo = () => {
                                     username
                                     displayName
                                     userColor
+                                    isFollowing(followeeUsername: "${userInfo.state.username}")
                                 }
                             }
                         }
@@ -61,6 +73,7 @@ const SideInfo = () => {
                     username
                     displayName
                     userColor
+                    isFollowing(followeeUsername: "${userInfo.state.username}")
                 }  
             }
         `
@@ -71,7 +84,7 @@ const SideInfo = () => {
             },
             body: JSON.stringify({ query })
         }).then(res => res.json())
-
+        console.log(response)
         setCurrentUser(response.data.user);
 
         const followers: UserPayload[] = response.data.user.followers.users;
@@ -80,7 +93,8 @@ const SideInfo = () => {
                 username: u.username,
                 displayName: u.displayName,
                 userColor: u.userColor,
-                relation: "follower"
+                relation: "follower",
+                isFollowing: u.isFollowing
             }
         }))
 
@@ -91,6 +105,7 @@ const SideInfo = () => {
                 displayName: u.displayName,
                 userColor: u.userColor,
                 relation: "popular",
+                isFollowing: u.isFollowing
             }
         }))
 
@@ -113,13 +128,13 @@ const SideInfo = () => {
             
             for (let j = 0; j < user.following.users.length; j++) {
                 const distant = user.following.users[j];
-                console.log(distant)
                 distantFollowing.push({
                     username: distant.username,
                     displayName: distant.displayName,
                     userColor: distant.userColor,
                     relation: "distant following",
-                    distant: user.username
+                    distant: user.username,
+                    isFollowing: distant.isFollowing
                 })
             }
             
@@ -186,7 +201,7 @@ const SideInfo = () => {
         
     return (
         <div className="hidden md:block p-4 sticky top-16 h-fit">
-            <div className="text-white text-center mt-1 mx-8 p-6 h-fit border border-black bg-black/10 rounded-2xl">
+            <div className="text-white text-center mt-8 mx-8 p-6 h-fit bg-black/20 rounded-2xl shadow-md">
                 {userInfo.state.username && currentUser ? 
                 <>
                     <div className ="text-lg">
@@ -199,15 +214,15 @@ const SideInfo = () => {
                     <div className = "mt-4">
                         <span className="text-blue-200">Current Statistics:</span>
                         <div className="text-white text-sm">
-                            {` ${currentUser.followerCount} follower${determineS(currentUser.followerCount)}`}
+                            {` ${currentUser.followerCount} follower${currentUser.followerCount === 1 ? "" : "s"}`}
                         </div>
 
                         <div className="text-white text-sm">
-                            {` ${currentUser.followingCount} following${determineS(currentUser.followingCount)}`}
+                            {` ${currentUser.followingCount} following`}
                         </div>
 
                         <div className="text-white text-sm">
-                            {` ${currentUser.postCount} post${determineS(currentUser.postCount)}`}
+                            {` ${currentUser.postCount} chirp${currentUser.postCount === 1 ? "" : "s"}`}
                         </div>
                     </div>
                 </>
@@ -225,8 +240,8 @@ const SideInfo = () => {
                 }
             </div>
 
-            <div className="text-white text-center mt-6 mx-8 p-6 h-fit border border-black bg-black/10 rounded-2xl">
-                <div className="text-2xl">
+            <div className="text-white text-center mt-6 mx-8 p-6 h-fit bg-black/20 rounded-2xl shadow-md">
+                <div className="text-lg">
                 {userInfo.state.username ? 
                     "Suggested Users to Follow"
                     :
@@ -242,18 +257,17 @@ const SideInfo = () => {
                             userColor = {u.userColor}
                             relation={u.relation}
                             distant={u.distant}
+                            isFollowing={u.isFollowing}
+                            changeFollowingCount = {(i: number) => {
+                                if (!currentUser) 
+                                    return;
+                                setCurrentUser({ ...currentUser, followingCount: currentUser.followingCount + i})
+                            }}
                         />
             })}
             </div>  
         </div>
     )
-}
-
-
-const determineS = (s: number) => {
-    if (s === 1)
-        return "";
-    return "s";
 }
 
 

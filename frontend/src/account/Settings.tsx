@@ -163,20 +163,20 @@ function Settings() {
         center = (<>
             <button 
                 onClick = {() => {setEditing(Setting.DisplayName)}} 
-                className = "text-sm block text-white px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50">
+                className = "text-sm block text-white px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50 min-w-[200px]">
                 Edit Display Name
             </button>
 
             <a
                 href = {`/profile/${userInfo.state.username}?editColor=true`}
-                className = "text-sm block text-white w-fit px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50">
+                className = "text-sm block text-white w-fit px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50 min-w-[200px]">
                 Edit User Color
             </a>
 
 
 
             <button onClick = {() => {setEditing(Setting.Password)}}
-                className = "text-sm block text-white px-4 py-2 mx-auto my-1 mb-4  bg-black/10 rounded-xl border border-black/50">
+                className = "text-sm block text-white px-4 py-2 mx-auto my-1 mb-4  bg-black/10 rounded-xl border border-black/50 min-w-[200px]">
                 Change Password
             </button>
         </>)

@@ -28,6 +28,8 @@ function Inbox () {
     const getNotifications = async () => {
         if (!hasNext) 
             return;
+        setDoneFetching(false)
+
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
@@ -57,11 +59,9 @@ function Inbox () {
         
         console.log(response)
 
-        let unreadLeft = response.data.notifications.unread
-        if (unreadLeft == null) 
-            return null;
+        //number of unread notifications left. from the top, go down and mark each one as unread while > 0
+        let unreadLeft = response.data.notifications.unread 
                     
-        
         const info = response.data.notifications
         setPageNum(pageNum + 1)
         setHasNext(info.hasNext)
@@ -71,7 +71,7 @@ function Inbox () {
                 unreadLeft -= 1
                 let postId = null
                 if (notif.post !== null) //in case post was deleted
-                    postId = notif.post.id
+                    postId = notif.post.id;
                 
                 return <Notification
                     key = {"notification" + i}
@@ -85,7 +85,7 @@ function Inbox () {
             })
         ));
 
-        setDoneFetching(true)
+        setDoneFetching(true);
     }
 
     const clearNotifications = async () => {
@@ -101,45 +101,41 @@ function Inbox () {
             body: JSON.stringify({query})
         }).then(res => res.json())
         
-        console.log(response)
+        console.log(response);
 
-        setNotificationsFeed([])
-        setPageNum(0)
+        setNotificationsFeed([]);
+        setPageNum(0);
     }
-    
-
-    let center= null
-
-    if (!doneFetching)
-        center = <SpinningCircle />
-    else if (notificationsFeed.length === 0)
-        center = <h1 className = "text-lg text-white text-center mt-2">No notifications</h1>
-    else 
-        center = <>
-            <div className = "text-center">
-                <button
-                    onClick = {clearNotifications} 
-                    className = "mx-auto bg-black/20 text-white p-4 border border-black/20 rounded-md py-2">
-                    Clear Notifications
-                </button>
-            </div>
-            <ul className = "w-[95%] mx-auto mt-6"> 
-                {notificationsFeed}
-            </ul>
-        </>
 
     useScrollBottom(async () => {
-        setDoneFetching(false)
-        await getNotifications()
+        await getNotifications();
     })
 
     return (
         <Layout>
-            <h1 className = "text-2xl text-white text-center py-4 bg-black/20 shadow-md">Inbox</h1>
+            <h1 className = "text-2xl text-white text-center p-4 bg-black/20 shadow-md">Inbox</h1>
 
-            <div className="mt-2 mx-auto w-5/6 lg:w-3/5 py-2">
-                {center}
-            </div>
+            {notificationsFeed.length === 0 ?
+                <div className = "text-center mt-4">
+                    <h1 className = "text-xl text-white">No Notifications Yet</h1>
+                </div>
+                :
+                <div className="mt-2 mx-auto w-5/6 lg:w-3/5 pt-2 pb-12">
+                    <div className = "text-center">
+                        <button
+                            onClick = {clearNotifications} 
+                            className = "mx-auto bg-black/20 text-white p-4 border border-black/20 rounded-md py-2">
+                            Clear Notifications
+                        </button>
+                    </div>
+                    
+                    <ul className = "w-[95%] mx-auto mt-6"> 
+                        {notificationsFeed}
+                    </ul>
+                </div>
+            }
+            
+            {!doneFetching ? <SpinningCircle /> : null}
         </Layout>
     )
 }

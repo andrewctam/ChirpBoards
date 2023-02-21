@@ -25,7 +25,7 @@ function Chirp(props: ChirpProps) {
 
     return (
     <li className={`w-full relative mb-8`}>
-        <div className="block bg-black/10 text-white p-1 pr-6 border rounded-bl-xl rounded-tr-xl truncate border-black">
+        <div className="block bg-black/20 text-white p-1 pr-6 rounded-bl-xl rounded-tr-xl truncate">
 
              {editor ? 
                 <div className = "m-8">

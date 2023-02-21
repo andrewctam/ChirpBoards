@@ -176,7 +176,7 @@ const useOptions = (postId: string,
 
 
     const editor =
-        (<form onSubmit = {editPost} className = "w-full mx-auto h-24 mb-6 bg-black/5 border border-black/25 relative rounded">
+        (<form onSubmit = {editPost} className = "w-full mx-auto h-24 mb-6 bg-black/10 relative rounded">
             <textarea 
                 value = {editedText} 
                 onChange = {(e) => setEditedText(e.target.value)} 

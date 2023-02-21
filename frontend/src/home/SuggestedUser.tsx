@@ -1,6 +1,47 @@
+import { useContext, useState } from "react";
+import { UserContext } from "../App";
 import { UserToFollow } from "./SideInfo";
 
-const SuggestedUser = (props: UserToFollow) => {
+interface SuggestedUserProps extends UserToFollow {
+    changeFollowingCount: (change: number) => void;
+}
+
+const SuggestedUser = (props: SuggestedUserProps) => {
+    const [isFollowing, setIsFollowing] = useState(props.isFollowing ?? false)
+
+    const userInfo = useContext(UserContext)
+    const toggleFollow = async () => {
+        if (!userInfo.state.username) {
+            return;
+        }
+         
+        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+
+        const query =
+        `mutation {    
+            toggleFollow(userToFollow: "${props.username}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
+                msg
+                endRes
+            }
+        }`
+
+        const response = await fetch(url ?? '', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({query})
+        }).then(res => res.json())
+
+        console.log(response)
+
+        if (isFollowing) {
+            setIsFollowing(false);
+            props.changeFollowingCount(-1);
+        } else {
+            setIsFollowing(true);
+            props.changeFollowingCount(1);
+        }
+    }
+
     let relation = "";
     switch (props.relation) {
         case "popular":
@@ -16,7 +57,7 @@ const SuggestedUser = (props: UserToFollow) => {
             break;
     }
     return (
-        <div className="text-white w-3/4 lg:w-1/2 mx-auto text-left rounded border border-black p-2 bg-black/5 mt-3 truncate">
+        <div className="text-white w-3/4 lg:w-1/2 mx-auto text-left rounded p-2 bg-black/20 mt-3 truncate shadow-md relative">
             <a href = {`/profile/${props.username}`}>
                 <div>
                     <span style={{color: props.userColor}}>
@@ -35,7 +76,12 @@ const SuggestedUser = (props: UserToFollow) => {
                 {relation}
             </div>
 
-            
+            { userInfo.state.username ?
+                <button onClick = {toggleFollow} 
+                    className = {`py-1 px-2 shadow-md rounded absolute text-sm bottom-1 right-1 z-20 ${isFollowing ? "hover:bg-red-800/70 bg-red-500/10 " : "hover:bg-green-800/70 bg-green-500/10 " }`}>
+                    {isFollowing ? "Unfollow" : "Follow"}
+                </button> 
+            : null}
         </div>
 
     )

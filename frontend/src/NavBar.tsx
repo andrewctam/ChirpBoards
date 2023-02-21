@@ -98,7 +98,7 @@ const NavBar = () => {
 
     return (<>
         <header className = 'w-full sticky top-0 z-50 bg-gradient-to-r from-stone-800/60 to-stone-800/95 shadow-lg p-4 text-sky-200 flex justify-between items-center'>
-            <h1 className = "text-xl font- sm:text-2xl inline my-auto">
+            <h1 className = "text-xl sm:text-2xl inline my-auto font-light">
                 <a href = "/">Chirp Boards</a>
             </h1>
 
