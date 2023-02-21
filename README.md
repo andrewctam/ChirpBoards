@@ -3,7 +3,7 @@
 ## Description
 [Chirp Boards](https://chirpboards.web.app) is a full stack social media app that is similar to Twitter and Reddit. Like Twitter, users can "chirp" out short status messages up to 500 characters long. Users can also "rechirp" other users' chirps. Each chirp opens to a forum board like Reddit where users can comment and upvote/downvote posts.
 
-![Demo Board](board.png)
+![Demo Board](demo.png)
 
 ## Technologies
 - [Java Spring Boot](https://spring.io/projects/spring-boot)
