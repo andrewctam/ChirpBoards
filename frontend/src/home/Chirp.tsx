@@ -35,7 +35,11 @@ function Chirp(props: ChirpProps) {
                 <a href={`/board/${props.id}`}>
                     <div className={`w-full max-h-96 overflow-y-hidden whitespace-pre-line p-6 ${props.rechirper ? "pt-14" : "pt-10"} text-sm break-all text-white`}>
                         {props.text}
+
                     </div>
+                    {props.imageURL ? 
+                        <img src = {props.imageURL} className = "mx-auto max-w-[95%] max-h-[400px] rounded my-4"/>
+                    : null }
                 </a>
             }
 
@@ -83,7 +87,6 @@ function Chirp(props: ChirpProps) {
                     </div>
                 : null}
             </div>
-
         </div>
 
 

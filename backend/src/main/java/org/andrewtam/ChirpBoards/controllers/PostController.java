@@ -2,11 +2,13 @@ package org.andrewtam.ChirpBoards.controllers;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -24,6 +26,7 @@ import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -34,6 +37,11 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
+
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
 
 import graphql.GraphQLContext;
 
@@ -49,6 +57,9 @@ public class PostController {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Value("${azure.storage.connectionString}")
+    private String azureConnectionString;
 
     @QueryMapping
     public Post post(@Argument String id, @Argument String relatedUsername, GraphQLContext context) {
@@ -346,7 +357,7 @@ public class PostController {
     
 
     @MutationMapping
-    public PostResponse createPost(@Argument String text, @Argument String username, @Argument String sessionToken) {
+    public PostResponse createPost(@Argument String text, @Argument String base64Image, @Argument String username, @Argument String sessionToken) {
         username = username.toLowerCase();
         if (text == "" || username == "" || text.length() > 500) {
             return new PostResponse("Invalid inputs", null);
@@ -360,7 +371,28 @@ public class PostController {
         if (!user.checkUserSession(userRepository, sessionToken))
             return new PostResponse("User not authenticated", null);
 
-        Post created = postRepository.save(new Post(text, user.getId()));
+        String imageURL = "";
+        if (base64Image.length() > 0) {
+            try {
+                byte[] imageBytes = Base64.getDecoder().decode(base64Image);
+
+                CloudStorageAccount storageAccount = CloudStorageAccount.parse(azureConnectionString);
+                CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
+                CloudBlobContainer container = blobClient.getContainerReference("images");
+
+                String filename = username + "_" + UUID.randomUUID().toString() + ".jpg";
+                CloudBlockBlob blob = container.getBlockBlobReference(filename);
+                blob.uploadFromByteArray(imageBytes, 0, imageBytes.length);
+
+                imageURL = blob.getUri().toString();
+                System.out.println(imageURL);
+            } catch (Exception e) {
+                imageURL = "";
+                System.out.println(e);           
+            }
+        }
+
+        Post created = postRepository.save(new Post(text, imageURL, user.getId()));
 
         pingUsers(text, created);
             
@@ -390,7 +422,7 @@ public class PostController {
         if (parentPost == null)
             return new PostResponse("Post not found", null);
             
-        Post created = new Post(text, user.getId());
+        Post created = new Post(text, "", user.getId());
         created.declareComment(parentPost);
         created = postRepository.save(created);
         
@@ -437,7 +469,7 @@ public class PostController {
         if (post.getAuthor().equals(user.getId()))
             return new BooleanResponse("Can not rechirp own posts", null);
 
-        Post rechirp = new Post("This is a rechirp of " + postId, user.getId());
+        Post rechirp = new Post("This is a rechirp of " + postId, "", user.getId());
         rechirp.declareRechirp(post);
         rechirp = postRepository.save(rechirp);
 
@@ -661,6 +693,21 @@ public class PostController {
             userRepository.save(author);
         }
 
+        if (post.getImageURL().length() > 0) {
+            try {
+                CloudStorageAccount storageAccount = CloudStorageAccount.parse(azureConnectionString);
+                CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
+                CloudBlobContainer container = blobClient.getContainerReference("images");
+                
+                String name = post.getImageURL();
+                name = name.substring(name.lastIndexOf('/') + 1);
+
+                CloudBlockBlob blob = container.getBlockBlobReference(name);
+                blob.deleteIfExists();
+            } catch (Exception e) {
+                System.out.println(e);           
+            }
+        }
         
         //delete rechirps and remove it from author's post
         List<Post> rechirps = postRepository.findRechirpsOfPost(post.getId());

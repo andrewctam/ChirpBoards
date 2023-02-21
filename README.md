@@ -9,19 +9,24 @@
 - [Java Spring Boot](https://spring.io/projects/spring-boot)
 - [MongoDB](https://www.mongodb.com/try/download/community)
 - [GraphQL](https://graphql.org/)
+- [Azure Blob Storage](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction)
 - [TypeScript](https://www.typescriptlang.org/download)
 - [React](https://reactjs.org/docs/getting-started.html)
 - [Tailwind CSS](https://tailwindcss.com/docs/guides/create-react-app)
 - [Docker](https://docs.docker.com/get-docker/)
 
 ## Installation
-Clone this repository. Then, in `/frontend`, update the environmental variables in `.env.template` (and rename it to `.env`). 
-
-In `backend/src/main/resources/application.properties.template`, update `application.properties.template` with your MongoDB URI (and rename it to `application.properties`). 
+Clone this repository.
 
 ```
 git clone https://github.com/tamandrew/ChirdBoards.git
 ```
+
+In `/frontend`, rename `.env.template` to `.env`, and update the environmental variables.
+
+In `/backend/src/main/resources`, rename `application.properties.template` to `application.properties`, and update the fields.
+- Add your MongoDB URI (required)
+- Add your Azure Blob Storage connection string (optional, but image uploading requires it)
 
 ### Docker
 To run with docker, run `docker compose up` at the root. 

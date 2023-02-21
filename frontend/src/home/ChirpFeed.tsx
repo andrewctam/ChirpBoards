@@ -127,6 +127,7 @@ const ChirpFeed = () => {
                     posts {
                         id
                         text
+                        imageURL
                         isEdited
                         author {
                             username
@@ -148,6 +149,7 @@ const ChirpFeed = () => {
                             }
                             id
                             text
+                            imageURL
                             isEdited
                             
                             postDate(timezone: ${timezone})
@@ -202,6 +204,7 @@ const ChirpFeed = () => {
                 id={post.id}
                 postDate={post.postDate}
                 text={post.text}
+                imageURL={post.imageURL}
                 key={post.id}
                 score={post.score}
                 voteStatus={userInfo.state.username ? post.voteStatus : 0}

@@ -19,6 +19,7 @@ public class Post implements Comparable<Post> {
     private ObjectId rootPost;
 
     private String text;
+    private String imageURL;
     private ObjectId author; //reference to user
     private long postDate; //milliseconds since epoch
     private int score;
@@ -31,8 +32,9 @@ public class Post implements Comparable<Post> {
     private boolean isEdited;
 
 
-    public Post(String text, ObjectId author) {
+    public Post(String text, String imageURL, ObjectId author) {
         this.text = text;
+        this.imageURL = imageURL;
         this.author = author;
 
         this.isComment = false;
@@ -80,6 +82,9 @@ public class Post implements Comparable<Post> {
 
     public String getText() { return text; }
     public String setText(String text) { return this.text = text; }
+
+    public String getImageURL() { return imageURL; }
+    public String setImageURL(String imageURL) { return this.imageURL = imageURL; }
 
     public int getScore() { return score; }
 

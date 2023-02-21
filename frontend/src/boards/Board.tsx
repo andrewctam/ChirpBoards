@@ -71,6 +71,7 @@ function Board() {
                     userColor
                 }
                 text
+                imageURL
                 parentPost {
                     id
                 }
@@ -101,6 +102,7 @@ function Board() {
         setMainPost({
             id: postId,
             text: info.text,
+            imageURL: info.imageURL,
             voteStatus: userInfo.state.username ? info.voteStatus : 0,
             rechirpStatus: userInfo.state.username ? info.rechirpStatus : false,
             postDate: info.postDate,
@@ -267,6 +269,10 @@ function Board() {
                             {mainPost.text}
                         </div>}
 
+                        {mainPost.imageURL ? 
+                            <img src = {mainPost.imageURL} className = "mx-auto max-h-[50vh] rounded my-8" />
+                        : null }
+
                         {dots}
 
                         <Vote postId = {mainPost.id} initialScore = {mainPost.score} initialVoteStatus = {mainPost.voteStatus}/>
@@ -275,6 +281,7 @@ function Board() {
                 </div>
                 
                 <div className = "bg-black/20 p-4 my-2 rounded-xl shadow-md">
+                    {userInfo.state.username ?
                     <ReplyBox 
                         postId = {mainPost.id} 
                         sortMethod = {sortMethod}
@@ -282,6 +289,7 @@ function Board() {
                         addReply = {(reply) => {
                             setLocalComments([reply, ...localComments])
                         }}/> 
+                    : null}
 
                     {!doneFetching ? <SpinningCircle /> : null}
 

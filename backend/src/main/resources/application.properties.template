@@ -1,6 +1,9 @@
 spring.data.mongodb.uri=
 spring.data.mongodb.database=
 
+#If not provided, all other functions except image uploading will still work
+azure.storage.connectionString=
+
 #uncomment for GraphiQL
 #spring.graphql.graphiql.enabled=true
 #spring.graphql.graphiql.path=/graphiql

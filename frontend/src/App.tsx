@@ -18,6 +18,7 @@ export interface PostChirp {
     id: string
     text: string
     postDate: string
+    imageURL?: string
     authorUsername: string
     authorDisplayName: string
     score: number
@@ -53,6 +54,7 @@ export interface PostPayload {
     id: string
     author: UserPayload
     text: string
+    imageURL: string
     isComment: boolean
     parentPost: PostPayload | null
     rootPost: PostPayload | null
