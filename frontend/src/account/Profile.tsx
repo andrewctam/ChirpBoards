@@ -113,6 +113,7 @@ function Profile() {
                     id
                     text
                     isEdited
+                    imageURL
                     postDate(timezone: ${timezone})
                     score
                     ${userInfo.state.username ? "voteStatus" : ""}
@@ -153,6 +154,7 @@ function Profile() {
                     id={info.pinnedPost.id}
                     postDate={info.pinnedPost.postDate}
                     text={info.pinnedPost.text}
+                    imageURL={info.pinnedPost.imageURL}
                     key={info.pinnedPost.id}
                     score={info.pinnedPost.score}
                     voteStatus={userInfo.state.username ? info.pinnedPost.voteStatus : 0}

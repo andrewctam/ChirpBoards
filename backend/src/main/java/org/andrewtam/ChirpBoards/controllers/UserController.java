@@ -429,29 +429,32 @@ public class UserController {
         if (!user.checkUserSession(userRepository, sessionToken))
             return new BooleanResponse("User not authenticated", null);
 
-        if (base64Image.length() < 0) {
-            return new BooleanResponse("Invalid image", null);
-        }
-
-        String imageURL = "";
         try {
-            byte[] imageBytes = Base64.getDecoder().decode(base64Image);
-
             CloudStorageAccount storageAccount = CloudStorageAccount.parse(azureConnectionString);
             CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
             CloudBlobContainer container = blobClient.getContainerReference("images");
+
+        
+            byte[] imageBytes = Base64.getDecoder().decode(base64Image);
 
             if (user.getPictureURL().length() > 0) {
                 String oldImageName = user.getPictureURL().substring(user.getPictureURL().lastIndexOf("/") + 1);
                 CloudBlockBlob oldImage = container.getBlockBlobReference(oldImageName);
                 oldImage.deleteIfExists();
             }
+
+            //if no new image is provided, indicates to remove
+            if (base64Image.length() == 0) { 
+                user.setPictureURL("");
+                userRepository.save(user);
+                return new BooleanResponse("Successfully removed profile picture", true);
+            }
             
             String filename = username + "_" + UUID.randomUUID().toString() + ".jpg";
             CloudBlockBlob blob = container.getBlockBlobReference(filename);
             blob.uploadFromByteArray(imageBytes, 0, imageBytes.length);
 
-            imageURL = blob.getUri().toString();
+            String imageURL = blob.getUri().toString();
 
             user.setPictureURL(imageURL);
         } catch (Exception e) {

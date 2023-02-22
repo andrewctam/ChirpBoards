@@ -1,12 +1,13 @@
 import { useContext, useEffect, useState } from "react"
 import { UserContext, PostPayload } from "../App"
-import { Post } from "./Board"
+import { BoardInfo } from "./Board"
 import ReplyBox from "./ReplyBox"
 import Vote from "./Vote"
 import useOptions from "../hooks/useOptions"
 import UserPhoto from "../UserPhoto"
+import PostBody from "../PostBody"
 
-interface CommentProps extends Post {
+interface CommentProps extends BoardInfo {
     local: boolean
     autoLoadComments: boolean
     sortMethod: string
@@ -84,6 +85,7 @@ function Comment(props: CommentProps) {
                     id = {comment.id}
                     text = {comment.text}
                     postDate = {comment.postDate}
+                    imageURL = {""}
                     authorUsername = {comment.author.username}
                     authorDisplayName = {comment.author.displayName}
                     authorPictureURL = {comment.author.pictureURL}
@@ -106,57 +108,21 @@ function Comment(props: CommentProps) {
 
     return (
         <div className = "w-[97.5%] ml-[2.5%]">
-            <div className = {`my-6 px-4 py-4 rounded-bl-xl rounded-tr-xl relative break-all bg-black/20 shadow-md text-gray-100 ${props.local ? "animate-fadeColor": ""} `} >
-                <div className = "inline mb-3 text-xs">                                
-                    <a href={`/profile/${props.authorUsername}`}>
-                        <UserPhoto
-                            url = {props.authorPictureURL}
-                            userColor = {props.userColor}
-                            size = {40}
-                        />
-                    </a>
-
-                    <a href={`/profile/${props.authorUsername}`} style = {{color: props.userColor}} className = "ml-2">
-                        {props.authorDisplayName}
-                    </a>
-                    <a href={`/profile/${props.authorUsername}`}>
-                        {` • @${props.authorUsername}`}
-                    </a>
-                    <div className = "text-xs inline">
-                        {` • ${props.postDate}`}
-                    </div>
-
-                    {props.isEdited ? 
-                        <div className = "text-xs inline italics">
-                            <span className = "text-white">
-                                {` • `}
-                            </span>
-                            <span className = "text-yellow-300">
-                                {`edited`}
-                            </span>
-                        </div>
-                    : null}
-
-                    <a className = "text-gray-200 ml-1" href = {`/board/${props.id}`}> ► </a>
-                </div>
-                
-                { editor ? editor :
-                <div className = "whitespace-pre-line ml-[48px]">
-                    {props.text}
-                </div>
-                }
+            <div className = {`my-6 rounded-bl-xl rounded-tr-xl relative break-all bg-black/20 shadow-md text-gray-100 ${props.local ? "animate-fadeColor": ""} `} >
+                <PostBody
+                    username = {props.authorUsername}
+                    displayName = {props.authorDisplayName}
+                    userColor = {props.userColor}
+                    postDate = {props.postDate}
+                    pictureURL = {props.authorPictureURL}
+                    isEdited = {props.isEdited}
+                    pinned = {false}
+                    text = {props.text}
+                    editor = {editor}
+                />
+                    
                 
 
-                {replying ? 
-                    <ReplyBox 
-                        close = {() => {setReplying(false)}}
-                        postId = {props.id}
-                        addReply = {(reply) => {
-                            setLocalReplies([reply, ...localReplies]); 
-                        }}
-                        sortMethod = {props.sortMethod}
-                        sortDirection = {props.sortDirection}
-                /> : null}
 
                 <div className = "absolute -bottom-3 right-12">
                     {props.commentCount > 0 ?
@@ -180,6 +146,18 @@ function Comment(props: CommentProps) {
                 <Vote postId = {props.id} initialScore = {props.score} initialVoteStatus = {props.voteStatus}/>
             </div>
 
+            {replying ? 
+                <ReplyBox 
+                    close = {() => {setReplying(false)}}
+                    postId = {props.id}
+                    addReply = {(reply) => {
+                        setLocalReplies([reply, ...localReplies]); 
+                    }}
+                    sortMethod = {props.sortMethod}
+                    sortDirection = {props.sortDirection}
+                    offset = {true}
+            /> : null}
+
             {showReplies ? 
                 <div className = "w-full border-l ml-[1px] border-l-gray-500">
                     {localReplies.length > 0 ? localReplies.concat(replies) : replies}
@@ -189,6 +167,8 @@ function Comment(props: CommentProps) {
                     : null}
                 </div>
              : null}
+
+
         </div>
     )
 

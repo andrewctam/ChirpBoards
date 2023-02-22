@@ -14,11 +14,11 @@ type UserInfo = {
     sessionToken: string;
 }
 
-export interface PostChirp {
+export interface PostInfo {
     id: string
     text: string
     postDate: string
-    imageURL?: string
+    imageURL: string
     authorUsername: string
     authorDisplayName: string
     authorPictureURL: string

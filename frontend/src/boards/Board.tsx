@@ -1,18 +1,18 @@
 import { useContext, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { PostChirp, PostPayload, UserContext } from "../App"
+import { PostInfo, PostPayload, UserContext } from "../App"
 import useOptions from "../hooks/useOptions"
 import useScrollBottom from "../hooks/useScrollBottom"
 import useSort from "../hooks/useSort"
 import Layout from "../Layout"
+import PostBody from "../PostBody"
 import SpinningCircle from "../SpinningCircle"
-import UserPhoto from "../UserPhoto"
 import Comment from "./Comment"
 import CommentsPlaceholder from "./CommentsPlaceholder"
 import ReplyBox from "./ReplyBox"
 import Vote from "./Vote"
 
-export interface Post extends PostChirp {
+export interface BoardInfo extends PostInfo {
     commentCount: number
     parentPost?: string | null
     rootPost?: string | null
@@ -21,7 +21,7 @@ export interface Post extends PostChirp {
 
 
 function Board() {
-    const [mainPost, setMainPost] = useState<Post | null>(null)
+    const [mainPost, setMainPost] = useState<BoardInfo | null>(null)
 
     const [comments, setComments] = useState<JSX.Element[]>([])
     const [doneFetching, setDoneFetching] = useState(false);
@@ -180,6 +180,7 @@ function Board() {
                     id = {comment.id}
                     text = {comment.text}
                     postDate = {comment.postDate}
+                    imageURL = {""}
                     authorUsername = {comment.author.username}
                     authorDisplayName = {comment.author.displayName}
                     authorPictureURL = {comment.author.pictureURL}
@@ -241,48 +242,18 @@ function Board() {
                 : null}
 
                 <div>
-                    <div className = "w-full mt-6 mb-6 p-6 rounded-bl-xl rounded-tr-xl bg-black/20 text-white relative break-all shadow-md">
-                        <div>
-                            <a href={`/profile/${mainPost.authorUsername}`}>
-                                <UserPhoto
-                                    url = {mainPost.authorPictureURL}
-                                    userColor = {mainPost.userColor}
-                                    size = {40}
-                                />
-                            </a>
-
-                            <a href={`/profile/${mainPost.authorUsername}`} className = "text-lg ml-2" style = {{color: mainPost.userColor}}>
-                                {mainPost.authorDisplayName}
-                            </a>
-
-                            <a href={`/profile/${mainPost.authorUsername}`} className = "text-sm">
-                                {` • @${mainPost.authorUsername}`}
-                            </a>
-                            
-                            <div className = "text-sm inline">
-                                {` • ${mainPost.postDate}`}
-                            </div>
-
-                            {mainPost.isEdited ? 
-                                <div className = "text-sm inline italics">
-                                    <span className = "text-white">
-                                        {` • `}
-                                    </span>
-                                    <span className = "text-yellow-300">
-                                        {`edited`}
-                                    </span>
-                                </div>
-                            : null}     
-                        </div>
-
-                        {editor ? editor :
-                        <div className = "whitespace-pre-line ml-[48px]">
-                            {mainPost.text}
-                        </div>}
-
-                        {mainPost.imageURL ? 
-                            <img src = {mainPost.imageURL} className = "mx-auto max-h-[50vh] rounded my-8" />
-                        : null }
+                    <div className = "w-full mt-6 mb-6 ounded-bl-xl rounded-tr-xl bg-black/20 text-white relative break-all shadow-md">
+                        <PostBody
+                            username = {mainPost.authorUsername}
+                            displayName = {mainPost.authorDisplayName}
+                            userColor = {mainPost.userColor}
+                            postDate = {mainPost.postDate}
+                            pictureURL = {mainPost.authorPictureURL}
+                            isEdited = {mainPost.isEdited}
+                            text = {mainPost.text}
+                            imageURL = {mainPost.imageURL}
+                            editor = {editor}
+                        />
 
                         {dots}
 
@@ -293,13 +264,13 @@ function Board() {
                 
                 <div className = "bg-black/20 p-4 my-2 rounded-xl shadow-md">
                     {userInfo.state.username ?
-                    <ReplyBox 
-                        postId = {mainPost.id} 
-                        sortMethod = {sortMethod}
-                        sortDirection = {sortDirection}
-                        addReply = {(reply) => {
-                            setLocalComments([reply, ...localComments])
-                        }}/> 
+                        <ReplyBox 
+                            postId = {mainPost.id} 
+                            sortMethod = {sortMethod}
+                            sortDirection = {sortDirection}
+                            addReply = {(reply) => {
+                                setLocalComments([reply, ...localComments])
+                            }}/> 
                     : null}
 
                     {!doneFetching ? <SpinningCircle /> : null}
@@ -312,7 +283,7 @@ function Board() {
                         <CommentsPlaceholder opacity = {"25%"} />
                     </>
                     :
-                        <div className = "w-full mb-10 border-l-white">
+                        <div className = "w-full mb-10 border-l ml-[1px] border-l-gray-500">
                             {
                             localComments.length > 0 ? localComments.concat(comments) 
                             :

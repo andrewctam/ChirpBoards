@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import FormInput from "./FormInput";
 import { UserContext } from "../App";
 import { useNavigate } from "react-router-dom";
-import PictureInput from "./PictureInput";
+import ChangePicture from "./ChangePicture";
 
 enum Setting {
     None,
@@ -161,7 +161,7 @@ function Settings() {
         </>
         break;
     case Setting.Picture:
-        center = <PictureInput 
+        center = <ChangePicture 
                     close = {() => {
                         setEditing(Setting.None); 
                         setMsg("")

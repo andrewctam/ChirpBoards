@@ -9,6 +9,7 @@ interface ReplyBoxProps {
     addReply: (reply: JSX.Element) => void
     sortMethod: string
     sortDirection: string
+    offset?: boolean
 }
 
 function ReplyBox(props: ReplyBoxProps) {
@@ -73,6 +74,7 @@ function ReplyBox(props: ReplyBoxProps) {
                 id = {info.id}
                 text = {info.text}
                 postDate = {info.postDate}
+                imageURL = {""}
                 authorUsername = {info.author.username}
                 authorDisplayName = {info.author.displayName}
                 authorPictureURL = {info.author.pictureURL}
@@ -98,7 +100,7 @@ function ReplyBox(props: ReplyBoxProps) {
     }
 
     return (
-        <form onSubmit = {addComment} className = "mx-auto h-24 mb-6 bg-black/20 shadow-md relative rounded">
+        <form onSubmit = {addComment} className = {`h-24 mb-6 bg-black/20 shadow-md relative rounded ${props.offset ? "w-[97.5%] ml-[2.5%]" : 'w-full'}`}>
             <textarea 
                 value = {comment} 
                 onChange = {(e) => setComment(e.target.value)} 
