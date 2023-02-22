@@ -3,12 +3,14 @@ import { useContext, useEffect, useState } from "react";
 import FormInput from "./FormInput";
 import { UserContext } from "../App";
 import { useNavigate } from "react-router-dom";
+import PictureInput from "./PictureInput";
 
 enum Setting {
     None,
     DisplayName,
     Password,
-    UserColor
+    UserColor,
+    Picture
 }
 function Settings() {
     const [oldPasswordInput, setOldPasswordInput] = useState("");
@@ -133,7 +135,7 @@ function Settings() {
                         Cancel
                     </button>
 
-                    <button onClick = {updatePassword} className = "text-sm text-white px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50">
+                    <button onClick = {updatePassword} disabled = {!oldPasswordInput && !newPasswordInput} className = "text-sm text-white px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50 disabled:bg-white/5 disabled:text-gray-100/50">
                         Save Changes
                     </button>
             </>)
@@ -153,10 +155,18 @@ function Settings() {
                     Cancel
                 </button>
 
-                <button onClick = {updateDisplayName} className = "text-sm text-white px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50">
+                <button onClick = {updateDisplayName} disabled = {!displayNameInput} className = "text-sm text-white px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50 disabled:bg-white/5 disabled:text-gray-100/50">
                     Save Changes
                 </button>
         </>
+        break;
+    case Setting.Picture:
+        center = <PictureInput 
+                    close = {() => {
+                        setEditing(Setting.None); 
+                        setMsg("")
+                    }}
+                />
         break;
     
     default:
@@ -173,7 +183,10 @@ function Settings() {
                 Edit User Color
             </a>
 
-
+            <button onClick = {() => {setEditing(Setting.Picture)}}
+                className = "text-sm block text-white px-4 py-2 mx-auto my-2 bg-black/10 rounded-xl border border-black/50 min-w-[200px]">
+                Change Profile Picture
+            </button>
 
             <button onClick = {() => {setEditing(Setting.Password)}}
                 className = "text-sm block text-white px-4 py-2 mx-auto my-1 mb-4  bg-black/10 rounded-xl border border-black/50 min-w-[200px]">

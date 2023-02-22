@@ -95,11 +95,13 @@ function Search () {
                 posts {
                     id
                     text
+                    imageURL
                     isEdited
                     author {
                         username
                         displayName
                         userColor
+                        pictureURL
                     }
                     postDate(timezone: ${timezone})
                     score
@@ -128,9 +130,11 @@ function Search () {
             return <Chirp
                     authorUsername={post.author.username}
                     authorDisplayName={post.author.displayName}
+                    authorPictureURL={post.author.pictureURL}
                     id = {post.id}
                     postDate = {post.postDate}
                     text = {post.text}
+                    imageURL = {post.imageURL}
                     key = {post.id}
                     score = {post.score}
                     voteStatus = {userInfo.state.username ? post.voteStatus : 0}
@@ -159,6 +163,7 @@ function Search () {
                     displayName
                     followerCount
                     followingCount
+                    pictureURL
                     postCount
                     userColor
                 }
@@ -184,6 +189,7 @@ function Search () {
             return <UserSearchResult
                 username={user.username}
                 displayName={user.displayName}
+                pictureURL = {user.pictureURL}
                 followerCount = {user.followerCount}
                 followingCount = {user.followingCount}
                 postCount = {user.postCount}

@@ -133,6 +133,7 @@ const ChirpFeed = () => {
                             username
                             displayName
                             userColor
+                            pictureURL
                         }
                         postDate(timezone: ${timezone})
                         score
@@ -146,6 +147,7 @@ const ChirpFeed = () => {
                                 username
                                 displayName
                                 userColor
+                                pictureURL
                             }
                             id
                             text
@@ -201,6 +203,7 @@ const ChirpFeed = () => {
             return <Chirp
                 authorUsername={post.author.username}
                 authorDisplayName={post.author.displayName}
+                authorPictureURL={post.author.pictureURL}
                 id={post.id}
                 postDate={post.postDate}
                 text={post.text}

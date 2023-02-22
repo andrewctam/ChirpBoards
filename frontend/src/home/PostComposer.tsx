@@ -37,22 +37,6 @@ function PostComposer() {
         setComposedChirp(text)
     }
 
-    const convertToBase64 = (file: File) => new Promise<string | ArrayBuffer | null>((resolve, reject) => {
-        const fileReader = new FileReader();
-        fileReader.readAsDataURL(file);
-
-        fileReader.onload = () => {
-            if (typeof fileReader.result === "string")
-                resolve(fileReader.result.split(",")[1]);
-            else 
-                reject("Error converting to base64");
-        };
-
-        fileReader.onerror = (error) => {
-            reject(error)
-        };
-    });
-
 
     const createChirp = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
@@ -70,7 +54,6 @@ function PostComposer() {
         let imageData = ""
         if (image) {
             const base64Image = await convertToBase64(image);
-            console.log(base64Image)
             if (typeof base64Image === "string") {
                 imageData = `, base64Image: "${base64Image}"`
             }
@@ -115,8 +98,7 @@ function PostComposer() {
                 : `${composedChirp.length}/500 characters`}
         </p>
 
-        {
-            image ? 
+        {image ? 
             <button className="bg-rose-300 text-xs sm:text-sm text-black border border-black rounded shadow-md absolute -bottom-3 right-20 px-2 py-1"
                 onClick={() => {
                     if (uploadRef.current) {
@@ -148,5 +130,21 @@ function PostComposer() {
         </button>
     </form>)
 }
+
+const convertToBase64 = (file: File) => new Promise<string | ArrayBuffer | null>((resolve, reject) => {
+    const fileReader = new FileReader();
+    fileReader.readAsDataURL(file);
+
+    fileReader.onload = () => {
+        if (typeof fileReader.result === "string")
+            resolve(fileReader.result.split(",")[1]);
+        else 
+            reject("Error converting to base64");
+    };
+
+    fileReader.onerror = (error) => {
+        reject(error)
+    };
+});
 
 export default PostComposer

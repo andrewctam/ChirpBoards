@@ -27,6 +27,7 @@ function ReplyBox(props: ReplyBoxProps) {
 
     const addComment = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
+        
 
         if (comment.length === 0 || !userInfo.state.username) {
             return;
@@ -47,6 +48,7 @@ function ReplyBox(props: ReplyBoxProps) {
                         username
                         displayName
                         userColor
+                        pictureURL
                     }
                 }
             }
@@ -73,6 +75,7 @@ function ReplyBox(props: ReplyBoxProps) {
                 postDate = {info.postDate}
                 authorUsername = {info.author.username}
                 authorDisplayName = {info.author.displayName}
+                authorPictureURL = {info.author.pictureURL}
                 commentCount = {0}
                 score = {0}
                 voteStatus = {0}

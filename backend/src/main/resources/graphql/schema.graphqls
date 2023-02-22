@@ -81,7 +81,8 @@ type Mutation {
     #Requires authentication. Clears notifications
     clearNotifications(username: String!, sessionToken: String!): Boolean
 
-
+    #Requires authentication. Changes profile picture.
+    changeProfilePicture(username: String!, base64Image: String!, sessionToken: String!): BooleanResponse
 
     #Requires authentication. Follows or unfollows a user. Returns the ending follow status as a boolean, or null if unauthorized.
     toggleFollow(userToFollow: String!, username: String!, sessionToken: String!): BooleanResponse
@@ -96,7 +97,8 @@ type User {
     followerCount: Int!
     followingCount: Int!
     pinnedPost: Post
-    userColor: String
+    userColor: String!
+    pictureURL: String!
 
     isFollowing(followeeUsername: String!): Boolean
     followers(pageNum: Int = 0, size: Int = 10): PaginatedUsers

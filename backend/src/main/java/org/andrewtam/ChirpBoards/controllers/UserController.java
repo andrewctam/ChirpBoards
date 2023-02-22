@@ -1,5 +1,6 @@
 package org.andrewtam.ChirpBoards.controllers;
 
+import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -15,6 +16,7 @@ import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -25,6 +27,11 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
+
 import graphql.GraphQLContext;
 
 @Controller
@@ -34,6 +41,10 @@ public class UserController {
 
     @Autowired
     private PostRepository postRepository;
+
+
+    @Value("${azure.storage.connectionString}")
+    private String azureConnectionString;
 
     @QueryMapping
     public User user(@Argument String username, @Argument String relatedUsername, GraphQLContext context) {
@@ -404,6 +415,52 @@ public class UserController {
 
         userRepository.save(user);
         return new BooleanResponse("Success", result);
+    }
+
+    @MutationMapping
+    public BooleanResponse changeProfilePicture(@Argument String username, @Argument String base64Image, @Argument String sessionToken) {
+        username = username.toLowerCase();
+
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return new BooleanResponse("Username not found", null);
+        }
+
+        if (!user.checkUserSession(userRepository, sessionToken))
+            return new BooleanResponse("User not authenticated", null);
+
+        if (base64Image.length() < 0) {
+            return new BooleanResponse("Invalid image", null);
+        }
+
+        String imageURL = "";
+        try {
+            byte[] imageBytes = Base64.getDecoder().decode(base64Image);
+
+            CloudStorageAccount storageAccount = CloudStorageAccount.parse(azureConnectionString);
+            CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
+            CloudBlobContainer container = blobClient.getContainerReference("images");
+
+            if (user.getPictureURL().length() > 0) {
+                String oldImageName = user.getPictureURL().substring(user.getPictureURL().lastIndexOf("/") + 1);
+                CloudBlockBlob oldImage = container.getBlockBlobReference(oldImageName);
+                oldImage.deleteIfExists();
+            }
+            
+            String filename = username + "_" + UUID.randomUUID().toString() + ".jpg";
+            CloudBlockBlob blob = container.getBlockBlobReference(filename);
+            blob.uploadFromByteArray(imageBytes, 0, imageBytes.length);
+
+            imageURL = blob.getUri().toString();
+
+            user.setPictureURL(imageURL);
+        } catch (Exception e) {
+            System.out.println(e);           
+            return new BooleanResponse("Failed to upload image", null);
+        }
+        
+        userRepository.save(user);
+        return new BooleanResponse("Successfully changed profile picture", true);
     }
     
 

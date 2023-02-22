@@ -385,7 +385,6 @@ public class PostController {
                 blob.uploadFromByteArray(imageBytes, 0, imageBytes.length);
 
                 imageURL = blob.getUri().toString();
-                System.out.println(imageURL);
             } catch (Exception e) {
                 imageURL = "";
                 System.out.println(e);           
@@ -698,7 +697,7 @@ public class PostController {
                 CloudStorageAccount storageAccount = CloudStorageAccount.parse(azureConnectionString);
                 CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
                 CloudBlobContainer container = blobClient.getContainerReference("images");
-                
+
                 String name = post.getImageURL();
                 name = name.substring(name.lastIndexOf('/') + 1);
 

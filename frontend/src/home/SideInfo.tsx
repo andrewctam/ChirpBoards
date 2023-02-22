@@ -7,6 +7,7 @@ export type UserToFollow = {
     username: string;
     displayName: string;
     userColor: string;
+    pictureURL: string;
     relation: "no display" | "popular" | "follower" | "distant following";
     distant?: string;
     isFollowing?: boolean;
@@ -52,6 +53,7 @@ const SideInfo = () => {
                             username
                             displayName
                             userColor
+                            pictureURL
                             isFollowing(followeeUsername: "${userInfo.state.username}")
                         }
                     }
@@ -63,6 +65,7 @@ const SideInfo = () => {
                                     username
                                     displayName
                                     userColor
+                                    pictureURL
                                     isFollowing(followeeUsername: "${userInfo.state.username}")
                                 }
                             }
@@ -73,6 +76,7 @@ const SideInfo = () => {
                     username
                     displayName
                     userColor
+                    pictureURL
                     isFollowing(followeeUsername: "${userInfo.state.username}")
                 }  
             }
@@ -93,8 +97,9 @@ const SideInfo = () => {
                 username: u.username,
                 displayName: u.displayName,
                 userColor: u.userColor,
+                pictureURL: u.pictureURL,
                 relation: "follower",
-                isFollowing: u.isFollowing
+                isFollowing: u.isFollowing,
             }
         }))
 
@@ -104,8 +109,10 @@ const SideInfo = () => {
                 username: u.username,
                 displayName: u.displayName,
                 userColor: u.userColor,
+                pictureURL: u.pictureURL,
                 relation: "popular",
-                isFollowing: u.isFollowing
+                isFollowing: u.isFollowing,
+
             }
         }))
 
@@ -113,6 +120,7 @@ const SideInfo = () => {
             username: string;
             displayName: string;
             userColor: string;
+            pictureURL: string,
             following: {
                 users: UserPayload[] //normal UserPayload doesn't have to access following.users
             }
@@ -132,9 +140,10 @@ const SideInfo = () => {
                     username: distant.username,
                     displayName: distant.displayName,
                     userColor: distant.userColor,
+                    pictureURL: distant.pictureURL,
                     relation: "distant following",
                     distant: user.username,
-                    isFollowing: distant.isFollowing
+                    isFollowing: distant.isFollowing,
                 })
             }
             
@@ -152,6 +161,7 @@ const SideInfo = () => {
                     username
                     displayName
                     userColor
+                    pictureURL
                 }  
             }
         `
@@ -169,6 +179,7 @@ const SideInfo = () => {
             return {
                 username: user.username,
                 displayName: user.displayName,
+                pictureURL: user.pictureURL,
                 userColor: user.userColor,
                 relation: "no display", //all popular, so no display
             }
@@ -190,7 +201,7 @@ const SideInfo = () => {
 
                                         return u.username != userInfo.state.username
                                 }) //remove self and dupes
-                                .slice(0, 10) 
+                                .slice(0, 4) 
                                 .sort(() => Math.random() - 0.5); //shuffle
     }, [popularUsers, followersUsers, distantFollowingUsers])
 
@@ -255,6 +266,7 @@ const SideInfo = () => {
                             username={u.username}
                             displayName = {u.displayName}
                             userColor = {u.userColor}
+                            pictureURL = {u.pictureURL}
                             relation={u.relation}
                             distant={u.distant}
                             isFollowing={u.isFollowing}

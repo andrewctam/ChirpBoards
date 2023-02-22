@@ -19,6 +19,8 @@ public class User {
     private String username;
     private String displayName;
 
+    private String pictureURL;
+
     private String hashedPassword;
 
     private int followerCount;
@@ -43,6 +45,9 @@ public class User {
     public User(String username, String displayName, String hashedPassword) {
         this.username = username;
         this.hashedPassword = hashedPassword;
+
+        this.pictureURL = "";
+
         this.displayName = displayName;
         this.createDate = new Date();
 
@@ -70,6 +75,9 @@ public class User {
     public Date getCreateDate() { return createDate; }
 
     public String getUsername() { return username; }
+
+    public String getPictureURL() { return pictureURL; }
+    public void setPictureURL(String pictureURL) { this.pictureURL = pictureURL; }
 
     public String getDisplayName() { return displayName; }
     public void setDisplayName(String displayName) { this.displayName = displayName; }

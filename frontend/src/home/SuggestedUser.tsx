@@ -1,5 +1,6 @@
 import { useContext, useState } from "react";
 import { UserContext } from "../App";
+import UserPhoto from "../UserPhoto";
 import { UserToFollow } from "./SideInfo";
 
 interface SuggestedUserProps extends UserToFollow {
@@ -58,8 +59,21 @@ const SuggestedUser = (props: SuggestedUserProps) => {
     }
     return (
         <div className="text-white w-3/4 lg:w-1/2 mx-auto text-left rounded p-2 bg-black/20 mt-3 truncate shadow-md relative">
+                { userInfo.state.username ?
+                    <button onClick = {toggleFollow} 
+                        className = {`py-1 px-2 shadow-md rounded absolute text-sm top-2 right-2 z-20 ${isFollowing ? "hover:bg-red-800/70 bg-red-500/10 " : "hover:bg-green-800/70 bg-green-500/10 " }`}>
+                        {isFollowing ? "Unfollow" : "Follow"}
+                    </button> 
+                : null}
+
             <a href = {`/profile/${props.username}`}>
-                <div>
+                <UserPhoto
+                    url = {props.pictureURL}
+                    userColor = {props.userColor}
+                    size = {40}
+                />
+
+                <div className = "w-fit">
                     <span style={{color: props.userColor}}>
                         {props.displayName}
                     </span>
@@ -75,13 +89,6 @@ const SuggestedUser = (props: SuggestedUserProps) => {
             <div className="text-sm">
                 {relation}
             </div>
-
-            { userInfo.state.username ?
-                <button onClick = {toggleFollow} 
-                    className = {`py-1 px-2 shadow-md rounded absolute text-sm bottom-1 right-1 z-20 ${isFollowing ? "hover:bg-red-800/70 bg-red-500/10 " : "hover:bg-green-800/70 bg-green-500/10 " }`}>
-                    {isFollowing ? "Unfollow" : "Follow"}
-                </button> 
-            : null}
         </div>
 
     )

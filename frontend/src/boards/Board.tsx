@@ -6,6 +6,7 @@ import useScrollBottom from "../hooks/useScrollBottom"
 import useSort from "../hooks/useSort"
 import Layout from "../Layout"
 import SpinningCircle from "../SpinningCircle"
+import UserPhoto from "../UserPhoto"
 import Comment from "./Comment"
 import CommentsPlaceholder from "./CommentsPlaceholder"
 import ReplyBox from "./ReplyBox"
@@ -47,7 +48,7 @@ function Board() {
     useEffect(() => {
         //get comments after the main post loads
         if (mainPost) {
-            if (mainPost.commentCount > 0)
+            if (mainPost.commentCount > 0) 
                 getComments();
             else
                 setDoneFetching(true)
@@ -69,6 +70,7 @@ function Board() {
                     username
                     displayName
                     userColor
+                    pictureURL
                 }
                 text
                 imageURL
@@ -108,6 +110,7 @@ function Board() {
             postDate: info.postDate,
             authorUsername: info.author.username,
             authorDisplayName: info.author.displayName,
+            authorPictureURL: info.author.pictureURL,
             commentCount: info.commentCount,
             score: info.score,
             parentPost: info.parentPost ? info.parentPost.id : null,
@@ -115,8 +118,6 @@ function Board() {
             userColor: info.author.userColor,
             isEdited: info.isEdited,
         })
-
-        setHasNextPage(info.commentCount > 10)
 
     }
 
@@ -146,6 +147,7 @@ function Board() {
                             username
                             displayName
                             userColor
+                            pictureURL
                         }
                     }
                     hasNext
@@ -180,6 +182,7 @@ function Board() {
                     postDate = {comment.postDate}
                     authorUsername = {comment.author.username}
                     authorDisplayName = {comment.author.displayName}
+                    authorPictureURL = {comment.author.pictureURL}
                     commentCount = {comment.commentCount}
                     score = {comment.score}
                     isEdited = {comment.isEdited}
@@ -239,8 +242,16 @@ function Board() {
 
                 <div>
                     <div className = "w-full mt-6 mb-6 p-6 rounded-bl-xl rounded-tr-xl bg-black/20 text-white relative break-all shadow-md">
-                        <div className = "mb-3">
-                            <a href={`/profile/${mainPost.authorUsername}`} className = "text-lg" style = {{color: mainPost.userColor}}>
+                        <div>
+                            <a href={`/profile/${mainPost.authorUsername}`}>
+                                <UserPhoto
+                                    url = {mainPost.authorPictureURL}
+                                    userColor = {mainPost.userColor}
+                                    size = {40}
+                                />
+                            </a>
+
+                            <a href={`/profile/${mainPost.authorUsername}`} className = "text-lg ml-2" style = {{color: mainPost.userColor}}>
                                 {mainPost.authorDisplayName}
                             </a>
 
@@ -265,7 +276,7 @@ function Board() {
                         </div>
 
                         {editor ? editor :
-                        <div className = "whitespace-pre-line">
+                        <div className = "whitespace-pre-line ml-[48px]">
                             {mainPost.text}
                         </div>}
 
@@ -293,7 +304,8 @@ function Board() {
 
                     {!doneFetching ? <SpinningCircle /> : null}
 
-                    {localComments.length == 0 && comments.length == 0 ?
+                    {
+                    localComments.length === 0 && comments.length === 0 ?
                     <>
                         <CommentsPlaceholder opacity = {"90%"} showNoComments = {doneFetching}/>
                         <CommentsPlaceholder opacity = {"50%"} />
@@ -301,8 +313,11 @@ function Board() {
                     </>
                     :
                         <div className = "w-full mb-10 border-l-white">
-                            {localComments.length > 0 ? localComments.concat(comments) : comments}
-                        </div>                
+                            {
+                            localComments.length > 0 ? localComments.concat(comments) 
+                            :
+                            comments}
+                        </div>
                     }
                 </div>
             </div>}

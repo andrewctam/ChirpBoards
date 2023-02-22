@@ -4,6 +4,7 @@ import { Post } from "./Board"
 import ReplyBox from "./ReplyBox"
 import Vote from "./Vote"
 import useOptions from "../hooks/useOptions"
+import UserPhoto from "../UserPhoto"
 
 interface CommentProps extends Post {
     local: boolean
@@ -54,6 +55,7 @@ function Comment(props: CommentProps) {
                             username
                             displayName
                             userColor
+                            pictureURL
                         }
                     }
                     hasNext
@@ -84,6 +86,7 @@ function Comment(props: CommentProps) {
                     postDate = {comment.postDate}
                     authorUsername = {comment.author.username}
                     authorDisplayName = {comment.author.displayName}
+                    authorPictureURL = {comment.author.pictureURL}
                     commentCount = {comment.commentCount}
                     score = {comment.score}
                     voteStatus = {userInfo.state.username ? comment.voteStatus : 0}
@@ -103,9 +106,17 @@ function Comment(props: CommentProps) {
 
     return (
         <div className = "w-[97.5%] ml-[2.5%]">
-            <div className = {`my-6 px-8 py-4 rounded-bl-xl rounded-tr-xl relative break-all bg-black/20 shadow-md text-gray-100 ${props.local ? "animate-fadeColor": ""} `} >
-                <div className = "inline mb-3 text-xs">
-                    <a href={`/profile/${props.authorUsername}`} style = {{color: props.userColor}}>
+            <div className = {`my-6 px-4 py-4 rounded-bl-xl rounded-tr-xl relative break-all bg-black/20 shadow-md text-gray-100 ${props.local ? "animate-fadeColor": ""} `} >
+                <div className = "inline mb-3 text-xs">                                
+                    <a href={`/profile/${props.authorUsername}`}>
+                        <UserPhoto
+                            url = {props.authorPictureURL}
+                            userColor = {props.userColor}
+                            size = {40}
+                        />
+                    </a>
+
+                    <a href={`/profile/${props.authorUsername}`} style = {{color: props.userColor}} className = "ml-2">
                         {props.authorDisplayName}
                     </a>
                     <a href={`/profile/${props.authorUsername}`}>
@@ -130,7 +141,7 @@ function Comment(props: CommentProps) {
                 </div>
                 
                 { editor ? editor :
-                <div className = "whitespace-pre-line mt-3">
+                <div className = "whitespace-pre-line ml-[48px]">
                     {props.text}
                 </div>
                 }

@@ -21,6 +21,7 @@ export interface PostChirp {
     imageURL?: string
     authorUsername: string
     authorDisplayName: string
+    authorPictureURL: string
     score: number
     voteStatus: number | null
     rechirpStatus: boolean
@@ -40,6 +41,7 @@ type UserContextType = {
 export interface UserPayload {
     username: string
     displayName: string
+    pictureURL: string
     followerCount: number
     followingCount: number
     pinnedPost: PostPayload
