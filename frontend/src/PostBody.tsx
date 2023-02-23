@@ -42,7 +42,7 @@ const PostBody = (props: PostBodyProps) => {
                 />
             </a>
 
-            <a href={`/profile/${props.username}`} className = {`absolute left-16 text-xs ${props.rechirper ? "top-8": "top-4"}`}>
+            <a href={`/profile/${props.username}`} className = {`absolute left-16 text-xs ${props.rechirper ? "top-9": "top-4"}`}>
                 <span style = {{color: props.userColor}}>
                     {props.displayName}
                 </span>
@@ -73,7 +73,7 @@ const PostBody = (props: PostBodyProps) => {
                 <div className = "m-8">
                     {props.editor}
                     {props.imageURL ? 
-                        <img src = {props.imageURL} className = "mx-auto max-w-[95%] max-h-[400px] rounded my-4"/>
+                        <img src = {props.imageURL} alt = "" className = "mx-auto max-w-[95%] max-h-[400px] rounded my-4"/>
                     : null 
                     }
                 </div> 
@@ -82,7 +82,7 @@ const PostBody = (props: PostBodyProps) => {
                     {props.text}
 
                     {props.imageURL ? 
-                        <img src = {props.imageURL} className = "mx-auto max-w-[95%] max-h-[400px] rounded my-4"/>
+                        <img src = {props.imageURL} alt = {props.username} className = "mx-auto max-w-[95%] max-h-[400px] rounded my-4"/>
                     : null }
                 </div>
             }

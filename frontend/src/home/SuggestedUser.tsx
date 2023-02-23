@@ -11,11 +11,11 @@ const SuggestedUser = (props: SuggestedUserProps) => {
     const [isFollowing, setIsFollowing] = useState(props.isFollowing ?? false)
 
     const userInfo = useContext(UserContext)
-    const toggleFollow = async () => {
+    const toggleFollow = async (e: React.MouseEvent<HTMLButtonElement> ) => {
+        e.preventDefault();
         if (!userInfo.state.username) {
             return;
-        }
-         
+        }         
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
 
         const query =
@@ -58,38 +58,39 @@ const SuggestedUser = (props: SuggestedUserProps) => {
             break;
     }
     return (
-        <div className="text-white w-3/4 lg:w-1/2 mx-auto text-left rounded p-2 bg-black/20 mt-3 truncate shadow-md relative">
-                { userInfo.state.username ?
-                    <button onClick = {toggleFollow} 
-                        className = {`py-1 px-2 shadow-md rounded absolute text-sm top-2 right-2 z-20 ${isFollowing ? "hover:bg-red-800/70 bg-red-500/10 " : "hover:bg-green-800/70 bg-green-500/10 " }`}>
-                        {isFollowing ? "Unfollow" : "Follow"}
-                    </button> 
-                : null}
+        <a href = {`/profile/${props.username}`}>
+            <div className="text-white w-3/4 lg:w-1/2 mx-auto text-left rounded p-2 bg-black/20 mt-3 truncate shadow-md relative">
+                    { userInfo.state.username ?
+                        <button onClick = {toggleFollow} 
+                            className = {`py-1 px-2 shadow-md rounded absolute text-sm top-2 right-2 z-20 ${isFollowing ? "hover:bg-red-800/70 bg-red-500/10 " : "hover:bg-green-800/70 bg-green-500/10 " }`}>
+                            {isFollowing ? "Unfollow" : "Follow"}
+                        </button> 
+                    : null}
 
-            <a href = {`/profile/${props.username}`}>
-                <UserPhoto
-                    url = {props.pictureURL}
-                    userColor = {props.userColor}
-                    size = {40}
-                />
+                    <UserPhoto
+                        url = {props.pictureURL}
+                        userColor = {props.userColor}
+                        size = {40}
+                    />
 
-                <div className = "w-fit">
-                    <span style={{color: props.userColor}}>
-                        {props.displayName}
-                    </span>
-                    <span className = "mx-1">
-                        • 
-                    </span>
-                    <span className="text-sm">
-                        {`@${props.username}`}
-                    </span>
+                    <div className = "w-fit">
+                        <span style={{color: props.userColor}}>
+                            {props.displayName}
+                        </span>
+                        <span className = "mx-1">
+                            • 
+                        </span>
+                        <span className="text-sm">
+                            {`@${props.username}`}
+                        </span>
+                    </div>
+
+                <div className="text-sm">
+                    {relation}
                 </div>
-            </a>
-
-            <div className="text-sm">
-                {relation}
             </div>
-        </div>
+        </a>
+
 
     )
 }

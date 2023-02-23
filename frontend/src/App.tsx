@@ -47,9 +47,9 @@ export interface UserPayload {
     pinnedPost: PostPayload
     userColor: string
     isFollowing: boolean
-    followers: UserPayload[]
-    following: UserPayload[]
-    posts: PostPayload[]
+    followers: {hasNext: boolean, users: UserPayload[]}
+    following: {hasNext: boolean, users: UserPayload[]}
+    posts: {hasNext: boolean, posts: PostPayload[]}
     postCount: number
 }
 export interface PostPayload {
@@ -65,7 +65,7 @@ export interface PostPayload {
     voteStatus: number
     rechirpStatus: boolean
     commentCount: number
-    comments: PostPayload[]
+    comments: {hasNext: boolean, posts: PostPayload[]}
     isEdited: boolean
     isRechirp: boolean
 }

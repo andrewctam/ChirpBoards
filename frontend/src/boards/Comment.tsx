@@ -72,7 +72,7 @@ function Comment(props: CommentProps) {
         }).then(res => res.json())
         
         console.log(response)
-        const info = response.data.post;
+        const info: PostPayload = response.data.post;
         
 
         setPageNum(pageNum + 1)

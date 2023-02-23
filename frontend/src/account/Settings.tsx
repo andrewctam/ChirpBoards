@@ -58,6 +58,9 @@ function Settings() {
         console.log(response)
 
         setMsg(response.data.changeDisplayName.msg);        
+        setTimeout(() => {
+            setMsg("")
+        }, 3000)
         setDisplayNameInput("");
     }
 
@@ -103,6 +106,9 @@ function Settings() {
         console.log(response)
 
         setMsg(response.data.changePassword.msg);        
+        setTimeout(() => {
+            setMsg("")
+        }, 3000)
         setOldPasswordInput("");
         setNewPasswordInput("");
     }

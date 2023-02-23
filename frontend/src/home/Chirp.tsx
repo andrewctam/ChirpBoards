@@ -1,5 +1,4 @@
 import { useContext } from "react"
-import { useNavigate } from "react-router-dom"
 import { PostInfo, UserContext } from "../App"
 import Vote from "../boards/Vote"
 import useOptions from "../hooks/useOptions"

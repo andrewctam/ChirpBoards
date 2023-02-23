@@ -1,7 +1,9 @@
 package org.andrewtam.ChirpBoards.controllers;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,15 +77,18 @@ public class UserController {
 
 
     @QueryMapping
-    public User[] popularUsers(@Argument int num) {
+    public List<User> popularUsers(@Argument int num) {
         PageRequest paging = PageRequest.of(0, num, Sort.by("followerCount", "id").descending());
 
         Page<User> page = userRepository.findAll(paging);
 
-        User[] users = new User[page.getNumberOfElements()];
-        for (int i = 0; i < users.length; i++) {
-            users[i] = page.getContent().get(i);
+        List<User> users = new ArrayList<>(num);
+
+        for (User user : page) {
+            if (user.getFollowerCount() > 0)
+                users.add(user);
         }
+
         return users;
     }
 

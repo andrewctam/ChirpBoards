@@ -62,7 +62,7 @@ function Inbox () {
         //number of unread notifications left. from the top, go down and mark each one as unread while > 0
         let unreadLeft = response.data.notifications.unread 
                     
-        const info = response.data.notifications
+        const info: {hasNext: boolean, notifications: NotificationPayload[]} = response.data.notifications
         setPageNum(pageNum + 1)
         setHasNext(info.hasNext)
 

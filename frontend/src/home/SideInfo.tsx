@@ -29,7 +29,6 @@ const SideInfo = () => {
     const [distantFollowingUsers, setDistantFollowingUsers] = useState<UserToFollow[]>([]);
     const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
     const [doneLoading, setDoneLoading] = useState(false);
-
     useEffect(() => {
         if (userInfo.state.username) {
             getSuggested();
@@ -57,7 +56,7 @@ const SideInfo = () => {
                             isFollowing(followeeUsername: "${userInfo.state.username}")
                         }
                     }
-                    following(pageNum: 0, size: 3) {
+                    following(pageNum: 0, size: 10) {
                         users {
                             username
                             following(pageNum: 0, size: 3) {
@@ -72,7 +71,7 @@ const SideInfo = () => {
                         }
                     }
                 }
-                popularUsers(num: 5) {
+                popularUsers(num: 10) {
                     username
                     displayName
                     userColor
@@ -116,17 +115,9 @@ const SideInfo = () => {
             }
         }))
 
-        type NestedUserPayload = {
-            username: string;
-            displayName: string;
-            userColor: string;
-            pictureURL: string,
-            following: {
-                users: UserPayload[] //normal UserPayload doesn't have to access following.users
-            }
-        }
+      
 
-        const following: NestedUserPayload[] = response.data.user.following.users;
+        const following: UserPayload[] = response.data.user.following.users;
         const distantFollowing: UserToFollow[] = [];
         for (let i = 0; i < following.length; i++) {
             if (following[i].following.users.length === 0)
@@ -201,7 +192,7 @@ const SideInfo = () => {
 
                                         return u.username != userInfo.state.username
                                 }) //remove self and dupes
-                                .slice(0, 4) 
+                                .slice(0, 10) 
                                 .sort(() => Math.random() - 0.5); //shuffle
     }, [popularUsers, followersUsers, distantFollowingUsers])
 
@@ -211,8 +202,8 @@ const SideInfo = () => {
         return <SpinningCircle />
         
     return (
-        <div className="hidden md:block p-4 sticky top-16 h-fit">
-            <div className="text-white text-center mt-8 mx-8 p-6 h-fit bg-black/20 rounded-2xl shadow-md">
+        <div className="hidden md:block p-4 h-fit">
+            <div className="text-white text-center mt-8 mx-8 p-6 h-fit bg-black/30 rounded-2xl shadow-md">
                 {userInfo.state.username && currentUser ? 
                 <>
                     <div className ="text-lg">
@@ -251,7 +242,7 @@ const SideInfo = () => {
                 }
             </div>
 
-            <div className="text-white text-center mt-6 mx-8 p-6 h-fit bg-black/20 rounded-2xl shadow-md">
+            <div className="text-white text-center mt-6 mx-8 p-6 h-fit bg-black/30 rounded-2xl shadow-md">
                 <div className="text-lg">
                 {userInfo.state.username ? 
                     "Suggested Users to Follow"

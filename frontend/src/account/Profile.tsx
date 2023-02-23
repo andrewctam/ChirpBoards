@@ -39,7 +39,7 @@ function Profile() {
 
     const [viewSelected, setViewSelected] = useState<View>(View.Chirps);
 
-    const [chirps, setChirps] = useState<JSX.Element[]>([]);
+    const [chirps, setChirps] = useState<(JSX.Element | null)[]>([]);
     const [chirpsPageNum, setChirpsPageNum] = useState(0);
     const [chirpsHasNextPage, setChirpsHasNextPage] = useState(true);
 
@@ -50,6 +50,8 @@ function Profile() {
     const [following, setFollowing] = useState<JSX.Element[]>([]);
     const [followingPageNum, setFollowingPageNum] = useState(0);
     const [followingHasNextPage, setFollowingHasNextPage] = useState(true);
+
+    const [showSetting, setShowSetting] = useState(false);
 
     const navigate = useNavigate();
 
@@ -238,11 +240,13 @@ function Profile() {
         setChirpsPageNum(chirpsPageNum + 1)
         setDoneFetching(true);
 
-        const info = response.data.user;
+        const info: UserPayload = response.data.user;
         setChirpsHasNextPage(info.posts.hasNext)
-
+        
         setChirps(chirps.concat(info.posts.posts.map((post: PostPayload) => {
             let rechirper: Rechirper | undefined = undefined
+            let p = post;
+            
             if (post.id === pinnedPostId)
                 return null;
             else if (post.isRechirp) {
@@ -256,24 +260,24 @@ function Profile() {
                         dateRechirped: post.postDate
                     }
 
-                    post = post.rootPost;
+                    p = post.rootPost;
                 }
             }
 
             return <Chirp
-                authorUsername={post.author.username}
-                authorDisplayName={post.author.displayName}
-                authorPictureURL={post.author.pictureURL}
-                id={post.id}
-                postDate={post.postDate}
-                text={post.text}
-                imageURL={post.imageURL}
-                key={post.id}
-                score={post.score}
-                voteStatus={userInfo.state.username ? post.voteStatus : 0}
-                rechirpStatus={userInfo.state.username ? post.rechirpStatus : false}
-                userColor={post.author.userColor}
-                isEdited={post.isEdited}
+                authorUsername={p.author.username}
+                authorDisplayName={p.author.displayName}
+                authorPictureURL={p.author.pictureURL}
+                id={p.id}
+                postDate={p.postDate}
+                text={p.text}
+                imageURL={p.imageURL}
+                key={p.id}
+                score={p.score}
+                voteStatus={userInfo.state.username ? p.voteStatus : 0}
+                rechirpStatus={userInfo.state.username ? p.rechirpStatus : false}
+                userColor={p.author.userColor}
+                isEdited={p.isEdited}
                 pinned={false}
 
                 rechirper={rechirper}
@@ -338,7 +342,7 @@ function Profile() {
         setDoneFetching(true)
         console.log(response)
 
-        const info = response.data.user[type];
+        const info: {hasNext: boolean, users: UserPayload[]} = response.data.user[type];
         const fetchedUsers = info.users.map((user: UserPayload) => {
             return <UserSearchResult
                 username={user.username}
@@ -475,8 +479,21 @@ function Profile() {
         </Layout>)
     } else
         return (<Layout>
-            <div className="text-center p-4 shadow-md" style={{ backgroundColor: userColor }}>
+            <div className="text-center p-4 shadow-md relative" style={{ backgroundColor: userColor }} 
+                onMouseEnter = {() => {setShowSetting(true)}}
+                onMouseLeave = {() => {setShowSetting(false)}}>
+
                 {viewSelected === View.Chirps && !editingColor ? sortBubble : null}
+
+                {showSetting && userInfo.state.username === username ? 
+                    <a href="/settings" className="absolute right-1 top-1">
+                        <svg xmlns="http://www.w3.org/2000/svg"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
+                            <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
+                        </svg>
+                    </a>
+                : null}
 
                 <UserPhoto
                     userColor={userColor}

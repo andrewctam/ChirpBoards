@@ -13,9 +13,9 @@ export enum Feed { None, Trending, All, Following }
 const ChirpFeed = () => {
     const [feedSelected, setFeedSelected] = useState<Feed>(Feed.None)
 
-    const [allFeed, setAllFeed] = useState<JSX.Element[]>([]);
-    const [trendingFeed, setTrendingFeed] = useState<JSX.Element[]>([]);
-    const [followingFeed, setFollowingFeed] = useState<JSX.Element[] | null>([]);
+    const [allFeed, setAllFeed] = useState<(JSX.Element | null)[]>([]);
+    const [trendingFeed, setTrendingFeed] = useState<(JSX.Element | null)[]>([]);
+    const [followingFeed, setFollowingFeed] = useState<(JSX.Element | null)[] | null>([]);
 
     const [allPageNum, setAllPageNum] = useState(0);
     const [trendingPageNum, setTrendingPageNum] = useState(0);
@@ -174,7 +174,7 @@ const ChirpFeed = () => {
         console.log(response)
 
 
-        const info = response.data[`${type}Posts`];
+        const info: {hasNext: boolean, posts: PostPayload[]} = response.data[`${type}Posts`];
         setDoneFetching(true);
 
         if (!info) {
