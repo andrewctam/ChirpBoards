@@ -190,7 +190,8 @@ public class UserController {
 
         String sessionToken = UUID.randomUUID().toString();
         user.setSessionToken(sessionToken);
-        user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 3600000 ));
+        int ONE_WEEK = 1000 * 60 * 60 * 24 * 7;
+        user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + ONE_WEEK ));
         
         userRepository.save(user);
 
@@ -213,7 +214,8 @@ public class UserController {
 
         String sessionToken = UUID.randomUUID().toString();
         user.setSessionToken(sessionToken);
-        user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 3600000 ));
+        int ONE_WEEK = 1000 * 60 * 60 * 24 * 7;
+        user.setSessionTokenExpiration(new Date( System.currentTimeMillis() + ONE_WEEK ));
 
         userRepository.save(user);
 
@@ -441,6 +443,9 @@ public class UserController {
 
         
             byte[] imageBytes = Base64.getDecoder().decode(base64Image);
+            if (imageBytes.length > 1000000) {
+                return new BooleanResponse("Image must be less than 1MB", null);
+            }
 
             if (user.getPictureURL().length() > 0) {
                 String oldImageName = user.getPictureURL().substring(user.getPictureURL().lastIndexOf("/") + 1);

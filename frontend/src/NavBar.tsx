@@ -11,7 +11,7 @@ const NavBar = () => {
     const [showMobileSearch, setShowMobileSearch] = useState(false);
 
     const [searchInput, setSearchInput] = useState("");
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
 
     const [unreadNotifs, setUnreadNotifs] = useState(0);
 
@@ -97,29 +97,33 @@ const NavBar = () => {
     }
 
     return (<>
-        <header className = 'w-full sticky top-0 z-50 bg-gradient-to-r from-stone-800/60 to-stone-800/95 shadow-lg p-4 text-sky-200 flex justify-between items-center'>
-            <h1 className = "text-xl sm:text-2xl inline my-auto font-light">
+        <header className = 'w-full sticky top-0 z-50 bg-black/50 shadow-lg p-4 flex justify-between items-center'>
+            <h1 className = "text-xl sm:text-2xl inline my-auto bg-clip-text bg-gradient-to-r from-purple-300 to-sky-400 text-transparent">
                 <a href = "/">Chirp Boards</a>
             </h1>
 
-            <div>
-                <form onSubmit = {search} className = "hidden sm:inline-block mr-4">
+            <div className = "flex align-middle items-center">
+                <form onSubmit = {search} className = "hidden md:inline-block mr-8">
                     <input
                         value = {searchInput}
                         onChange = {(e) => setSearchInput(e.target.value)}
-                        className = "p-2 mx-auto rounded-lg bg-white/10 text-white border border-black w-64" 
-                        placeholder="Search for a user or chirp" />
+                        className = "p-2 mx-auto rounded-full bg-black/5 text-white border border-black w-96" 
+                        placeholder="Search" />
                 </form>
 
-                {windowWidth < 640 ?
-                <p className = "text-white cursor-pointer text-center inline mr-3" 
+                {windowWidth < 768 ?
+                <div className = "inline text-white cursor-pointer" 
                     onClick={() =>  {
                         setSearchInput("");
                         setShowMobileSearch(!showMobileSearch);
                     }}>
 
-                    {showMobileSearch ? "Close" : "Search"}
-                </p> : null}
+                    <svg className = "inline mr-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                        <path d="M21 21l-6 -6"></path>
+                    </svg>
+                </div> : null}
 
                 { !userInfo.state.username ? 
                 <>
@@ -127,7 +131,7 @@ const NavBar = () => {
                     <a className = "ml-3 text-sky-300" href = "/register">Register</a>
                 </>
                 :
-                <div className = "inline-block">
+                <div className = "inline-block text-sky-100">
                     <div onClick = {() => setShowDropdown(!showDropdown)} className = "cursor-pointer relative select-none inline-block ">
                         {`@${userInfo.state.username} ▼`}
 
@@ -170,12 +174,12 @@ const NavBar = () => {
             </div>
         </header>
 
-        {showMobileSearch && windowWidth < 640 ?
-            <form onSubmit = {search} className = 'w-full bg-stone-800/50 shadow-lg p-4 text-white flex justify-between items-center'>
+        {showMobileSearch && windowWidth < 768 ?
+            <form onSubmit = {search} className = 'w-full bg-stone-800 shadow-lg p-4 text-white flex justify-between items-center sticky top-14 z-50'>
                 <input 
                     value = {searchInput}
                     onChange = {(e) => setSearchInput(e.target.value)}
-                    className = "p-1 w-full mx-auto rounded-xl bg-black/10 text-white border border-black mr-4" 
+                    className = "p-2 w-full mx-auto rounded-full bg-black/5 text-white border border-black mr-4" 
                     placeholder="Search for a user or chirp" /> 
                 
                 <p className = "text-gray-50 cursor-pointer text-center my-auto" onClick={search}>

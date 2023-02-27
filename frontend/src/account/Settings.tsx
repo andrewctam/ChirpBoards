@@ -132,7 +132,7 @@ function Settings() {
                         setValue = {setNewPasswordInput}
                         placeholder = ""
                         password = {true}
-                        mt = {"8"}
+                        marginTop = {"12px"}
                         valid = {newPasswordInput.length >= 8}
                     />
                     <p className = "text-white break-words my-3">{msg}</p>
@@ -204,7 +204,7 @@ function Settings() {
 
     return (
         <Layout>
-            <div className = "text-white mt-8 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
+            <div className = "text-white mt-16 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
                 <div className = "mx-auto border border-black/10 w-5/6 md:w-3/4 lg:w-1/2 px-12 py-4 rounded-xl bg-black/10 shadow-md text-center">
                     <h1 className = "text-3xl mb-4 ">Settings</h1>
                     {center}

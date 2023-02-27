@@ -1,6 +1,8 @@
 import { useContext, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../App";
+import imageCompression from 'browser-image-compression';
+import SpinningCircle from "../SpinningCircle";
 
 function PostComposer() {
     const [composedChirp, setComposedChirp] = useState("");
@@ -8,12 +10,38 @@ function PostComposer() {
     const [image, setImage] = useState<File | null>(null);
     const [imageURL, setImageURL] = useState<string>("");
 
-    const uploadImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const [loadingImage, setLoadingImage] = useState(false);
+    const [uploading, setUploading] = useState(false);
+
+    const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = (e.target as HTMLInputElement).files?.[0]
 
         if (file) {
-            setImage(file)
-            setImageURL(URL.createObjectURL(file))
+            const options = {
+                maxSizeMB: 0.5,
+                maxWidthOrHeight: 1920,
+                useWebWorker: true
+            }
+
+            setLoadingImage(true)
+            const compressed = await imageCompression(file, options)
+            setLoadingImage(false)
+
+            if (compressed.size > 500000) {
+                setErrorMsg("Image must be less than 5MB!")
+                return;
+            }
+
+            setImage(compressed)
+            setImageURL(URL.createObjectURL(compressed))
+        }
+    }
+    
+    const clearInput = () => {
+        if (uploadRef.current) {
+            uploadRef.current.value = ""
+            setImage(null)
+            setImageURL("")
         }
     }
             
@@ -54,11 +82,13 @@ function PostComposer() {
         let imageData = ""
         if (image) {
             const base64Image = await convertToBase64(image);
+
             if (typeof base64Image === "string") {
                 imageData = `, base64Image: "${base64Image}"`
             }
         }
 
+        setUploading(true)
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
             `mutation {
@@ -76,6 +106,7 @@ function PostComposer() {
             },
             body: JSON.stringify({ query })
         }).then(res => res.json())
+        setUploading(false)
 
         console.log(response)
 
@@ -84,30 +115,21 @@ function PostComposer() {
             return
         }
 
+        
         navigate(`/board/${response.data.createPost.post.id}`)
     }
-    return (<form onSubmit={createChirp} className="w-full mb-12 bg-black/20 p-1 shadow-lg relative rounded">
+    return (
+    <form onSubmit={createChirp} className="w-full mb-12 bg-black/20 p-1 shadow-lg relative rounded">
         <textarea
             value={composedChirp}
             onChange={updateComposedChirp}
             className = "w-full h-40 bg-transparent p-2 resize-none focus:outline-none text-white"
             placeholder="Compose a chirp..." />
 
-        <p className="text-white/75 text-xs ml-2 mb-2">
-            {errorMsg ? errorMsg
-                : `${composedChirp.length}/500 characters`}
-        </p>
 
         {image ? 
             <button className="bg-rose-300 text-xs sm:text-sm text-black border border-black rounded shadow-md absolute -bottom-3 right-20 px-2 py-1"
-                onClick={() => {
-                    if (uploadRef.current) {
-                        uploadRef.current.value = ""
-                        setImage(null)
-                        setImageURL("")
-                    }
-                }}
-                >
+                onClick={clearInput}>
                 Remove Image
             </button>
             :
@@ -116,18 +138,31 @@ function PostComposer() {
             </label>
         }
 
+        {loadingImage ? <SpinningCircle /> : null}
+
         {imageURL ? 
-            <img src={imageURL} alt="preview" className="mx-auto max-h-[50vh] rounded my-8"/> : null
-        }
+            <div className = "bg-black/10 py-2 m-2 mb-4 relative">
+                <div className = "absolute top-0 left-2 text-white text-xl hover:text-red-200 cursor-pointer" onClick = {clearInput}>
+                    ×
+                </div>
+                <img src={imageURL} alt="preview" className="mx-auto max-h-[50vh] rounded my-8"/> 
+            </div>
+        : null }
 
         <input ref = {uploadRef} type="file" onChange={uploadImage} className="hidden" id="file" accept=".jpg, .png"/>
 
+        <p className="text-white/75 text-xs ml-2 mb-2">
+            {errorMsg ? errorMsg
+                : `${composedChirp.length}/500 characters`}
+        </p>
 
         <button className="bg-gray-300 disabled:bg-gray-400 disabled:text-black/50 text-xs sm:text-sm text-black border border-black rounded shadow-md absolute -bottom-3 right-4 px-2 py-1"
             onClick={createChirp}
             disabled = {composedChirp.length === 0}>
             Post
         </button>
+
+        {uploading ? <div className = "absolute right-5 bottom-0"><SpinningCircle /></div> : null}
     </form>)
 }
 

@@ -118,13 +118,15 @@ public class User {
 
         long timeDiff = this.sessionTokenExpiration.getTime() - System.currentTimeMillis();
         
+        int ONE_DAY = 1000 * 60 * 60 * 24;
+        int ONE_WEEK = 1000 * 60 * 60 * 24 * 7;
         if (timeDiff < 0) {
             this.setSessionToken(null);
             this.setSessionTokenExpiration(null);
             userRepository.save(this);
             return false;
-        } else if (timeDiff < 900000 ) { // 15 minutes
-            this.setSessionTokenExpiration(new Date( System.currentTimeMillis() + 3600000 )); // 1 hour
+        } else if (timeDiff < ONE_DAY ) { 
+            this.setSessionTokenExpiration(new Date( System.currentTimeMillis() + ONE_WEEK ));
             userRepository.save(this);
         }        
 

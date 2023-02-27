@@ -190,7 +190,7 @@ const SideInfo = () => {
                                         }
                                         seen.add(u.username);
 
-                                        return u.username != userInfo.state.username
+                                        return u.username !== userInfo.state.username
                                 }) //remove self and dupes
                                 .slice(0, 10) 
                                 .sort(() => Math.random() - 0.5); //shuffle

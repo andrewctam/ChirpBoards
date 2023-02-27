@@ -45,6 +45,19 @@ function Board() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [] )
 
+    useEffect(() => {
+        //get comments after the main post loads
+        if (mainPost) {
+            if (mainPost.commentCount > 0) 
+                getComments();
+            else
+                setDoneFetching(true)
+
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [mainPost])
+
+
     
     const fetchPost = async (postId: string) => {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
@@ -74,25 +87,6 @@ function Board() {
                 commentCount
                 ${userInfo.state.username ? "voteStatus" : ""}
                 ${userInfo.state.username ? "rechirpStatus" : ""}
-                comments(pageNum:${pageNum}, size:10, sortMethod: "${sortMethod}", sortDirection: "${sortDirection}") {
-                    posts {
-                        id
-                        text
-                        commentCount
-                        postDate(timezone: ${timezone})
-                        score
-                        isEdited
-                        ${userInfo.state.username ? "voteStatus" : ""}
-                        ${userInfo.state.username ? "rechirpStatus" : ""}
-                        author {
-                            username
-                            displayName
-                            userColor
-                            pictureURL
-                        }
-                    }
-                    hasNext
-                }
             }
         }`
 
@@ -107,7 +101,6 @@ function Board() {
             navigate("/");
 
         const info: PostPayload = response.data.post;
-        
         setMainPost({
             id: postId,
             text: info.text,
@@ -125,35 +118,6 @@ function Board() {
             userColor: info.author.userColor,
             isEdited: info.isEdited,
         })
-
-        if (info.commentCount > 0) {
-            setComments( info.comments.posts.map((comment: PostPayload) => {
-                    return <Comment
-                        key = {comment.id}
-                        id = {comment.id}
-                        text = {comment.text}
-                        postDate = {comment.postDate}
-                        imageURL = {""}
-                        authorUsername = {comment.author.username}
-                        authorDisplayName = {comment.author.displayName}
-                        authorPictureURL = {comment.author.pictureURL}
-                        commentCount = {comment.commentCount}
-                        score = {comment.score}
-                        isEdited = {comment.isEdited}
-                        voteStatus = {userInfo.state.username ? comment.voteStatus : 0}
-                        local = {false}
-                        autoLoadComments = {info.commentCount < 10}
-                        userColor = {comment.author.userColor}
-                        sortMethod = {sortMethod}
-                        sortDirection = {sortDirection}
-                        rechirpStatus = {userInfo.state.username ? comment.rechirpStatus : false}
-                    />
-                })
-            )
-        }
-
-        
-        setDoneFetching(true)
 
     }
 

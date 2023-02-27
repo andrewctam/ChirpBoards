@@ -13,7 +13,7 @@ function Register() {
     const userInfo = useContext(UserContext);
 
     const navigate = useNavigate()
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
 
     
     const register = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
@@ -104,7 +104,7 @@ function Register() {
 
     return (
     <Layout>
-        <div className = "text-white mt-8 mx-auto w-11/12 md:w-4/5">
+        <div className = "text-white mt-16 mx-auto w-11/12 md:w-4/5">
             {userInfo.state.username ?
             <div className = "mx-auto w-fit">
                 <p>Already signed in.</p>
@@ -113,57 +113,75 @@ function Register() {
                 </button>
             </div>
             :
-            <form onSubmit={register} className = "mx-auto border border-black/10 w-5/6 md:w-3/4 xl:w-1/2 px-12 py-4 rounded-xl bg-black/20 shadow-md">
-                <h1 className = "text-2xl text-center">Register</h1>
-                <a href = "/signin">
-                    <p className = "text-sm text-sky-300 underline text-center">
-                        or sign in here
-                    </p>
-                </a>
+            <div className = "grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <form onSubmit={register} className = "mx-auto w-11/12 px-12 py-4 rounded-xl bg-black/20 shadow-md">
+                    <h1 className = "text-2xl text-center">Create a New Account</h1>
+                        <div className = "grid grid-cols-1 md:grid-cols-2 mt-12 gap-4">
+                            <FormInput
+                                name = "Username"
+                                value = {usernameInput}
+                                setValue = {setUsernameInput}
+                                valid = {usernameInput.length >= 3 && usernameInput.length <= 16 && (/^[a-zA-Z0-9]+$/.test(usernameInput))} 
+                            />
 
+                            <FormInput
+                                name = "Display Name"
+                                value = {displayNameInput}
+                                setValue = {setDisplayNameInput}
+                                placeholder = {usernameInput}
+                                valid = {(usernameInput.length > 0 && usernameInput.length <= 32) || (displayNameInput.length > 0 && displayNameInput.length <= 32)}
+                            />
+                        </div>
 
-                <FormInput
-                    name = "Username"
-                    value = {usernameInput}
-                    setValue = {setUsernameInput}
-                    mt = "mt-6"
-                    valid = {usernameInput.length >= 3 && usernameInput.length <= 16}
-                />
+                        <div className = "grid grid-cols-1 md:grid-cols-2 mt-12 mb-10 gap-4">
+                            <FormInput
+                                name = "Password"
+                                value = {passwordInput}
+                                setValue = {setPasswordInput}
+                                password = {true}
+                                valid = {passwordInput.length >= 8}
+                            />
 
-                <FormInput
-                    name = "Display Name"
-                    value = {displayNameInput}
-                    setValue = {setDisplayNameInput}
-                    placeholder = {usernameInput}
-                    valid = {(usernameInput.length >= 3 && usernameInput.length <= 16 && displayNameInput === "") ||
-                             (displayNameInput.length > 0 && displayNameInput.length <= 32)}
-                />
+                            <FormInput
+                                name = "Repeat Password"
+                                value = {repeatPasswordInput}
+                                setValue = {setRepeatPasswordInput}
+                                placeholder = ""
+                                password = {true}
+                                valid = {repeatPasswordInput === passwordInput && repeatPasswordInput !== "" && passwordInput.length >= 8}
+                            />
+                        </div>
 
+                    <p className = "text-rose-200 break-words text-center my-4">{error}</p>
 
-                <FormInput
-                    name = "Password"
-                    value = {passwordInput}
-                    setValue = {setPasswordInput}
-                    password = {true}
-                    mt = "mt-8"
-                    valid = {passwordInput.length >= 8}
-                />
+                    <button onClick = {register} className = "text-sm text-black px-8 py-2 mx-auto mb-2 bg-sky-200/90 rounded-xl block border border-black/50">
+                        Sign Up
+                    </button>
+                </form>
 
-                <FormInput
-                    name = "Repeat Password"
-                    value = {repeatPasswordInput}
-                    setValue = {setRepeatPasswordInput}
-                    placeholder = ""
-                    password = {true}
-                    valid = {repeatPasswordInput === passwordInput && repeatPasswordInput !== "" && passwordInput.length >= 8}
-                />
+                <div className = "mx-auto w-11/12 x-12 py-4 rounded-xl bg-black/20 shadow-md flex items-center justify-center text-center">
+                    <div>
+                        Welcome to Chirp Boards!
+                        <div className="mt-2 mb-8">
+                            Already have an account?
+                            <a href="./signin" className="text-sky-200 ">
+                                {" Sign in here"}
+                            </a>
+                        </div>
 
-                <p className = "text-rose-200 break-words">{error}</p>
+                        <ul className="list-disc text-left w-[90%] pl-12 mx-auto">
+                            <li>Username must be between 3 and 20 characters</li>
+                            <li>Username can only contain letters and numbers</li>
+                            <li>Display name must be between 1 and 32 characters</li>
+                            <li>Password must be at least 8 characters</li>
+                            <li>You can change your user color and profile picture in the settings later</li>
+                        </ul>
+                    </div>
 
-                <button onClick = {register} className = "text-sm text-white px-4 py-2 mx-auto my-2 bg-black/20 rounded-xl block border border-black/50">
-                    Register
-                </button>
-            </form>
+                   
+                </div>
+
+            </div>
 
         }
         </div>

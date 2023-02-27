@@ -4,7 +4,6 @@ import { BoardInfo } from "./Board"
 import ReplyBox from "./ReplyBox"
 import Vote from "./Vote"
 import useOptions from "../hooks/useOptions"
-import UserPhoto from "../UserPhoto"
 import PostBody from "../PostBody"
 
 interface CommentProps extends BoardInfo {

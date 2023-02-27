@@ -375,6 +375,9 @@ public class PostController {
         if (base64Image.length() > 0) {
             try {
                 byte[] imageBytes = Base64.getDecoder().decode(base64Image);
+                if (imageBytes.length > 5000000) {
+                    return new PostResponse("Image must be less than 5MB", null);
+                }
 
                 CloudStorageAccount storageAccount = CloudStorageAccount.parse(azureConnectionString);
                 CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
