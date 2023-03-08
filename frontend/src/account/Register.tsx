@@ -104,7 +104,7 @@ function Register() {
 
     return (
     <Layout>
-        <div className = "text-white mt-16 mx-auto w-11/12 md:w-4/5">
+        <div className = "text-white mt-16 mx-auto w-11/12 md:w-4/5 mb-4">
             {userInfo.state.username ?
             <div className = "mx-auto w-fit">
                 <p>Already signed in.</p>
