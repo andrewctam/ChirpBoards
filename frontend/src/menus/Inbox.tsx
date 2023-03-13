@@ -111,31 +111,49 @@ function Inbox () {
         await getNotifications();
     })
 
+
+
     return (
         <Layout>
-            <h1 className = "text-2xl text-white text-center p-4 bg-black/20 shadow-md">Inbox</h1>
+            <div className = "p-4 bg-black/20 shadow-md">
+                <h1 className = "text-2xl text-white text-center mb-4"> 
+                    Inbox
+                </h1>
 
-            {notificationsFeed.length === 0 ?
-                <div className = "text-center mt-4">
-                    <h1 className = "text-xl text-white">No Notifications Yet</h1>
+                <div className = "text-center">
+                    <button
+                        onClick = {clearNotifications} 
+                        className = "mx-auto text-white hover:text-red-200 px-2 py-1 text-sm rounded-md">
+                        Clear All Notifications
+                    </button>
                 </div>
-                :
-                <div className="mt-2 mx-auto w-5/6 lg:w-3/5 pt-2 pb-12">
-                    <div className = "text-center">
-                        <button
-                            onClick = {clearNotifications} 
-                            className = "mx-auto bg-black/20 text-white p-4 border border-black/20 rounded-md py-2">
-                            Clear Notifications
-                        </button>
+            </div>
+                {doneFetching && notificationsFeed.length === 0 ?
+                    <div className = "text-center mt-4">
+                        <h1 className = "text-xl text-white">No Notifications Yet</h1>
                     </div>
-                    
-                    <ul className = "w-[95%] mx-auto mt-6"> 
+                : null}
+                       
+
+                <div className="mt-2 mx-auto w-5/6 lg:w-3/5 pt-2 pb-12">
+                    <ul className = "w-[95%] mx-auto mt-6">
+
                         {notificationsFeed}
+                            
+                        {!doneFetching ? 
+                            <>
+                             <ul className = "w-[95%] mx-auto mt-6"> 
+                                <li className = "p-10 text-white bg-black/20 rounded my-3 relative shadow-md" />
+                                <li className = "p-10 text-white bg-black/20 rounded my-3 relative shadow-md" />
+                                <li className = "p-10 text-white bg-black/20 rounded my-3 relative shadow-md" />
+                            </ul>
+                                <SpinningCircle /> 
+                            </>
+                        
+                        : null}
                     </ul>
                 </div>
-            }
             
-            {!doneFetching ? <SpinningCircle /> : null}
         </Layout>
     )
 }

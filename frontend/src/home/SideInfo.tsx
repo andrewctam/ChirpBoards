@@ -2,6 +2,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { UserContext, UserPayload } from "../App";
 import SuggestedUser from "./SuggestedUser";
 import SpinningCircle from "../SpinningCircle"
+import UserPhoto from "../UserPhoto";
 
 export type UserToFollow = {
     username: string;
@@ -17,6 +18,7 @@ interface CurrentUser {
     username: string;
     displayName: string;
     userColor: string;
+    pictureURL: string;
     followerCount: number;
     followingCount: number;
     postCount: number;
@@ -47,6 +49,7 @@ const SideInfo = () => {
                     followerCount
                     followingCount
                     postCount
+                    pictureURL
                     followers(pageNum: 0, size: 10) {
                         users {
                             username
@@ -199,22 +202,41 @@ const SideInfo = () => {
                                 
 
     if (!doneLoading)
-        return <SpinningCircle />
+        return (<div>
+            <div className="hidden md:block p-4 h-fit">
+                <div className="text-white text-center mt-8 mx-8 p-4 h-[160px] bg-black/30 rounded-2xl shadow-md">
+                    <SpinningCircle />
+                </div>
+
+                <div className="text-white text-center mt-6 mx-8 p-8 h-[552px] bg-black/30 rounded-2xl shadow-md">
+                    <SpinningCircle />
+                </div>  
+            </div>
+        </div>)
         
     return (
         <div className="hidden md:block p-4 h-fit">
-            <div className="text-white text-center mt-8 mx-8 p-6 h-fit bg-black/30 rounded-2xl shadow-md">
+            <div className="text-white text-center mt-8 mx-8 p-8 h-fit bg-black/30 rounded-2xl shadow-md">
                 {userInfo.state.username && currentUser ? 
                 <>
-                    <div className ="text-lg">
-                        Welcome Back 
+                    <div className ="text-lg my-2">
+                        Welcome back 
                         <a style={{color: currentUser.userColor}} href={`./profile/${userInfo.state.username}`}>
                             {` ${currentUser.displayName}`}
                         </a>
                         !
                     </div>
-                    <div className = "mt-4">
-                        <span className="text-blue-200">Current Statistics:</span>
+
+                    <a href={`./profile/${userInfo.state.username}`}>
+                        <UserPhoto
+                                url = {currentUser.pictureURL}
+                                userColor = {currentUser.userColor}
+                                size = {60}
+                        />
+                    </a>
+
+
+                    <div className = "mt-2">
                         <div className="text-white text-sm">
                             {` ${currentUser.followerCount} follower${currentUser.followerCount === 1 ? "" : "s"}`}
                         </div>
@@ -242,7 +264,7 @@ const SideInfo = () => {
                 }
             </div>
 
-            <div className="text-white text-center mt-6 mx-8 p-6 h-fit bg-black/30 rounded-2xl shadow-md">
+            <div className="text-white text-center mt-6 mx-8 p-8 h-fit bg-black/30 rounded-2xl shadow-md">
                 <div className="text-lg">
                 {userInfo.state.username ? 
                     "Suggested Users to Follow"

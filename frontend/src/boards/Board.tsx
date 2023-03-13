@@ -8,7 +8,8 @@ import Layout from "../Layout"
 import PostBody from "../PostBody"
 import SpinningCircle from "../SpinningCircle"
 import Comment from "./Comment"
-import CommentsPlaceholder from "./CommentsPlaceholder"
+import BoardPlaceholder from "../placeholders/BoardPlaceholder"
+import CommentsPlaceholder from "../placeholders/CommentsPlaceholder"
 import ReplyBox from "./ReplyBox"
 import Vote from "./Vote"
 
@@ -45,19 +46,6 @@ function Board() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [] )
 
-    useEffect(() => {
-        //get comments after the main post loads
-        if (mainPost) {
-            if (mainPost.commentCount > 0) 
-                getComments();
-            else
-                setDoneFetching(true)
-
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [mainPost])
-
-
     
     const fetchPost = async (postId: string) => {
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
@@ -87,6 +75,25 @@ function Board() {
                 commentCount
                 ${userInfo.state.username ? "voteStatus" : ""}
                 ${userInfo.state.username ? "rechirpStatus" : ""}
+                comments(pageNum:${pageNum}, size:10, sortMethod: "${sortMethod}", sortDirection: "${sortDirection}") {
+                    posts {
+                        id
+                        text
+                        commentCount
+                        postDate(timezone: ${timezone})
+                        score
+                        isEdited
+                        ${userInfo.state.username ? "voteStatus" : ""}
+                        ${userInfo.state.username ? "rechirpStatus" : ""}
+                        author {
+                            username
+                            displayName
+                            userColor
+                            pictureURL
+                        }
+                    }
+                    hasNext
+                }
             }
         }`
 
@@ -97,8 +104,10 @@ function Board() {
         }).then(res => res.json())
         console.log(response)
 
+        /*
         if (response.errors || !response.data.post)
             navigate("/");
+        */
 
         const info: PostPayload = response.data.post;
         setMainPost({
@@ -118,7 +127,35 @@ function Board() {
             userColor: info.author.userColor,
             isEdited: info.isEdited,
         })
+        setPageNum(pageNum + 1)
+        setHasNextPage(info.comments.hasNext)
 
+        setComments(comments.concat(
+            info.comments.posts.map((comment: PostPayload) => {
+                return <Comment
+                    key = {comment.id}
+                    id = {comment.id}
+                    text = {comment.text}
+                    postDate = {comment.postDate}
+                    imageURL = {""}
+                    authorUsername = {comment.author.username}
+                    authorDisplayName = {comment.author.displayName}
+                    authorPictureURL = {comment.author.pictureURL}
+                    commentCount = {comment.commentCount}
+                    score = {comment.score}
+                    isEdited = {comment.isEdited}
+                    voteStatus = {userInfo.state.username ? comment.voteStatus : 0}
+                    local = {false}
+                    autoLoadComments = {info.commentCount < 10}
+                    userColor = {comment.author.userColor}
+                    sortMethod = {sortMethod}
+                    sortDirection = {sortDirection}
+                    rechirpStatus = {userInfo.state.username ? comment.rechirpStatus : false}
+                />
+            })
+        ))
+
+        setDoneFetching(true);        
     }
 
     const getComments = async () => {
@@ -195,8 +232,9 @@ function Board() {
                     sortDirection = {sortDirection}
                     rechirpStatus = {userInfo.state.username ? comment.rechirpStatus : false}
                 />
-            }))
-        )
+            })
+        ))
+
         setDoneFetching(true);
     }
 
@@ -220,9 +258,15 @@ function Board() {
             null,
             mainPost ? mainPost.rechirpStatus :false)
             
+        
+    if (!mainPost) {
+        return <Layout>
+            <BoardPlaceholder />
+        </Layout>
+    }
+    
     return (
         <Layout>
-            {!mainPost ? null :
             <div className = "mx-auto w-11/12 md:w-4/5">
                 {sortBubble}
 
@@ -291,7 +335,7 @@ function Board() {
                         </div>
                     }
                 </div>
-            </div>}
+            </div>
         </Layout>
     )
 

@@ -3,19 +3,19 @@ import FeedButton from "./FeedButton";
 import Chirp, { Rechirper } from "./Chirp";
 import { UserContext } from "../App";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import SpinningCircle from "../SpinningCircle";
 import { PostPayload } from "../App";
 import useScrollBottom from "../hooks/useScrollBottom";
 import useSort from "../hooks/useSort";
+import ChirpPlaceholder from "../placeholders/ChirpPlaceholder";
 
 export enum Feed { None, Trending, All, Following }
 
 const ChirpFeed = () => {
     const [feedSelected, setFeedSelected] = useState<Feed>(Feed.None)
 
-    const [allFeed, setAllFeed] = useState<(JSX.Element | null)[]>([]);
-    const [trendingFeed, setTrendingFeed] = useState<(JSX.Element | null)[]>([]);
-    const [followingFeed, setFollowingFeed] = useState<(JSX.Element | null)[] | null>([]);
+    const [allFeed, setAllFeed] = useState<JSX.Element[]>([]);
+    const [trendingFeed, setTrendingFeed] = useState<JSX.Element[]>([]);
+    const [followingFeed, setFollowingFeed] = useState<JSX.Element[]>([]);
 
     const [allPageNum, setAllPageNum] = useState(0);
     const [trendingPageNum, setTrendingPageNum] = useState(0);
@@ -26,6 +26,7 @@ const ChirpFeed = () => {
     const [followingHasNextPage, setFollowingHasNextPage] = useState(true);
 
     const [doneFetching, setDoneFetching] = useState(false);
+    const [followingOthers, setFollowingOthers] = useState(false);
     const userInfo = useContext(UserContext);
     const navigate = useNavigate();
 
@@ -33,19 +34,21 @@ const ChirpFeed = () => {
 
     const switchFeeds = (feed: Feed) => {
         setFeedSelected(feed);
+        setDoneFetching(false)
         setSearchParams({ feed: feed === Feed.All ? "all" : feed === Feed.Trending ? "trending" : "following" })
     }
 
     useEffect(() => {
-        if (feedSelected === Feed.None) //inital page load
+        //get initial chirps when the selected feed changes
+
+        //inital page load, set the feed in the hook below
+        if (feedSelected === Feed.None) 
             return;
 
-        if ((feedSelected === Feed.All && allFeed.length) === 0 ||
-            (feedSelected === Feed.Trending && trendingFeed.length) === 0 ||
+        if ((feedSelected === Feed.All && allFeed.length === 0)  ||
+            (feedSelected === Feed.Trending && trendingFeed.length === 0)  ||
             (feedSelected === Feed.Following && followingFeed !== null && followingFeed.length === 0)) {
                 getChirps();
-        } else {
-            setDoneFetching(true)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -177,17 +180,24 @@ const ChirpFeed = () => {
         const info: {hasNext: boolean, posts: PostPayload[]} = response.data[`${type}Posts`];
         setDoneFetching(true);
 
-        if (!info) {
-            if (feedSelected === Feed.Following)
-                setFollowingFeed(null);
-            return;
+        if (feedSelected === Feed.Following) {
+            if (!info)
+                setFollowingFeed([]);
+            else
+                setFollowingOthers(true);
         }
 
-        const newChirps = info.posts.map((post: PostPayload) => {
+        if (!info) {
+           return;
+        }
+
+
+        const newChirps: JSX.Element[] = info.posts.map((post: PostPayload) => {
             let rechirper: Rechirper | undefined = undefined
+
             if (feedSelected === Feed.Following && post.isRechirp) {
-                if (post.rootPost == null) {
-                    return null
+                if (post.rootPost == null) { //original post was deleted
+                    return null;
                 } else {
                     rechirper = {
                         username: post.author.username,
@@ -217,9 +227,9 @@ const ChirpFeed = () => {
                 pinned={false} //only shows on profile
 
                 rechirper={rechirper}
-
             />
         })
+        .filter((chirp: JSX.Element | null) => chirp !== null) as JSX.Element[];
 
         if (feedSelected === Feed.All) {
             setAllFeed(allFeed.concat(newChirps));
@@ -238,50 +248,30 @@ const ChirpFeed = () => {
 
 
 
-    let msg = null;
-    let feed = null;
+    let emptyMsg = "";
+    let feed: JSX.Element[] = [];
     switch (feedSelected) {
         case Feed.All:
             feed = allFeed;
+            emptyMsg = "No chirps yet...";
+
             break;
         case Feed.Trending:
             feed = trendingFeed;
+            emptyMsg = "No chirps in the past 24 hours";
+
             break;
         case Feed.Following:
-            if (followingFeed !== null)
-                feed = followingFeed;
+            feed = followingFeed;
+
+            if (followingOthers)
+                emptyMsg = "No chirps from followed users";
             else
-                msg = "You are not following any users";
+                emptyMsg = "You are not following any users";
+
             break;
         default:
             break;
-    }
-
-    if (feed && doneFetching) {
-        if (feed.length === 0) {
-            msg = "No chirps... other than the crickets chirping!"
-            feed = null
-        } else {
-            switch (feedSelected) {
-                case Feed.All:
-                    if (!allHasNextPage) {
-                        msg = "You reached the end of the all feed. You saw all chirps ever made!"
-                    }
-                    break;
-                case Feed.Trending:
-                    if (!trendingHasNextPage) {
-                        msg = "You reached the end of the trending feed. Only chirps from the past 24 hours are here"
-                    }
-                    break;
-                case Feed.Following:
-                    if (!followingHasNextPage) {
-                        msg = "You reached the end of your following feed"
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
     }
 
 
@@ -289,6 +279,7 @@ const ChirpFeed = () => {
         await getChirps()
     })
 
+    
     const [sortMethod, sortDirection, sortBubble] = useSort(doneFetching, getChirps, () => {
         setAllFeed([])
         setFollowingFeed([])
@@ -322,11 +313,22 @@ const ChirpFeed = () => {
                 <ul className="mt-6 w-[95%] mx-auto">
                     {feed}
 
-                    <div className="text-center text-white text-lg my-4">{msg}</div>
-
                     {!doneFetching ?
-                        <SpinningCircle />
-                        : null}
+                        <>
+                            <ChirpPlaceholder />
+                            <ChirpPlaceholder />
+                            <ChirpPlaceholder />
+                            <ChirpPlaceholder />
+                            <ChirpPlaceholder />
+                            <ChirpPlaceholder />
+                            <ChirpPlaceholder />
+                            <ChirpPlaceholder />   
+                        </>
+                    : feed.length === 0 ?
+                        <div className="text-center text-white text-lg my-4 whitespace-pre-line">
+                            {emptyMsg}
+                        </div> 
+                    : null}
                 </ul>
             </div>
     )

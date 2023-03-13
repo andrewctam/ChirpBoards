@@ -33,7 +33,7 @@ function Notification(props: NotificationProps)  {
                 <div> {msg} </div>
 
                 {props.unread ?
-                    <div className = "absolute -top-1 -left-1 p-1 rounded-full bg-rose-400" />: null}
+                    <div className = "absolute -top-1 -left-1 p-1 rounded-full bg-rose-400" /> : null}
 
 
             </li>

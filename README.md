@@ -36,7 +36,7 @@ docker compose up
 
 
 ### No Docker
-To run the back end, run `./wmvn spring-boot:run` in `/backend`.
+To run the back end, run `./mvnw spring-boot:run` in `/backend`.
 
 ```
 ./mvnw spring-boot:run

@@ -8,6 +8,8 @@ import useScrollBottom from "../hooks/useScrollBottom";
 import useSort from "../hooks/useSort";
 import Layout from "../Layout";
 import UserSearchResult from "../menus/UserSearchResult";
+import ChirpPlaceholder from "../placeholders/ChirpPlaceholder";
+import ProfilePlaceholder from "../placeholders/ProfilePlaceholder";
 import SpinningCircle from "../SpinningCircle";
 import UserPhoto from "../UserPhoto";
 
@@ -417,34 +419,6 @@ function Profile() {
     }
 
 
-    let feed = null;
-    switch (viewSelected) {
-        case View.Chirps:
-            if (chirpsPageNum > 0 && chirps.length === 0)
-                feed = <div className="text-center text-white text-lg">{`${username} has not made any chirps`}</div>
-            else
-                feed = <>{pinnedPost}{chirps}</>
-            break;
-
-        case View.Followers:
-            if (followersPageNum > 0 && followers.length === 0)
-                feed = <div className="text-center text-white text-lg">{`${username} has no followers. Why not be the first one?`}</div>
-            else
-                feed = followers
-            break;
-
-
-        case View.Following:
-            if (followingPageNum > 0 && following.length === 0)
-                feed = <div className="text-center text-white text-lg">{`${username} is not following any users`}</div>
-            else
-                feed = following
-            break;
-
-        default:
-            break;
-    }
-
     const [sortMethod, sortDirection, sortBubble] = useSort(doneFetching, getChirps, () => {
         setChirps([])
         setChirpsPageNum(0)
@@ -469,99 +443,156 @@ function Profile() {
     })
 
 
-    if (!doneFetching && username === null) //first load
-        return <Layout><SpinningCircle /></Layout>
-    else if (doneFetching && username === null) { //first load done, but user not found
+    let feed: JSX.Element[] | JSX.Element | null = null;
+    switch (viewSelected) {
+        case View.Chirps:
+            if (chirpsPageNum > 0 && chirps.length === 0)
+                feed = <div className="text-center text-white text-lg">{`${username} has not made any chirps`}</div>
+            else
+                feed = <>{pinnedPost}{chirps}</>
+
+            break;
+
+        case View.Followers:
+            if (followersPageNum > 0 && followers.length === 0)
+                feed = <div className="text-center text-white text-lg">{`${username} has no followers. Why not be the first one?`}</div>
+            else
+                feed = followers
+            
+            break;
+
+        case View.Following:
+            if (followingPageNum > 0 && following.length === 0)
+                feed = <div className="text-center text-white text-lg">{`${username} is not following any users`}</div>
+            else
+                feed = following
+
+            break;
+
+        default:
+            break;
+    }
+
+
+    let placeholder;
+    if (viewSelected === View.Chirps) {
+        placeholder = (
+            <>
+                <ChirpPlaceholder />
+                <ChirpPlaceholder />
+                <ChirpPlaceholder />
+                <ChirpPlaceholder />
+                <ChirpPlaceholder />
+            </>
+        )
+    } else {
+        placeholder = (
+            <>
+                <div className = "p-4 bg-black/10 rounded my-3"> <SpinningCircle /> </div>
+                <div className = "p-4 bg-black/10 rounded my-3"> <SpinningCircle /> </div>
+                <div className = "p-4 bg-black/10 rounded my-3"> <SpinningCircle /> </div>
+            </>
+        );
+    
+    }
+
+    if (!doneFetching && username === null) { //first load
+        return (<Layout>
+           <ProfilePlaceholder />
+        </Layout>)
+
+    } else if (doneFetching && username === null) { //first load done, but user not found
         return (<Layout>
             <div className="text-center bg-red-200 py-8 shadow-md">
                 <h1>{`User ${params.username} not Found`}</h1>
             </div>
         </Layout>)
-    } else
-        return (<Layout>
-            <div className="text-center p-4 shadow-md relative" style={{ backgroundColor: userColor }} 
-                onMouseEnter = {() => {setShowSetting(true)}}
-                onMouseLeave = {() => {setShowSetting(false)}}>
+    }
 
-                {viewSelected === View.Chirps && !editingColor ? sortBubble : null}
 
-                {showSetting && userInfo.state.username === username ? 
-                    <a href="/settings" className="absolute right-1 top-1">
-                        <svg xmlns="http://www.w3.org/2000/svg"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                            <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
-                            <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
-                        </svg>
-                    </a>
+    return (<Layout>
+        <div className="text-center p-4 shadow-md relative" style={{ backgroundColor: userColor }} 
+            onMouseEnter = {() => {setShowSetting(true)}}
+            onMouseLeave = {() => {setShowSetting(false)}}>
+
+            {viewSelected === View.Chirps && !editingColor ? sortBubble : null}
+
+            {showSetting && userInfo.state.username === username ? 
+                <a href="/settings" className="absolute right-1 top-1">
+                    <svg xmlns="http://www.w3.org/2000/svg"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"></path>
+                        <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
+                    </svg>
+                </a>
+            : null}
+
+            <UserPhoto
+                userColor={userColor}
+                url={pictureURL}
+                size={100} />
+
+
+            <div className="flex justify-center gap-4 my-2">
+                <div className="h-[70px] text-sm w-fit my-auto border border-white/10 text-black bg-slate-200/50 px-4 py-1 rounded-xl">
+                    <h1 className="text-3xl break-words">{displayName}</h1>
+                    <h1 className="text-sm">{`@${username}`}</h1>
+                </div>
+
+                <div className="h-[70px] text-sm w-fit my-auto border border-white/10 text-black bg-slate-200/50 px-4 py-1 rounded-xl">
+                    <div className={`w-fit mx-auto cursor-pointer select-none ${viewSelected === View.Chirps ? "text-[#b22222]" : "text-black"}`} onClick={() => setViewSelected(View.Chirps)}>
+                        {`${postCount} chirp${postCount !== 1 ? "s" : ""}`}
+                    </div>
+
+                    <div className={`w-fit mx-auto cursor-pointer select-none ${viewSelected === View.Followers ? "text-[#b22222]" : "text-black"}`} onClick={() => setViewSelected(View.Followers)}>
+                        {`${followerCount} follower${followerCount !== 1 ? "s" : ""}`}
+                    </div>
+
+                    <div className={`w-fit mx-auto cursor-pointer select-none ${viewSelected === View.Following ? "text-[#b22222]" : "text-black"}`} onClick={() => setViewSelected(View.Following)}>
+                        {`${followingCount} following`}
+                    </div>
+                </div>
+
+            </div>
+
+            {userInfo.state.username !== username ?
+                <button onClick={toggleFollow} className={`inline text-black px-4 py-2 mt-2 w-fit h-fit my-auto text-sm rounded-lg ${isFollowing ? "bg-rose-200/75" : "bg-green-100/75"}`}>
+                    {isFollowing ? "Unfollow" : "Follow"}
+                </button>
                 : null}
+        </div>
 
-                <UserPhoto
-                    userColor={userColor}
-                    url={pictureURL}
-                    size={100} />
-
-
-                <div className="flex justify-center gap-4 my-2">
-                    <div className="h-[70px] text-sm w-fit my-auto border border-white/10 text-black bg-slate-200/50 px-4 py-1 rounded-xl">
-                        <h1 className="text-3xl break-words">{displayName}</h1>
-                        <h1 className="text-sm">{`@${username}`}</h1>
-                    </div>
-
-                    <div className="h-[70px] text-sm w-fit my-auto border border-white/10 text-black bg-slate-200/50 px-4 py-1 rounded-xl">
-                        <div className={`w-fit mx-auto cursor-pointer select-none ${viewSelected === View.Chirps ? "text-[#b22222]" : "text-black"}`} onClick={() => setViewSelected(View.Chirps)}>
-                            {`${postCount} chirp${postCount !== 1 ? "s" : ""}`}
-                        </div>
-
-                        <div className={`w-fit mx-auto cursor-pointer select-none ${viewSelected === View.Followers ? "text-[#b22222]" : "text-black"}`} onClick={() => setViewSelected(View.Followers)}>
-                            {`${followerCount} follower${followerCount !== 1 ? "s" : ""}`}
-                        </div>
-
-                        <div className={`w-fit mx-auto cursor-pointer select-none ${viewSelected === View.Following ? "text-[#b22222]" : "text-black"}`} onClick={() => setViewSelected(View.Following)}>
-                            {`${followingCount} following`}
-                        </div>
-                    </div>
-
+        {userInfo.state.username === username && viewSelected === View.Chirps ?
+            <div className="w-full bg-black/30 shadow-md pt-8 pb-1">
+                <div className="mx-auto w-11/12 md:w-3/4 lg:w-3/5">
+                    <PostComposer />
                 </div>
-
-                {userInfo.state.username !== username ?
-                    <button onClick={toggleFollow} className={`inline text-black px-4 py-2 mt-2 w-fit h-fit my-auto text-sm rounded-lg ${isFollowing ? "bg-rose-200/75" : "bg-green-100/75"}`}>
-                        {isFollowing ? "Unfollow" : "Follow"}
-                    </button>
-                    : null}
             </div>
+            : <div />}
 
-            {userInfo.state.username === username && viewSelected === View.Chirps ?
-                <div className="w-full bg-black/30 shadow-md pt-8 pb-1">
-                    <div className="mx-auto w-11/12 md:w-3/4 lg:w-3/5">
-                        <PostComposer />
-                    </div>
-                </div>
-                : <div />}
+        <div className="mt-4 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
+            <ul className="mt-4">
+                {feed}
 
-            <div className="mt-4 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
-                <ul className="mt-4">
-                    {feed}
-
-                    {!doneFetching ? <SpinningCircle /> : null}
-                </ul>
-            </div>
+                {!doneFetching ? placeholder : null}
+            </ul>
+        </div>
 
 
+        {editingColor ?
+            <div className="fixed bottom-2 right-2 w-fit text-center border border-black/30 bg-black/60 shadow-md rounded-xl p-4">
+                <p className="text-white">Click below to select a new color</p>
+                <input type="color" className="bg-transparent block mx-auto w-16 h-16" value={userColor} onChange={(e) => setUserColor(e.target.value)} />
+                <button onClick={() => { navigate("/settings") }} className="text-sm text-white px-4 py-2 mx-auto my-2 mr-2 bg-rose-700/30 rounded-xl border border-black/50">
+                    Cancel
+                </button>
+                <button onClick={updateUserColor} className="text-sm text-white px-4 py-2 mx-auto my-2 bg-white/10 rounded-xl border border-black/50">
+                    Save Changes
+                </button>
 
-            {editingColor ?
-                <div className="fixed bottom-2 right-2 w-fit text-center border border-black/30 bg-black/60 shadow-md rounded-xl p-4">
-                    <p className="text-white">Click below to select a new color</p>
-                    <input type="color" className="bg-transparent block mx-auto w-16 h-16" value={userColor} onChange={(e) => setUserColor(e.target.value)} />
-                    <button onClick={() => { navigate("/settings") }} className="text-sm text-white px-4 py-2 mx-auto my-2 mr-2 bg-rose-700/30 rounded-xl border border-black/50">
-                        Cancel
-                    </button>
-                    <button onClick={updateUserColor} className="text-sm text-white px-4 py-2 mx-auto my-2 bg-white/10 rounded-xl border border-black/50">
-                        Save Changes
-                    </button>
+            </div> : null}
 
-                </div> : null}
-
-        </Layout>)
+    </Layout>)
 
 }
 

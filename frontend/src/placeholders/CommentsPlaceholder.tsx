@@ -1,7 +1,9 @@
+import SpinningCircle from "../SpinningCircle"
 
 interface CommentsPlaceholderProps {
     opacity: string,
     showNoComments?: boolean,
+    showSpinning?: boolean
 }
 const CommentsPlaceholder = (props: CommentsPlaceholderProps) => {
     
@@ -12,6 +14,9 @@ const CommentsPlaceholder = (props: CommentsPlaceholderProps) => {
                 <div className = "w-fit h-fit text-white/50 text-xl select-none flex">
                     No Comments Yet
                 </div>
+            : null}
+            {props.showSpinning ?
+                <SpinningCircle />
             : null}
         </div>
     )

@@ -8,6 +8,7 @@ import FeedButton from "../home/FeedButton";
 import UserSearchResult from "./UserSearchResult";
 import SpinningCircle from "../SpinningCircle";
 import useSort from "../hooks/useSort";
+import ChirpPlaceholder from "../placeholders/ChirpPlaceholder";
 
 export enum SearchFeed {
     Chirps,
@@ -211,10 +212,30 @@ function Search () {
         setDoneFetching(false);
     })
 
-    
+    let placeholder = null;
+    if (feedSelected === SearchFeed.Users) {
+        placeholder = (
+            <>
+                <div className = "p-4 bg-black/10 rounded my-3"> <SpinningCircle /> </div>
+                <div className = "p-4 bg-black/10 rounded my-3"> <SpinningCircle /> </div>
+                <div className = "p-4 bg-black/10 rounded my-3"> <SpinningCircle /> </div>
+                <div className = "p-4 bg-black/10 rounded my-3"> <SpinningCircle /> </div>
+                <div className = "p-4 bg-black/10 rounded my-3"> <SpinningCircle /> </div>
+            </>
+        )
+    } else if (feedSelected === SearchFeed.Chirps) {
+        placeholder = (
+            <>
+                <ChirpPlaceholder />
+                <ChirpPlaceholder />
+                <ChirpPlaceholder />
+                <ChirpPlaceholder />
+                <ChirpPlaceholder />
+            </>
+        )
+    }
 
-    let feed: JSX.Element[] | JSX.Element = <SpinningCircle /> 
-    
+    let feed: JSX.Element[] | JSX.Element | null = null;
     if (feedSelected === SearchFeed.Users && userResults.length > 0) {
         feed = userResults;
     } else if (feedSelected === SearchFeed.Chirps && chirpResults.length > 0) {
@@ -247,7 +268,8 @@ function Search () {
                 </div>
 
                 <ul className = "w-[95%] mx-auto mt-6"> 
-                    {feed} 
+                    {feed}
+                    {!doneFetching ? placeholder : null}
                 </ul>
             </div>
         </Layout>
