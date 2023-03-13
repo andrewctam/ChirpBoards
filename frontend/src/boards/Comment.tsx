@@ -103,12 +103,13 @@ function Comment(props: CommentProps) {
         )
     }
 
-    const [dots, editor] = useOptions(props.id, props.text, userInfo.state.username === props.authorUsername, null, props.rechirpStatus)
+    const [dots, editor] = useOptions(props.id, props.text, userInfo.state.username === props.authorUsername, null, true, props.rechirpStatus)
 
     return (
         <div className = "w-[97.5%] ml-[2.5%]">
             <div className = {`my-6 rounded-bl-xl rounded-tr-xl relative break-all bg-black/20 shadow-md text-gray-100 ${props.local ? "animate-fadeColor": ""} `} >
                 <PostBody
+                    id = {props.id}
                     username = {props.authorUsername}
                     displayName = {props.authorDisplayName}
                     userColor = {props.userColor}
@@ -118,6 +119,7 @@ function Comment(props: CommentProps) {
                     pinned = {false}
                     text = {props.text}
                     editor = {editor}
+                    
                 />
                     
                 

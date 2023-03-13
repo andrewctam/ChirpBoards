@@ -224,7 +224,7 @@ const ChirpFeed = () => {
                 rechirpStatus={userInfo.state.username ? post.rechirpStatus : false}
                 userColor={post.author.userColor}
                 isEdited={post.isEdited}
-                pinned={false} //only shows on profile
+                pinned={null} //only shows on profile
 
                 rechirper={rechirper}
             />

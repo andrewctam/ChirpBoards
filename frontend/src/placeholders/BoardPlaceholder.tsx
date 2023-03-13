@@ -4,7 +4,7 @@ import CommentsPlaceholder from "./CommentsPlaceholder"
 const BoardPlaceholder = () => {
     return (
         <div className="mx-auto w-11/12 md:w-4/5">
-            <div className="w-full mt-6 mb-6 ounded-bl-xl rounded-tr-xl bg-black/20 text-white relative break-all shadow-md">
+            <div className="w-full mt-6 mb-6 rounded-bl-xl rounded-tr-xl bg-black/20 text-white relative break-all shadow-md">
                 <div className="text-white truncate relative" >
                     <SpinningCircle />
                 </div>

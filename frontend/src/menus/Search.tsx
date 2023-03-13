@@ -248,7 +248,6 @@ function Search () {
 
     return (
         <Layout>
-            <h1 className = "text-2xl text-white text-center py-4 bg-black/20 shadow-md">Search Results</h1>
             <div className="mt-2 mx-auto w-5/6 lg:w-3/5 py-2">                
 
                 {feedSelected === SearchFeed.Chirps ? sortBubble : null}

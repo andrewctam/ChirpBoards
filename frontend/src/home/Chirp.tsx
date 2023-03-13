@@ -12,7 +12,7 @@ export type Rechirper = {
 }   
 
 interface ChirpProps extends PostInfo {
-    pinned: boolean
+    pinned: boolean | null
     userColor: string
 
     //user who rechirped, only relevant on profile where they are displayed. 
@@ -22,7 +22,7 @@ interface ChirpProps extends PostInfo {
 
 function Chirp(props: ChirpProps) {
     const userInfo = useContext(UserContext);
-    const [dots, editor] = useOptions(props.id, props.text, userInfo.state.username === props.authorUsername, props.pinned, props.rechirpStatus)
+    const [dots, editor] = useOptions(props.id, props.text, userInfo.state.username === props.authorUsername, props.pinned, false, props.rechirpStatus)
     return (
     <li className={`w-full relative mb-8`}>
         <div className="block bg-black/20 text-white rounded-bl-xl rounded-tr-xl truncate">
@@ -34,11 +34,12 @@ function Chirp(props: ChirpProps) {
                 postDate = {props.postDate}
                 pictureURL = {props.authorPictureURL}
                 isEdited = {props.isEdited}
-                pinned = {props.pinned}
+                pinned = {props.pinned ?? false}
                 text = {props.text}
                 imageURL = {props.imageURL}
                 editor = {editor}
                 rechirper = {props.rechirper}
+                allowClick = {true}
             />
         </div>
 

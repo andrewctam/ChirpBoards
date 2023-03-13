@@ -23,7 +23,7 @@ export interface BoardInfo extends PostInfo {
 
 function Board() {
     const [mainPost, setMainPost] = useState<BoardInfo | null>(null)
-
+    const [parentPost, setParentPost] = useState<BoardInfo | null>(null)
     const [comments, setComments] = useState<JSX.Element[]>([])
     const [doneFetching, setDoneFetching] = useState(false);
     //local comments are sent to the server, but also store them here to avoid a 2nd fetch
@@ -64,6 +64,19 @@ function Board() {
                 imageURL
                 parentPost {
                     id
+                    text
+                    commentCount
+                    postDate(timezone: ${timezone})
+                    score
+                    isEdited
+                    ${userInfo.state.username ? "voteStatus" : ""}
+                    ${userInfo.state.username ? "rechirpStatus" : ""}
+                    author {
+                        username
+                        displayName
+                        userColor
+                        pictureURL
+                    }
                 }
                 rootPost {
                     id
@@ -102,12 +115,14 @@ function Board() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({query})
         }).then(res => res.json())
-        console.log(response)
 
-        /*
-        if (response.errors || !response.data.post)
-            navigate("/");
-        */
+        console.log(response)  
+        setDoneFetching(true);
+
+        if (response.errors || !response.data.post) {
+            return;
+        }
+        
 
         const info: PostPayload = response.data.post;
         setMainPost({
@@ -155,16 +170,36 @@ function Board() {
             })
         ))
 
-        setDoneFetching(true);        
+        const parentInfo = info.parentPost;
+
+        if (parentInfo) {
+            setParentPost({
+                id: parentInfo.id,
+                text: parentInfo.text,
+                imageURL: parentInfo.imageURL,
+                voteStatus: userInfo.state.username ? parentInfo.voteStatus : 0,
+                rechirpStatus: userInfo.state.username ? parentInfo.rechirpStatus : false,
+                postDate: parentInfo.postDate,
+                authorUsername: parentInfo.author.username,
+                authorDisplayName: parentInfo.author.displayName,
+                authorPictureURL: parentInfo.author.pictureURL,
+                commentCount: parentInfo.commentCount,
+                score: parentInfo.score,
+                parentPost: parentInfo.parentPost ? parentInfo.parentPost.id : null,
+                rootPost: parentInfo.rootPost ? parentInfo.rootPost.id : null,
+                userColor: parentInfo.author.userColor,
+                isEdited: parentInfo.isEdited,
+            })
+        }
+
     }
 
     const getComments = async () => {
         if (!mainPost || !hasNextPage) {
-            setDoneFetching(true)
             return; 
         }
+        setDoneFetching(false)
 
-    
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
         const query =
@@ -204,8 +239,9 @@ function Board() {
             navigate("/");
         
         const info: PostPayload = response.data.post;
-        if (!info || info.isComment)
+        if (!info || info.isComment) {
             navigate("/");
+        }
 
         setPageNum(pageNum + 1)
         setHasNextPage(info.comments.hasNext)
@@ -247,7 +283,6 @@ function Board() {
     })
 
     useScrollBottom(async () => {
-        setDoneFetching(false)
         await getComments()
     })
 
@@ -256,38 +291,56 @@ function Board() {
             mainPost ? mainPost.text : "", 
             mainPost ? userInfo.state.username === mainPost.authorUsername : false,
             null,
-            mainPost ? mainPost.rechirpStatus :false)
+            false,
+            mainPost ? mainPost.rechirpStatus : false)
             
         
     if (!mainPost) {
         return <Layout>
-            <BoardPlaceholder />
+            {doneFetching ? 
+                <div className="text-center bg-red-200 py-8 shadow-md">
+                    <h1>Board deleted or not found</h1>
+                </div>
+            :
+            <BoardPlaceholder />}
         </Layout>
     }
     
     return (
         <Layout>
+            {sortBubble}
+            {mainPost.rootPost && mainPost.parentPost !== mainPost.rootPost ?
+            <div className = "bg-black/20 w-fit m-4 px-4 py-2 rounded-xl text-white">
+                <a href={`/board/${mainPost.rootPost}`}>← Top of the board</a>
+            </div>    
+            : null}
+
+            {parentPost ? 
+            <div className = "w-11/12 md:w-[90%] mx-auto mt-6 mb-6 rounded-bl-xl rounded-tr-xl bg-black/40 text-white relative break-all shadow-md">
+                <PostBody
+                    id = {parentPost.id}
+                    username = {parentPost.authorUsername}
+                    displayName = {parentPost.authorDisplayName}
+                    userColor = {parentPost.userColor}
+                    postDate = {parentPost.postDate}
+                    pictureURL = {mainPost.authorPictureURL}
+                    isEdited = {parentPost.isEdited}
+                    text = {parentPost.text}
+                    imageURL = {parentPost.imageURL}
+                    editor = {null}
+                    allowClick = {true}
+                />
+
+                <Vote postId = {parentPost.id} initialScore = {parentPost.score} initialVoteStatus = {parentPost.voteStatus}/>
+            </div>
+            : null}
+
             <div className = "mx-auto w-11/12 md:w-4/5">
-                {sortBubble}
-
-                {mainPost.parentPost ? 
-                    <div className = "my-6 ml-4">
-
-                        {mainPost.rootPost && mainPost.parentPost !== mainPost.rootPost ?
-                        <p className = "mb-2">
-                            <a href={`/board/${mainPost.rootPost}`} className = "text-blue-400">← Top of the board</a>
-                        </p>    
-                        : null}
-
-                        <p>
-                            <a href={`/board/${mainPost.parentPost}`} className = "text-blue-200">← Parent post</a>
-                        </p>    
-                    </div>
-                : null}
-
+            
                 <div>
-                    <div className = "w-full mt-6 mb-6 ounded-bl-xl rounded-tr-xl bg-black/20 text-white relative break-all shadow-md">
+                    <div className = "w-full mt-6 mb-6 rounded-bl-xl rounded-tr-xl bg-black/20 text-white relative break-all shadow-md">
                         <PostBody
+                            id = {mainPost.id}
                             username = {mainPost.authorUsername}
                             displayName = {mainPost.authorDisplayName}
                             userColor = {mainPost.userColor}
@@ -323,8 +376,10 @@ function Board() {
                     localComments.length === 0 && comments.length === 0 ?
                     <>
                         <CommentsPlaceholder opacity = {"90%"} showNoComments = {doneFetching}/>
+                        <CommentsPlaceholder opacity = {"80%"} />
+                        <CommentsPlaceholder opacity = {"70%"} />
+                        <CommentsPlaceholder opacity = {"60%"} />
                         <CommentsPlaceholder opacity = {"50%"} />
-                        <CommentsPlaceholder opacity = {"25%"} />
                     </>
                     :
                         <div className = "w-full mb-10 border-l ml-[1px] border-l-gray-500">

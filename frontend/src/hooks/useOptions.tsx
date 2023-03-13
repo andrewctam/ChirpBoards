@@ -1,11 +1,12 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../App";
 
 const useOptions = (postId: string,
                     oldText: string,
                     isOwner: boolean, 
                     isPinned: boolean | null,
+                    isComment: boolean,
                     userRechirped: boolean | null): [dots: JSX.Element, editor: JSX.Element | null] => {
 
     const [showOptions, setShowOptions] = useState(false)
@@ -13,7 +14,6 @@ const useOptions = (postId: string,
     const [showVerifyDelete, setShowVerifyDelete] = useState(false)
     const [editedText, setEditedText] = useState("");
     const [localRechirped, setLocalRechirped] = useState(false);
-
     const userInfo = useContext(UserContext);
     const dotsRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate()
@@ -176,7 +176,7 @@ const useOptions = (postId: string,
 
 
     const editor =
-        (<form onSubmit = {editPost} className = "w-full mx-auto h-24 mb-6 bg-black/10 relative rounded">
+        (<form onSubmit = {editPost} className = "w-full mx-auto h-24 mt-16 mb-6 bg-black/10 relative rounded">
             <textarea 
                 value = {editedText} 
                 onChange = {(e) => setEditedText(e.target.value)} 
@@ -218,13 +218,21 @@ const useOptions = (postId: string,
 
                                 {showVerifyDelete ? 
                                 <li>
-                                    <div onClick = {deletePost} className = "text-rose-500 mt-2 sm:mt-1">Confirm</div>
+                                    <div onClick = {deletePost} className = "text-rose-500 mt-1">Confirm</div>
                                 </li>
                                 : <li onClick = {() => setShowVerifyDelete(!showVerifyDelete)} className = "mt-1">Delete</li>}
                             </> 
                             :
                             <li onClick = {rechirp}>{localRechirped ? "Undo Rechirp" : "Rechirp"}</li>
                         }
+                        
+                        {isComment ?
+                            <li className = "mt-1">
+                                <Link reloadDocument to = {`/board/${postId}`} >
+                                    Open
+                                </Link>
+                            </li>
+                        : null}                   
                     </ul> : null}
                 </div>
             </div>

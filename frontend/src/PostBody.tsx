@@ -3,7 +3,7 @@ import { Rechirper } from "./home/Chirp"
 import UserPhoto from "./UserPhoto"
 
 interface PostBodyProps {
-    id?: string
+    id: string
     username: string
     displayName: string
     userColor: string
@@ -14,7 +14,8 @@ interface PostBodyProps {
     text: string
     imageURL?: string
     editor: JSX.Element | null
-    rechirper?: Rechirper | undefined
+    rechirper?: Rechirper | undefined,
+    allowClick?: boolean
 }
 
 const PostBody = (props: PostBodyProps) => {
@@ -78,7 +79,13 @@ const PostBody = (props: PostBodyProps) => {
                     }
                 </div> 
                 :
-                <div onClick={() => {if (props.id) navigate(`/board/${props.id}`)}} className={`w-full max-h-[600px] pt-12 pb-5 pl-14 m-0 overflow-y-hidden whitespace-pre-line text-sm break-all text-white ${props.id ? "cursor-pointer" : null}`}>
+                <div onClick={() => {
+                    if (props.allowClick) {
+                        navigate(`/board/${props.id}`); 
+                        navigate(0)
+                    }
+                }} className={`w-full max-h-[600px] pt-12 pb-5 pl-14 m-0 overflow-y-hidden whitespace-pre-line text-sm break-all text-white ${props.allowClick ? "cursor-pointer" : null}`}>
+                    
                     {props.text}
 
                     {props.imageURL ? 
