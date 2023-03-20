@@ -89,7 +89,7 @@ function Search () {
         }
 
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
         `query {    
             searchPosts(query: "${regex}", pageNum: ${chirpPageNum}, size: 10, sortMethod: "${sortMethod}", sortDirection: "${sortDirection}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
@@ -155,7 +155,7 @@ function Search () {
             return;
         }
             
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
         `query {    
             searchUsers(query: "${regex}", pageNum: ${userPageNum}, size: 10) {

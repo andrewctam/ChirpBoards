@@ -39,7 +39,7 @@ function Settings() {
             return;
         }
 
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query = 
         `mutation {
             changeDisplayName(newDisplayName: "${displayNameInput}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
@@ -87,7 +87,7 @@ function Settings() {
             return;
         }
 
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query = 
         `mutation {
             changePassword(oldPassword: "${oldPasswordInput}", newPassword: "${newPasswordInput}", username: "${userInfo.state.username}") {

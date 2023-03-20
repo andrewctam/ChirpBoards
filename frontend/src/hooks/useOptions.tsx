@@ -53,7 +53,7 @@ const useOptions = (postId: string,
         if (localRechirped)
             type = "undoRechirp"
 
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
             `mutation {
                 ${type}(postId: "${postId}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
@@ -86,7 +86,7 @@ const useOptions = (postId: string,
             return;
         }
 
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
             `mutation {
                 editPost(newText: """${editedText}""", postId: "${postId}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
@@ -122,7 +122,7 @@ const useOptions = (postId: string,
             return;
         }
 
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
             `mutation {
                 pinPost(postId: "${postId}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
@@ -151,7 +151,7 @@ const useOptions = (postId: string,
             return;
         }
 
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
             `mutation {
                 deletePost(postId: "${postId}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {

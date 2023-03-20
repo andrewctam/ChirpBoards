@@ -47,7 +47,7 @@ const PostBody = (props: PostBodyProps) => {
                 <span style = {{color: props.userColor}}>
                     {props.displayName}
                 </span>
-                <span className = "ml-1 "> 
+                <span className = "ml-1"> 
                     {`@${props.username}`}
                 </span>
 
@@ -64,7 +64,7 @@ const PostBody = (props: PostBodyProps) => {
                 : null}
 
                 {props.pinned ? 
-                    <span className = "text-rose-300 ml-1">
+                    <span className = "text-rose-300 ml-2">
                         {"pinned"} 
                     </span>
                 : null}

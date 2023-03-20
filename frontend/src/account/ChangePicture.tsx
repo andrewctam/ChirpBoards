@@ -53,7 +53,7 @@ const ChangePicture = (props: ChangePictureProps) => {
     }
         
     const getUserCurrentProfilePicture = async () => {
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
         `query {
             user(username: "${userInfo.state.username}") {
@@ -85,7 +85,7 @@ const ChangePicture = (props: ChangePictureProps) => {
         inputRef.current.value = ""
     }
 
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
         `mutation {
                 changeProfilePicture(username: "${userInfo.state.username}", base64Image: "${base64Image}", sessionToken: "${userInfo.state.sessionToken}") {

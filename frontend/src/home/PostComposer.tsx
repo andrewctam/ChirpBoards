@@ -89,7 +89,7 @@ function PostComposer() {
         }
 
         setUploading(true)
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
             `mutation {
                 createPost(text: """${composedChirp}"""${imageData}, username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {

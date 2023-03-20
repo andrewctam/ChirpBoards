@@ -32,7 +32,6 @@ function Profile() {
     const [followingCount, setFollowingCount] = useState<number>(0);
 
     const [pinnedPostId, setPinnedPostId] = useState("")
-    const [pinnedPost, setPinnedPost] = useState<JSX.Element | null>(null);
 
     const [userColor, setUserColor] = useState<string>("#000000")
     const [editingColor, setEditingColor] = useState(false);
@@ -41,7 +40,7 @@ function Profile() {
 
     const [viewSelected, setViewSelected] = useState<View>(View.Chirps);
 
-    const [chirps, setChirps] = useState<(JSX.Element | null)[]>([]);
+    const [chirps, setChirps] = useState<JSX.Element[]>([]);
     const [chirpsPageNum, setChirpsPageNum] = useState(0);
     const [chirpsHasNextPage, setChirpsHasNextPage] = useState(true);
 
@@ -100,7 +99,7 @@ function Profile() {
 
 
     const getUserInfo = async (username: string) => {
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
 
         const query =
@@ -150,24 +149,23 @@ function Profile() {
 
         if (info.pinnedPost !== null) {
             setPinnedPostId(info.pinnedPost.id)
-            setPinnedPost(
+            chirps.unshift(
                 <Chirp
-                    authorUsername={info.username}
-                    authorDisplayName={info.displayName}
-                    authorPictureURL={info.pictureURL}
-                    id={info.pinnedPost.id}
-                    postDate={info.pinnedPost.postDate}
-                    text={info.pinnedPost.text}
-                    imageURL={info.pinnedPost.imageURL}
-                    key={info.pinnedPost.id}
-                    score={info.pinnedPost.score}
-                    voteStatus={userInfo.state.username ? info.pinnedPost.voteStatus : 0}
-                    rechirpStatus={userInfo.state.username ? info.pinnedPost.rechirpStatus : false}
-                    userColor={info.userColor}
-                    isEdited={info.pinnedPost.isEdited}
-                    pinned={true}
-                />)
-
+                authorUsername={info.username}
+                authorDisplayName={info.displayName}
+                authorPictureURL={info.pictureURL}
+                id={info.pinnedPost.id}
+                postDate={info.pinnedPost.postDate}
+                text={info.pinnedPost.text}
+                imageURL={info.pinnedPost.imageURL}
+                key={info.pinnedPost.id}
+                score={info.pinnedPost.score}
+                voteStatus={userInfo.state.username ? info.pinnedPost.voteStatus : 0}
+                rechirpStatus={userInfo.state.username ? info.pinnedPost.rechirpStatus : false}
+                userColor={info.userColor}
+                isEdited={info.pinnedPost.isEdited}
+                pinned={true}
+            />)
         }
 
 
@@ -184,7 +182,7 @@ function Profile() {
         }
 
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
             `query {    
             user(username: "${username}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
@@ -252,7 +250,7 @@ function Profile() {
             if (post.id === pinnedPostId)
                 return null;
             else if (post.isRechirp) {
-                if (post.rootPost == null) {
+                if (post.rootPost == null) { //rechirped post deleted
                     return null
                 } else {
                     rechirper = {
@@ -284,7 +282,8 @@ function Profile() {
 
                 rechirper={rechirper}
             />
-        })))
+        }).filter((chirp: JSX.Element | null) => chirp !== null) as JSX.Element[]))
+        
     }
 
     //gets followers or following
@@ -314,7 +313,7 @@ function Profile() {
                 return;
         }
 
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
             `query {
                 user(username: "${username}") {
@@ -374,7 +373,7 @@ function Profile() {
             navigate(`/signin?return=${window.location.pathname}`)
         }
 
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
 
         const query =
             `mutation {    
@@ -398,7 +397,7 @@ function Profile() {
 
 
     const updateUserColor = async () => {
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
             `mutation {
             changeUserColor(newUserColor: "${userColor}", username: "${userInfo.state.username}", sessionToken: "${userInfo.state.sessionToken}") {
@@ -443,30 +442,22 @@ function Profile() {
     })
 
 
-    let feed: JSX.Element[] | JSX.Element | null = null;
+    let feed: JSX.Element[] = []
+    let emptyMsg: string = "";
     switch (viewSelected) {
         case View.Chirps:
-            if (chirpsPageNum > 0 && chirps.length === 0)
-                feed = <div className="text-center text-white text-lg">{`${username} has not made any chirps`}</div>
-            else
-                feed = <>{pinnedPost}{chirps}</>
-
+            feed = chirps
+            emptyMsg = `${username} has not made any chirps`
             break;
 
         case View.Followers:
-            if (followersPageNum > 0 && followers.length === 0)
-                feed = <div className="text-center text-white text-lg">{`${username} has no followers. Why not be the first one?`}</div>
-            else
-                feed = followers
-            
+            feed = followers
+            emptyMsg = `${username} has no followers. Why not be the first one?`
             break;
 
         case View.Following:
-            if (followingPageNum > 0 && following.length === 0)
-                feed = <div className="text-center text-white text-lg">{`${username} is not following any users`}</div>
-            else
-                feed = following
-
+            feed = following
+            emptyMsg = `${username} is not following any users`
             break;
 
         default:
@@ -572,6 +563,11 @@ function Profile() {
 
         <div className="mt-4 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
             <ul className="mt-4">
+                {doneFetching && feed.length === 0 ? 
+                    <div className="text-center text-white text-lg">
+                        {emptyMsg}
+                </div> : null}
+                
                 {feed}
 
                 {!doneFetching ? placeholder : null}

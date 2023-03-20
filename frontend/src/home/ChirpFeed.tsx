@@ -121,7 +121,7 @@ const ChirpFeed = () => {
             sortField = `, sortMethod: "${sortMethod}", sortDirection: "${sortDirection}"`;
 
 
-        const url = process.env.NODE_ENV !== "production" ? process.env.REACT_APP_DEV_URL : process.env.REACT_APP_PROD_URL
+        const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const query =
             `query {
