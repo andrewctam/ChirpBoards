@@ -218,7 +218,7 @@ const ChirpFeed = () => {
                 postDate={post.postDate}
                 text={post.text}
                 imageURL={post.imageURL}
-                key={post.id}
+                key={rechirper ? `${rechirper.username}_${post.id}` : post.id}
                 score={post.score}
                 voteStatus={userInfo.state.username ? post.voteStatus : 0}
                 rechirpStatus={userInfo.state.username ? post.rechirpStatus : false}
@@ -247,7 +247,7 @@ const ChirpFeed = () => {
     }
 
 
-
+    
     let emptyMsg = "";
     let feed: JSX.Element[] = [];
     switch (feedSelected) {
