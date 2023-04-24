@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.List;
 
-import org.andrewtam.ChirpBoards.MongoDBModels.User;
+import org.andrewtam.ChirpBoards.SQLModels.User;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -180,7 +180,6 @@ class AccountTests {
         assertEquals(0, res.path("user.following.users").entity(List.class).get().size());
 
         User user2 = userRepository.findByUsername(username2);
-        assertEquals(0, user2.getFollowers().size());
         assertEquals(0, user2.getFollowingCount());
 
         userRepository.delete(user2);

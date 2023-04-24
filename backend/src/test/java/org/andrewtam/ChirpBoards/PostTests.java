@@ -6,10 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.util.Arrays;
 import java.util.List;
 
-import org.andrewtam.ChirpBoards.MongoDBModels.User;
+import org.andrewtam.ChirpBoards.SQLModels.User;
+import org.andrewtam.ChirpBoards.SQLModels.Vote;
 import org.andrewtam.ChirpBoards.repositories.NotificationRepository;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
+import org.andrewtam.ChirpBoards.repositories.VoteRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.graphql.tester.AutoConfigureGraphQlTester;
@@ -29,6 +31,9 @@ public class PostTests {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    VoteRepository voteRepository;
 
     @Autowired
     NotificationRepository notificationRepository;
@@ -79,6 +84,7 @@ public class PostTests {
         payload = register();
         String user2 = payload[0].toLowerCase();
         String sessionToken2 = payload[1];
+
 
         payload = register();
         String user3 = payload[0].toLowerCase();
@@ -259,7 +265,6 @@ public class PostTests {
         
         Integer score = graphQlTester.document(query).execute().path("post.score").entity(Integer.class).get();
         assertEquals(1, score);
-    
         //user2 downvotes
         graphQlTester.documentName("post")
         .variable("postId", mainPost1)
@@ -287,6 +292,7 @@ public class PostTests {
         .variable("sessionToken", sessionToken3)
         .operationName("upvotePost")
         .execute();
+
         graphQlTester.documentName("post")
         .variable("postId", mainPost1)
         .variable("username", user3)
@@ -510,7 +516,6 @@ public class PostTests {
         assertEquals(1, res.path("user.postCount").entity(Integer.class).get());
         assertEquals(false, res.path("user.posts.posts[0].isRechirp").entity(Boolean.class).get());
 
-
         //test deleting posts
         graphQlTester.documentName("post")
         .variable("postId", mainPost1)
@@ -518,21 +523,18 @@ public class PostTests {
         .variable("sessionToken", sessionToken1)
         .operationName("deletePost")
         .execute();
-
         graphQlTester.documentName("post")
         .variable("postId", commentId1)
         .variable("username", user1)
         .variable("sessionToken", sessionToken1)
         .operationName("deletePost")
         .execute();
-
         graphQlTester.documentName("post")
         .variable("postId", commentId2)
         .variable("username", user2)
         .variable("sessionToken", sessionToken2)
         .operationName("deletePost")
         .execute();
-
         graphQlTester.documentName("post")
         .variable("postId", commentId3)
         .variable("username", user3)
@@ -547,14 +549,14 @@ public class PostTests {
         .operationName("deletePost")
         .execute();
 
+        //check if posts were deleted
         assertEquals(postCount, postRepository.count());
     
+
         //delete users
         User userObj1 = userRepository.findByUsername(user1);
         assertEquals(userObj1.getPostCount(), 0);
-        assertEquals(userObj1.getPosts().size(), 0);
         assertNull(userObj1.getPinnedPost());
-        assertEquals(0, userObj1.getNotifications().size());
         assertEquals(0, userObj1.getUnreadNotifications());
 
         assertEquals(notificationCount, notificationRepository.count());
@@ -562,15 +564,19 @@ public class PostTests {
 
         User userObj2 = userRepository.findByUsername(user2);
         assertEquals(userObj2.getPostCount(), 0);
-        assertEquals(userObj2.getPosts().size(), 0);
 
         User userObj3 = userRepository.findByUsername(user3);
         assertEquals(userObj3.getPostCount(), 0);
-        assertEquals(userObj3.getPosts().size(), 0);
 
         List<User> users = Arrays.asList(userObj1, userObj2, userObj3);
 
+        Vote post1UpVote = voteRepository.findVote(userObj1.getId(), mainPost1);
+        Vote post2DownVote = voteRepository.findVote(userObj2.getId(), mainPost1);
+
+        List<Vote> votes = Arrays.asList(post1UpVote, post2DownVote);
+
+        voteRepository.deleteAll(votes);
         userRepository.deleteAll(users);
 
-    }    
+    }
 }

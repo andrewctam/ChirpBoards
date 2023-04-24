@@ -1,6 +1,6 @@
 package org.andrewtam.ChirpBoards.GraphQLModels;
 
-import org.andrewtam.ChirpBoards.MongoDBModels.Post;
+import org.andrewtam.ChirpBoards.SQLModels.Post;
 
 public class PostResponse {
     private String msg;

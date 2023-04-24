@@ -7,13 +7,13 @@ import java.util.stream.Collectors;
 
 
 import org.andrewtam.ChirpBoards.GraphQLModels.PaginatedNotifications;
-import org.andrewtam.ChirpBoards.MongoDBModels.Post;
-import org.andrewtam.ChirpBoards.MongoDBModels.User;
-import org.andrewtam.ChirpBoards.MongoDBModels.Notification;
+import org.andrewtam.ChirpBoards.SQLModels.Notification;
+import org.andrewtam.ChirpBoards.SQLModels.Post;
+import org.andrewtam.ChirpBoards.SQLModels.User;
 import org.andrewtam.ChirpBoards.repositories.NotificationRepository;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
-import org.bson.types.ObjectId;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -60,7 +60,7 @@ public class NotificationController {
 
         PageRequest pageRequest = PageRequest.of(pageNum, size, Sort.by("date", "id").descending());
 
-        Page<Notification> page = notificationRepository.findAllById(user.getNotifications(), pageRequest);
+        Page<Notification> page = notificationRepository.findByUser(user.getId(), pageRequest);
         
         int unread = user.getUnreadNotifications();
         user.readNotifications(size);
@@ -76,11 +76,11 @@ public class NotificationController {
 
     @BatchMapping
     public Map<Notification, User> pinger(List<Notification> notifications) {
-        List<ObjectId> pingerIds = notifications.stream().map(notif -> notif.getPinger()).collect(Collectors.toList());
+        List<String> pingerIds = notifications.stream().map(notif -> notif.getPinger()).collect(Collectors.toList());
 
         
         List<User> users = userRepository.findAllById(pingerIds);
-        Map<ObjectId, User> idToUser = new HashMap<>();
+        Map<String, User> idToUser = new HashMap<>();
 
         for (User user : users) 
             idToUser.put(user.getId(), user);
@@ -95,11 +95,11 @@ public class NotificationController {
 
     @BatchMapping
     public Map<Notification, Post> post(List<Notification> notifications) {
-        List<ObjectId> postIds = notifications.stream().map(notif -> notif.getPost()).collect(Collectors.toList());
+        List<String> postIds = notifications.stream().map(notif -> notif.getPost()).collect(Collectors.toList());
         
         List<Post> posts = postRepository.findAllById(postIds);
 
-        Map<ObjectId, Post> idToPost = new HashMap<>();
+        Map<String, Post> idToPost = new HashMap<>();
 
         for (Post post : posts) 
             idToPost.put(post.getId(), post);
@@ -127,8 +127,7 @@ public class NotificationController {
         if (!user.checkUserSession(userRepository, sessionToken))
             return false;
 
-        notificationRepository.deleteAllById(user.getNotifications());
-        user.getNotifications().clear();
+        notificationRepository.deleteAllByUser(user.getId());
         user.readNotifications(user.getUnreadNotifications());
 
         userRepository.save(user);

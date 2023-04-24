@@ -2,7 +2,8 @@ package org.andrewtam.ChirpBoards.GraphQLModels;
 
 import java.util.List;
 import java.util.ArrayList;
-import org.andrewtam.ChirpBoards.MongoDBModels.Notification;
+
+import org.andrewtam.ChirpBoards.SQLModels.Notification;
 import org.springframework.data.domain.Page;
 
 public class PaginatedNotifications {

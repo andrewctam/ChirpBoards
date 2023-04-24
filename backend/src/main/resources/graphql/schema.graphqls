@@ -100,7 +100,7 @@ type User {
     userColor: String!
     pictureURL: String!
 
-    isFollowing(followeeUsername: String!): Boolean
+    isFollowing(followerUsername: String!): Boolean
     followers(pageNum: Int = 0, size: Int = 10): PaginatedUsers
     following(pageNum: Int = 0, size: Int = 10): PaginatedUsers
     posts(pageNum: Int = 0, size: Int = 10, sortMethod: String = "postDate", sortDirection: String = "descending"): PaginatedPosts

@@ -1,48 +1,66 @@
-package org.andrewtam.ChirpBoards.MongoDBModels;
+package org.andrewtam.ChirpBoards.SQLModels;
 
 import java.util.Date;
 
 import org.andrewtam.ChirpBoards.repositories.NotificationRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import java.util.LinkedList;
 
-@Document("users")
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+import java.util.UUID;
+@Entity
+@Table(name = "users")
 public class User {
     
     @Id
-    private ObjectId id;
+    private String id;
+
+    @Column(nullable = false)
     private Date createDate;
 
+    @Column(nullable = false)
     private String username;
+
+    @Column(nullable = false)
     private String displayName;
 
+    @Column(nullable = true)
     private String pictureURL;
 
+    @Column(nullable = false)
     private String hashedPassword;
 
+    @Column(nullable = false)
     private int followerCount;
-    private LinkedList<ObjectId> followers; //references to users
 
+    @Column(nullable = false)
     private int followingCount;
-    private LinkedList<ObjectId> following; //references to users
 
+    @Column(nullable = false)
     private int postCount;
-    private LinkedList<ObjectId> posts; //references to posts
-    private ObjectId pinnedPost;
 
+    @Column(nullable = true)
+    private String pinnedPost;
+
+    @Column(nullable = true)
     private String sessionToken;
+
+    @Column(nullable = true)
     private Date sessionTokenExpiration;
 
+    @Column(nullable = false)
     private String userColor;
 
-    private LinkedList<ObjectId> notifications;
+    @Column(nullable = false)
     private int unreadNotifications;
     
+    public User() {}
     
     public User(String username, String displayName, String hashedPassword) {
+        this.id = UUID.randomUUID().toString();
         this.username = username;
         this.hashedPassword = hashedPassword;
 
@@ -51,9 +69,6 @@ public class User {
         this.displayName = displayName;
         this.createDate = new Date();
 
-        this.followers = new LinkedList<ObjectId>();
-        this.following = new LinkedList<ObjectId>();
-        this.posts = new LinkedList<ObjectId>();
         this.pinnedPost = null;
 
         this.followerCount = 0;
@@ -66,11 +81,10 @@ public class User {
         String[] defaultColors = { "#FFCCCC", "#FFE5CC", "#FFFFCC", "#E5FFCC", "#CCFFCC", "#CCFFE5", "#CCFFFF", "#CCE5FF", "#CCCCFF", "#E5CCFF", "#FFCCFF", "#FFCCE5", "#FF9999", "#FFCC99", "#FFFF99", "#CCFF99", "#99FF99", "#99FFCC", "#99FFFF", "#99CCFF" };
         this.userColor = defaultColors[(int) (Math.random() * defaultColors.length)];
 
-        this.notifications = new LinkedList<ObjectId>();
         this.unreadNotifications = 0;
     }
 
-    public ObjectId getId() { return id; }
+    public String getId() { return id; }
 
     public Date getCreateDate() { return createDate; }
 
@@ -85,9 +99,6 @@ public class User {
     public String getHashedPassword() { return hashedPassword; }
     public void setHashedPassword(String hashedPassword) { this.hashedPassword = hashedPassword; }
 
-    public LinkedList<ObjectId> getFollowers() { return followers; }
-
-    public LinkedList<ObjectId> getFollowing() { return following; }
 
     public int getFollowerCount() { return followerCount; }
     public void setFollowerCount(int followerCount) { this.followerCount = followerCount; }
@@ -98,10 +109,9 @@ public class User {
     public int getPostCount() {return this.postCount; }
     public void setPostCount(int postCount) { this.postCount = postCount; }
 
-    public LinkedList<ObjectId> getPosts() { return posts; }
 
-    public ObjectId getPinnedPost() { return pinnedPost; }
-    public void setPinnedPost(ObjectId pinnedPost) { this.pinnedPost = pinnedPost; }
+    public String getPinnedPost() { return pinnedPost; }
+    public void setPinnedPost(String pinnedPost) { this.pinnedPost = pinnedPost; }
 
     public String getSessionToken() { return sessionToken; }
     public void setSessionToken(String sessionToken) { this.sessionToken = sessionToken; }
@@ -146,31 +156,27 @@ public class User {
             return false;
     }
 
+    @Override
     public int hashCode() {
         return this.username.hashCode();
     }
 
 
-    public LinkedList<ObjectId> getNotifications() {  return notifications; }
-
     public int getUnreadNotifications() { return unreadNotifications; }
-    
+    public void setUnreadNotifications(int unreadNotifications) { this.unreadNotifications = unreadNotifications; }
+    public int incrementUnreadNotifications() { return ++this.unreadNotifications; }
+
     public void readNotifications(int num) { 
         this.unreadNotifications -= num;
         if (this.unreadNotifications < 0)
             this.unreadNotifications = 0; 
     }
         
-    public void notifyReply(ObjectId pinger, ObjectId post, NotificationRepository notificationRepository, UserRepository userRepository) {
-        Notification notif = notificationRepository.save(new Notification("reply", this.getId(), pinger, post));
-        this.unreadNotifications++;
-        this.notifications.add(notif.getId());
-        userRepository.save(this);
-    }
+    public void notifyReply(String pinger, String post, NotificationRepository notificationRepository, UserRepository userRepository) {
+        notificationRepository.save(new Notification("reply", this.getId(), pinger, post));
 
-    public void notifyPing(Notification notif) {
         this.unreadNotifications++;
-        this.notifications.add(notif.getId());
+        userRepository.save(this);
     }
 
 }

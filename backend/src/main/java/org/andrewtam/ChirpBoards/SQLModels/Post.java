@@ -1,38 +1,58 @@
-package org.andrewtam.ChirpBoards.MongoDBModels;
+package org.andrewtam.ChirpBoards.SQLModels;
+
+import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 
-import java.util.LinkedList;
 
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-@Document("posts")
+@Entity
+@Table(name = "posts")
 public class Post implements Comparable<Post> {
 
     @Id
-    private ObjectId id;
+    private String id;
     
+    @Column(nullable = false)
     private boolean isComment;
+
+    @Column(nullable = false)
     private boolean isRechirp;
-    private ObjectId parentPost;
-    private ObjectId rootPost;
 
+    @Column(nullable = true)
+    private String parentPost;
+
+    @Column(nullable = true)
+    private String rootPost;
+
+    @Column(nullable = false)
     private String text;
+
+    @Column(nullable = true)
     private String imageURL;
-    private ObjectId author; //reference to user
+
+    @Column(nullable = false)
+    private String author; //reference to user id
+
+    @Column(nullable = false)
     private long postDate; //milliseconds since epoch
+
+    @Column(nullable = false)
     private int score;
-    private LinkedList<ObjectId> upvotes; //references to users
-    private LinkedList<ObjectId> downvotes; //references to users
 
+    @Column(nullable = false)
     private int commentCount;
-    private LinkedList<ObjectId> comments; //references to posts
 
+    @Column(nullable = false)
     private boolean isEdited;
 
+    public Post() {}
 
-    public Post(String text, String imageURL, ObjectId author) {
+    public Post(String text, String imageURL, String author) {
+        this.id = UUID.randomUUID().toString();
         this.text = text;
         this.imageURL = imageURL;
         this.author = author;
@@ -45,12 +65,9 @@ public class Post implements Comparable<Post> {
         //MM/dd/yy HH:mm:ss
         this.postDate = System.currentTimeMillis();
 
-        this.upvotes = new LinkedList<ObjectId>();
-        this.downvotes = new LinkedList<ObjectId>();
         this.score = 0;
 
         this.commentCount = 0;
-        this.comments = new LinkedList<ObjectId>();
 
         this.isEdited = false;
     }
@@ -71,14 +88,14 @@ public class Post implements Comparable<Post> {
         this.rootPost = originalPost.id;
     }
 
-    public ObjectId getId() { return id; }
+    public String getId() { return id; }
 
     public boolean isComment() { return isComment; }
     public boolean isRechirp() { return isRechirp; }
 
-    public ObjectId getParentPost() { return parentPost; }
+    public String getParentPost() { return parentPost; }
 
-    public ObjectId getRootPost() { return rootPost; }
+    public String getRootPost() { return rootPost; }
 
     public String getText() { return text; }
     public String setText(String text) { return this.text = text; }
@@ -96,15 +113,9 @@ public class Post implements Comparable<Post> {
      }
 
     
-    public ObjectId getAuthor() { return author; }
+    public String getAuthor() { return author; }
 
     public long getPostDate() { return postDate; }
-
-    public LinkedList<ObjectId> getUpvotes() { return upvotes; }
-
-    public LinkedList<ObjectId> getDownvotes() { return downvotes; }
-
-    public LinkedList<ObjectId> getComments() { return comments; }
 
     public boolean isEdited() { return isEdited; }
     public boolean setEdited(boolean isEdited) { return this.isEdited = isEdited; }
@@ -115,6 +126,7 @@ public class Post implements Comparable<Post> {
         return this.commentCount;
     }
 
+    @Override
     public int hashCode() {
         return id.hashCode();
     }

@@ -4,7 +4,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.LinkedList;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,13 +18,14 @@ import org.andrewtam.ChirpBoards.GraphQLModels.BooleanResponse;
 import org.andrewtam.ChirpBoards.GraphQLModels.IntResponse;
 import org.andrewtam.ChirpBoards.GraphQLModels.PaginatedPosts;
 import org.andrewtam.ChirpBoards.GraphQLModels.PostResponse;
-import org.andrewtam.ChirpBoards.MongoDBModels.Notification;
-import org.andrewtam.ChirpBoards.MongoDBModels.Post;
-import org.andrewtam.ChirpBoards.MongoDBModels.User;
+import org.andrewtam.ChirpBoards.SQLModels.Notification;
+import org.andrewtam.ChirpBoards.SQLModels.Post;
+import org.andrewtam.ChirpBoards.SQLModels.User;
+import org.andrewtam.ChirpBoards.SQLModels.Vote;
 import org.andrewtam.ChirpBoards.repositories.NotificationRepository;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
-import org.bson.types.ObjectId;
+import org.andrewtam.ChirpBoards.repositories.VoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -56,6 +57,9 @@ public class PostController {
     private UserRepository userRepository;
 
     @Autowired
+    private VoteRepository voteRepository;
+
+    @Autowired
     private NotificationRepository notificationRepository;
 
     @Value("${azure.storage.connectionString}")
@@ -66,11 +70,11 @@ public class PostController {
         if (relatedUsername != null)
             context.put("relatedUsername", relatedUsername.toLowerCase());
 
-        if (id == null || !ObjectId.isValid(id)) {
+        if (id == null) {
             return null;
         }
 
-        return postRepository.findById(new ObjectId(id));
+        return postRepository.findById(id);
     }
 
     @QueryMapping
@@ -102,8 +106,8 @@ public class PostController {
         
 
         PageRequest paging = PageRequest.of(pageNum, size, sort);
-        
-        Page<Post> page = postRepository.findAllBoards(paging);
+
+        Page<Post> page = postRepository.findAllPosts(paging);
         return new PaginatedPosts(page);
 
     }
@@ -132,8 +136,6 @@ public class PostController {
 
         context.put("relatedUsername", username.toLowerCase());
 
-        List<ObjectId> followingIds = user.getFollowing();
-
         Sort sort;
         switch(sortMethod) {
             case "score":
@@ -156,14 +158,7 @@ public class PostController {
         }
 
         PageRequest paging = PageRequest.of(pageNum, size, sort);
-        Page<Post> page;
-
-        if (followingIds.size() == 0)
-            return null;
-        else if (followingIds.size() == 1)
-            page = postRepository.findBoardsByAuthor(followingIds.get(0), paging);        
-        else
-            page = postRepository.findBoardsByAuthors(followingIds, paging);
+        Page<Post> page = postRepository.findFollowingPosts(user.getId(), paging);
 
         return new PaginatedPosts(page);
     }
@@ -216,10 +211,10 @@ public class PostController {
 
     @BatchMapping
     public Map<Post, User> author(List<Post> posts) {
-        List<ObjectId> authorIds = posts.stream().map(post -> post.getAuthor()).collect(Collectors.toList());
+        List<String> authorIds = posts.stream().map(post -> post.getAuthor()).collect(Collectors.toList());
 
         List<User> authors = userRepository.findAllById(authorIds);
-        HashMap<ObjectId, User> idToAuthor = new HashMap<>();
+        HashMap<String, User> idToAuthor = new HashMap<>();
         for (User author : authors) {
             idToAuthor.put(author.getId(), author);
         }
@@ -234,10 +229,10 @@ public class PostController {
 
     @BatchMapping
     public Map<Post, Post> parentPost(List<Post> posts) {
-        List<ObjectId> parentIds = posts.stream().map(post -> post.getParentPost()).collect(Collectors.toList());
+        List<String> parentIds = posts.stream().map(post -> post.getParentPost()).collect(Collectors.toList());
 
         List<Post> parents = postRepository.findAllById(parentIds);
-        HashMap<ObjectId, Post> idToParent = new HashMap<>();
+        HashMap<String, Post> idToParent = new HashMap<>();
         
         for (Post parent : parents) {
             idToParent.put(parent.getId(), parent);
@@ -255,10 +250,10 @@ public class PostController {
 
     @BatchMapping
     public Map<Post, Post> rootPost(List<Post> posts) {
-        List<ObjectId> rootIds = posts.stream().map(post -> post.getRootPost()).collect(Collectors.toList());
+        List<String> rootIds = posts.stream().map(post -> post.getRootPost()).collect(Collectors.toList());
 
         List<Post> roots = postRepository.findAllById(rootIds);
-        HashMap<ObjectId, Post> idToRoot = new HashMap<>();
+        HashMap<String, Post> idToRoot = new HashMap<>();
         
         for (Post root : roots) {
             idToRoot.put(root.getId(), root);
@@ -284,7 +279,7 @@ public class PostController {
             return null;
         }
 
-        List<ObjectId> postIds = posts.stream().map(post -> post.getId()).collect(Collectors.toList());
+        List<String> postIds = posts.stream().map(post -> post.getId()).collect(Collectors.toList());
 
         Set<Post> upvoted = postRepository.filterUpvoted(user.getId(), postIds);
         Set<Post> downvoted = postRepository.filterDownvoted(user.getId(), postIds);       
@@ -317,7 +312,7 @@ public class PostController {
 
 
         Set<Post> rechirps = postRepository.findUsersRechirps(user.getId());
-        Set<ObjectId> originalChirps = rechirps.stream().map(post -> post.getParentPost()).collect(Collectors.toSet());
+        Set<String> originalChirps = rechirps.stream().map(post -> post.getParentPost()).collect(Collectors.toSet());
 
         return posts.stream().collect(Collectors.toMap(
             post -> post,
@@ -351,7 +346,7 @@ public class PostController {
 
         PageRequest paging = PageRequest.of(pageNum, size, sort);
 
-        Page<Post> page = postRepository.findAllById(post.getComments(), paging);
+        Page<Post> page = postRepository.findComments(post.getId(), paging);
         return new PaginatedPosts(page);
     }
     
@@ -398,7 +393,6 @@ public class PostController {
 
         pingUsers(text, created);
             
-        user.getPosts().addFirst(created.getId());
         user.setPostCount(user.getPostCount() + 1);
         userRepository.save(user);
         
@@ -409,7 +403,7 @@ public class PostController {
     public PostResponse comment(@Argument String text, @Argument String parentPostId, @Argument String username, @Argument String sessionToken) {
         username = username.toLowerCase();
 
-        if (text == "" || parentPostId == null || !ObjectId.isValid(parentPostId) || username == "") {
+        if (text.length() == 0 || parentPostId == null || username.length() == 0) {
             return new PostResponse("Invalid inputs", null);
         }
 
@@ -420,7 +414,7 @@ public class PostController {
         if (!user.checkUserSession(userRepository, sessionToken))
             return new PostResponse("User not authenticated", null);
 
-        Post parentPost = postRepository.findById(new ObjectId(parentPostId));
+        Post parentPost = postRepository.findById(parentPostId);
         if (parentPost == null)
             return new PostResponse("Post not found", null);
             
@@ -430,7 +424,6 @@ public class PostController {
         
         pingUsers(text, created);
         
-        parentPost.getComments().addFirst(created.getId());
         parentPost.adjustCommentCount(1);
         postRepository.save(parentPost);
 
@@ -446,7 +439,7 @@ public class PostController {
     public BooleanResponse rechirp(@Argument String postId, @Argument String username, @Argument String sessionToken) {
         username = username.toLowerCase();
 
-        if (postId == null || !ObjectId.isValid(postId) || username == "") {
+        if (postId == null || username.length() == 0) {
             return new BooleanResponse("Invalid inputs", null);
         }
 
@@ -458,7 +451,7 @@ public class PostController {
         if (!user.checkUserSession(userRepository, sessionToken))
             return new BooleanResponse("User not authenticated", null);
 
-        ObjectId id = new ObjectId(postId);
+        String id = postId;
 
         Post post = postRepository.findById(id);
 
@@ -475,7 +468,6 @@ public class PostController {
         rechirp.declareRechirp(post);
         rechirp = postRepository.save(rechirp);
 
-        user.getPosts().add(rechirp.getId());
         user.setPostCount(user.getPostCount() + 1);
         userRepository.save(user);
         
@@ -484,7 +476,7 @@ public class PostController {
 
     @MutationMapping
     public BooleanResponse undoRechirp(@Argument String postId, @Argument String username, @Argument String sessionToken) {
-        if (postId == null || !ObjectId.isValid(postId) || username == "") {
+        if (postId == null || username.length() == 0) {
             return new BooleanResponse("Invalid inputs", null);
         }
 
@@ -496,7 +488,7 @@ public class PostController {
         if (!user.checkUserSession(userRepository, sessionToken))
             return new BooleanResponse("User not authenticated", null);
 
-        Post post = postRepository.findById(new ObjectId(postId));
+        Post post = postRepository.findById(postId);
         if (!post.isRechirp()) {
             post = postRepository.findRechirpByAuthor(post.getId(), user.getId());
             
@@ -506,7 +498,6 @@ public class PostController {
 
 
         user.setPostCount(user.getPostCount() - 1);
-        user.getPosts().remove(post.getId());
         userRepository.save(user);
     
         postRepository.delete(post);
@@ -520,7 +511,7 @@ public class PostController {
     public IntResponse upvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
         username = username.toLowerCase();
 
-        if (postId == null || !ObjectId.isValid(postId) || username == "") {
+        if (postId == null || username.length() == 0) {
             return new IntResponse("Invalid inputs", null);
         }
 
@@ -532,29 +523,30 @@ public class PostController {
         if (!user.checkUserSession(userRepository, sessionToken))
             return new IntResponse("User not authenticated", null);
 
-        Post post = postRepository.findById(new ObjectId(postId));
+        Post post = postRepository.findById(postId);
 
         if (post == null) {
             return new IntResponse("Post not found", null);
         }
 
-        LinkedList<ObjectId> upvotes = post.getUpvotes();
-        LinkedList<ObjectId> downvotes = post.getDownvotes();
-
+        
+        Vote vote = voteRepository.findVote(user.getId(), post.getId());
 
         IntResponse response;
-        if (upvotes.remove(user.getId())) { // check if user already upvoted, remove it
+        if (vote != null && vote.isUpvote()) { // check if user already upvoted, remove it
             post.adjustScore(-1);
-
+            voteRepository.delete(vote);
             response = new IntResponse("0", post.getScore());
-        } else {
-            if (downvotes.remove(user.getId())) { // remove from downvotes if it's there)
+        } else { //upvote
+            
+            if (vote != null) { //already a downvote
+                post.adjustScore(2);
+                vote.setIsUpvote(true);
+            } else { //no vote yet
                 post.adjustScore(1);
+                vote = new Vote(post.getId(), user.getId(), true);
             }
-
-            upvotes.add(user.getId());
-
-            post.adjustScore(1);
+            voteRepository.save(vote);
 
            response = new IntResponse("1", post.getScore());
         }
@@ -571,7 +563,7 @@ public class PostController {
     public IntResponse downvotePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
         username = username.toLowerCase();
 
-        if (postId == null || !ObjectId.isValid(postId) || username == "") {
+        if (postId == null || username.length() == 0) {
             return new IntResponse("Invalid inputs", null);
         }
 
@@ -585,41 +577,46 @@ public class PostController {
             return new IntResponse("User not authenticated", null);
         
 
-        Post post = postRepository.findById(new ObjectId(postId));
+        Post post = postRepository.findById(postId);
 
         if (post == null) {
             return new IntResponse("Post not found", null);
         }
-        LinkedList<ObjectId> upvotes = post.getUpvotes();
-        LinkedList<ObjectId> downvotes = post.getDownvotes();
+        
+        Vote vote = voteRepository.findVote(user.getId(), post.getId());
 
-
+        
         IntResponse response;
-        if (downvotes.remove(user.getId())) { // check if user already downvoted, remove it
+        if (vote != null && !vote.isUpvote()) { // check if user already downvoted, remove it
             post.adjustScore(1);
-            response = new IntResponse("0", post.getScore()); //no longer downvoted
-        } else {
-            if (upvotes.remove(user.getId())) {
-                post.adjustScore(-1);// remove from upvotes if it's there
+            voteRepository.delete(vote);
+            response = new IntResponse("0", post.getScore());
+        } else { //downvote
+            
+            if (vote != null) { //already an upvote
+                post.adjustScore(-2);
+                vote.setIsUpvote(false);
+            } else { //no vote yet
+                post.adjustScore(-1);
+                vote = new Vote(post.getId(), user.getId(), false);
             }
+            voteRepository.save(vote);
 
-            downvotes.add(user.getId());
-            post.adjustScore(-1);
-            response = new IntResponse("-1", post.getScore()); //downvoted
+           response = new IntResponse("-1", post.getScore());
         }
-
         
         userRepository.save(user);
         postRepository.save(post);
 
         return response;
+
     }
 
 
     @MutationMapping
     public BooleanResponse editPost(@Argument String newText, @Argument String postId, @Argument String username, @Argument String sessionToken) {
         username = username.toLowerCase();
-        if (newText == "" || username == "" || postId == null || !ObjectId.isValid(postId)) {
+        if (newText.length() == 0 || username.length() == 0 || postId == null) {
             return new BooleanResponse("Invalid inputs", false);
         }
 
@@ -631,7 +628,7 @@ public class PostController {
         if (!user.checkUserSession(userRepository, sessionToken))
             return new BooleanResponse("User not authenticated", false);
 
-        Post post = postRepository.findById(new ObjectId(postId));
+        Post post = postRepository.findById(postId);
         if (post == null) {
             return new BooleanResponse("Post not found", false);
         }
@@ -654,7 +651,7 @@ public class PostController {
     @MutationMapping
     public BooleanResponse deletePost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
         username = username.toLowerCase();
-        if (username == "" || postId == null || !ObjectId.isValid(postId)) {
+        if (username.length() == 0 || postId == null) {
             return new BooleanResponse("Invalid inputs", false);
         }
 
@@ -666,7 +663,7 @@ public class PostController {
         if (!user.checkUserSession(userRepository, sessionToken))
             return new BooleanResponse("User not authenticated", false);
 
-        Post post = postRepository.findById(new ObjectId(postId));
+        Post post = postRepository.findById(postId);
         if (post == null) {
             return new BooleanResponse("Post not found", false);
         }
@@ -680,15 +677,13 @@ public class PostController {
             Post parentPost = postRepository.findById(post.getParentPost());
             if (parentPost != null) {
                 parentPost.adjustCommentCount(-1);
-                parentPost.getComments().remove(post.getId());
                 postRepository.save(parentPost);
             } //else main post was deleted
         } else {
             User author = userRepository.findById(post.getAuthor());
             author.setPostCount(author.getPostCount() - 1);
-            author.getPosts().remove(post.getId());
 
-            ObjectId pinned = author.getPinnedPost();
+            String pinned = author.getPinnedPost();
             if (pinned != null && pinned.equals(post.getId()))
                 author.setPinnedPost(null);
                 
@@ -714,25 +709,14 @@ public class PostController {
         //delete rechirps and remove it from author's post
         List<Post> rechirps = postRepository.findRechirpsOfPost(post.getId());
         if (rechirps.size() > 0) {
-
-            Set<ObjectId> rechirpIds = rechirps.stream().map(p -> p.getId()).collect(Collectors.toSet());
-            List<User> authors = userRepository.findAuthors(rechirpIds);
-
+            List<User> authors = userRepository.findRechirpers(post.getId());
             for (User author : authors) {
                 //remove rechirps from author's posts
-                for (ObjectId p : author.getPosts())
-                    if (rechirpIds.contains(p)) {
-                        author.getPosts().remove(p);
-                        break;
-                    }
-
                 author.setPostCount(author.getPostCount() - 1);
             }
 
             userRepository.saveAll(authors);
             postRepository.deleteAll(rechirps);
-
-            //remove rechirp and post count from authors
         }
 
         postRepository.delete(post);
@@ -746,8 +730,8 @@ public class PostController {
         if (text == "")
             return;
 
-        ObjectId postId = post.getId();
-        ObjectId pinger = post.getAuthor();
+        String postId = post.getId();
+        String pinger = post.getAuthor();
         
         List<String> usernames = new ArrayList<String>();
         Pattern pattern = Pattern.compile("@([a-zA-Z0-9_]+)");
@@ -778,13 +762,13 @@ public class PostController {
         pings = notificationRepository.saveAll(pings);
         
         
-        HashMap<ObjectId, Notification> usersToNotif = new HashMap<>();
+        HashMap<String, Notification> usersToNotif = new HashMap<>();
         for (Notification ping : pings) {
             usersToNotif.put(ping.getPinged(), ping);
         }
 
         for (User user : users) {
-            user.notifyPing(usersToNotif.get(user.getId()));
+            user.incrementUnreadNotifications();
         }
         userRepository.saveAll(users);
     }

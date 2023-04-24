@@ -3,7 +3,7 @@ package org.andrewtam.ChirpBoards.GraphQLModels;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.andrewtam.ChirpBoards.MongoDBModels.User;
+import org.andrewtam.ChirpBoards.SQLModels.User;
 import org.springframework.data.domain.Page;
 
 public class PaginatedUsers {

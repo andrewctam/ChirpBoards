@@ -56,7 +56,7 @@ const SideInfo = () => {
                             displayName
                             userColor
                             pictureURL
-                            isFollowing(followeeUsername: "${userInfo.state.username}")
+                            isFollowing(followerUsername: "${userInfo.state.username}")
                         }
                     }
                     following(pageNum: 0, size: 10) {
@@ -68,7 +68,7 @@ const SideInfo = () => {
                                     displayName
                                     userColor
                                     pictureURL
-                                    isFollowing(followeeUsername: "${userInfo.state.username}")
+                                    isFollowing(followerUsername: "${userInfo.state.username}")
                                 }
                             }
                         }
@@ -79,7 +79,7 @@ const SideInfo = () => {
                     displayName
                     userColor
                     pictureURL
-                    isFollowing(followeeUsername: "${userInfo.state.username}")
+                    isFollowing(followerUsername: "${userInfo.state.username}")
                 }  
             }
         `
@@ -264,33 +264,37 @@ const SideInfo = () => {
                 }
             </div>
 
-            <div className="text-white text-center mt-6 mx-8 p-8 h-fit bg-black/30 rounded-2xl shadow-md">
-                <div className="text-lg">
-                {userInfo.state.username ? 
-                    "Suggested Users to Follow"
-                    :
-                    "Popular Users"
-                }
+            {suggested.length > 0 ?
+                <div className="text-white text-center mt-6 mx-8 p-8 h-fit bg-black/30 rounded-2xl shadow-md">
+                    <div className="text-lg">
+                    {userInfo.state.username ? 
+                        "Suggested Users to Follow"
+                        :
+                        "Popular Users"
+                    }
+                    </div>
+                    
+                    {
+                    
+                    suggested.map((u, i) => {
+                    return <SuggestedUser 
+                                key = {`suggested${i}`}
+                                username={u.username}
+                                displayName = {u.displayName}
+                                userColor = {u.userColor}
+                                pictureURL = {u.pictureURL}
+                                relation={u.relation}
+                                distant={u.distant}
+                                isFollowing={u.isFollowing}
+                                changeFollowingCount = {(i: number) => {
+                                    if (!currentUser) 
+                                        return;
+                                    setCurrentUser({ ...currentUser, followingCount: currentUser.followingCount + i})
+                                }}
+                            />
+                })}
                 </div>
-                
-                {suggested.map((u, i) => {
-                return <SuggestedUser 
-                            key = {`suggested${i}`}
-                            username={u.username}
-                            displayName = {u.displayName}
-                            userColor = {u.userColor}
-                            pictureURL = {u.pictureURL}
-                            relation={u.relation}
-                            distant={u.distant}
-                            isFollowing={u.isFollowing}
-                            changeFollowingCount = {(i: number) => {
-                                if (!currentUser) 
-                                    return;
-                                setCurrentUser({ ...currentUser, followingCount: currentUser.followingCount + i})
-                            }}
-                        />
-            })}
-            </div>  
+            : null}
         </div>
     )
 }

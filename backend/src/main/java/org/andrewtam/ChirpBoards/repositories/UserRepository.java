@@ -2,36 +2,48 @@ package org.andrewtam.ChirpBoards.repositories;
 
 
 import java.util.List;
-import java.util.Set;
 
-import org.andrewtam.ChirpBoards.MongoDBModels.User;
-import org.bson.types.ObjectId;
+import org.andrewtam.ChirpBoards.SQLModels.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
-public interface UserRepository extends MongoRepository<User, String> {
+
+public interface UserRepository extends JpaRepository<User, Integer> {
     User findByUsername(String username);
-    User findById(ObjectId id);
+    User findById(String id);
 
-    @Query("{ $or: [ { username: { $regex: '?0', $options: 'i' } }, { displayName : { $regex: '?0', $options: 'i' } } ] }")
+    @Query(value = "SELECT * FROM users u WHERE u.username REGEXP ?1 OR u.displayName REGEXP ?1", 
+            countQuery = "SELECT COUNT(*) FROM users u WHERE u.username REGEXP ?1 OR u.displayName REGEXP ?1",
+            nativeQuery = true)
     Page<User> findWithRegex(String regex, PageRequest pageable);
 
-    @Query("{ 'id': { $in: ?0 } }")
-    Page<User> findAllById(List<ObjectId> ids, PageRequest pageable);
+    @Query(value = "SELECT * FROM users u WHERE u.id IN ?1", 
+            countQuery = "SELECT COUNT(*) FROM users u WHERE u.id IN ?1",
+            nativeQuery = true)
+    Page<User> findAllById(List<String> ids, PageRequest pageable);
 
-    @Query("{ 'id': { $in: ?0 } }")
-    List<User> findAllById(List<ObjectId> ids);
+    @Query(value = "SELECT * FROM users u WHERE u.id IN ?1", nativeQuery = true)
+    List<User> findAllById(List<String> ids);
 
-
-    @Query("{ 'username': { $in: ?0 } }")
+    @Query(value = "SELECT * FROM users u WHERE u.username IN ?1", nativeQuery = true)
     List<User> findAllByUsername(List<String> usernames);
 
-    @Query("{ _id: ?0, followers: ?1 }")
-    User userFollowing(ObjectId followed, ObjectId followee);
+    @Query(value = "SELECT u.* FROM users u INNER JOIN posts p ON u.id = p.author WHERE p.author IN ?1", nativeQuery = true)
+    List<User> findAuthors(List<String> postIds);
 
-    @Query("{ 'posts': { $in: ?0 } }")
-    List<User> findAuthors(Set<ObjectId> postIds);
+    @Query(value = "SELECT u.* FROM users u INNER JOIN posts p ON u.id = p.author WHERE p.parentPost = ?1 AND p.isRechirp = true", nativeQuery = true)
+    List<User> findRechirpers(String originalPostId);
+
+    @Query(value = "SELECT u.* FROM users u INNER JOIN follows f ON u.id = f.user WHERE f.target = ?1", 
+            countQuery = "SELECT COUNT(*) FROM users u INNER JOIN follows f ON u.id = f.user WHERE f.target = ?1",
+            nativeQuery = true)
+    Page<User> findFollowers(String userId, PageRequest pageable);
+
+    @Query(value = "SELECT u.* FROM users u INNER JOIN follows f ON u.id = f.target WHERE f.user = ?1", 
+            countQuery = "SELECT COUNT(*) FROM users u INNER JOIN follows f ON u.id = f.target WHERE f.user = ?1",
+            nativeQuery = true)
+    Page<User> findFollowing(String userId, PageRequest pageable);
 
 }

@@ -1,5 +1,11 @@
-spring.data.mongodb.uri=
-spring.data.mongodb.database=
+spring.jpa.hibernate.ddl-auto=update
+spring.datasource.url=
+spring.datasource.username=
+spring.datasource.password=
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.jpa.hibernate.ddl-auto= update
+spring.jpa.hibernate.naming-strategy=org.hibernate.cfg.EJB3NamingStrategy
+
 
 #If not provided, all other functions except image uploading will still work
 azure.storage.connectionString=

@@ -12,11 +12,12 @@ import org.andrewtam.ChirpBoards.GraphQLModels.BooleanResponse;
 import org.andrewtam.ChirpBoards.GraphQLModels.PaginatedPosts;
 import org.andrewtam.ChirpBoards.GraphQLModels.PaginatedUsers;
 import org.andrewtam.ChirpBoards.GraphQLModels.SigninRegisterResponse;
-import org.andrewtam.ChirpBoards.MongoDBModels.Post;
-import org.andrewtam.ChirpBoards.MongoDBModels.User;
+import org.andrewtam.ChirpBoards.SQLModels.Follow;
+import org.andrewtam.ChirpBoards.SQLModels.Post;
+import org.andrewtam.ChirpBoards.SQLModels.User;
+import org.andrewtam.ChirpBoards.repositories.FollowRepository;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -43,6 +44,9 @@ public class UserController {
 
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private FollowRepository followRepository;
 
 
     @Value("${azure.storage.connectionString}")
@@ -104,7 +108,7 @@ public class UserController {
     public PaginatedUsers following(User user, @Argument int pageNum, @Argument int size) {
         PageRequest paging = PageRequest.of(pageNum, size);
 
-        Page<User> page = userRepository.findAllById(user.getFollowing(), paging);
+        Page<User> page = userRepository.findFollowing(user.getId(), paging);
         return new PaginatedUsers(page);
     }
 
@@ -112,7 +116,7 @@ public class UserController {
     public PaginatedUsers followers(User user, @Argument int pageNum, @Argument int size) {
         PageRequest paging = PageRequest.of(pageNum, size);
 
-        Page<User> page = userRepository.findAllById(user.getFollowers(), paging);
+        Page<User> page = userRepository.findFollowers(user.getId(), paging);
         return new PaginatedUsers(page);
     }
         
@@ -142,18 +146,17 @@ public class UserController {
 
         PageRequest paging = PageRequest.of(pageNum, size, sort);
 
-        Page<Post> page = postRepository.findAllById(user.getPosts(), paging);
+        Page<Post> page = postRepository.findByAuthor(user.getId(), paging);
         return new PaginatedPosts(page);
     }
 
     @SchemaMapping
-    public Boolean isFollowing(User user, @Argument String followeeUsername) {
-        User followee = userRepository.findByUsername(followeeUsername);
-        if (followee == null) {
+    public Boolean isFollowing(User targetUser, @Argument String followerUsername) {
+        User follower = userRepository.findByUsername(followerUsername);
+        if (follower == null) {
             return false;
         }
-
-        return userRepository.userFollowing(user.getId(), followee.getId()) != null;
+        return followRepository.userFollowing(follower.getId(), targetUser.getId()) != null;
     }
 
         
@@ -269,39 +272,35 @@ public class UserController {
             return new BooleanResponse("Can not follow yourself!", null);
             
         User user = userRepository.findByUsername(username);
-        User followUser = userRepository.findByUsername(userToFollow);
+        User targetUser = userRepository.findByUsername(userToFollow);
 
-        if (user == null || followUser == null) {
+        if (user == null || targetUser == null) {
             return new BooleanResponse("User not found", null);
         }
 
         if (!user.checkUserSession(userRepository, sessionToken))
             return new BooleanResponse("User not authenticated", null);
 
+        Follow follow = followRepository.userFollowing(user.getId(), targetUser.getId());
         boolean nowFollowing;
 
-        if (user.getFollowing().remove(followUser.getId())) {
-            followUser.getFollowers().remove(user.getId());
-
-            user.setFollowingCount(user.getFollowingCount() - 1);
-            followUser.setFollowerCount(followUser.getFollowerCount() - 1);
-
+        if (follow != null) { //already following, remove it
             nowFollowing = false;
-
+            followRepository.delete(follow);
+            targetUser.setFollowerCount(targetUser.getFollowerCount() - 1);
+            user.setFollowingCount(user.getFollowingCount() - 1);
         } else {
-            user.getFollowing().add(followUser.getId());
-            followUser.getFollowers().add(user.getId());
-
-            user.setFollowingCount(user.getFollowingCount() + 1);
-            followUser.setFollowerCount(followUser.getFollowerCount() + 1);
-            
             nowFollowing = true;
+            follow = new Follow(user.getId(), targetUser.getId());
+            followRepository.save(follow);
+            targetUser.setFollowerCount(targetUser.getFollowerCount() + 1);
+            user.setFollowingCount(user.getFollowingCount() + 1);
         }
-        
 
+    
         userRepository.save(user);
-        userRepository.save(followUser);
-        return new BooleanResponse(followUser.getFollowerCount() + "", nowFollowing);
+        userRepository.save(targetUser);
+        return new BooleanResponse(targetUser.getFollowerCount() + "", nowFollowing);
     }
 
     @MutationMapping
@@ -387,7 +386,7 @@ public class UserController {
     public BooleanResponse pinPost(@Argument String postId, @Argument String username, @Argument String sessionToken) {
         username = username.toLowerCase();
 
-        if (username == "" || sessionToken == "" || postId == "" || postId == null || !ObjectId.isValid(postId))
+        if (username.length() == 0 || sessionToken.length() == 0 || postId.length() == 0 || postId == null)
             return new BooleanResponse("Invalid inputs", null);
 
         User user = userRepository.findByUsername(username);
@@ -399,8 +398,7 @@ public class UserController {
             return new BooleanResponse("User not authenticated", null);
 
 
-        ObjectId id = new ObjectId(postId);
-        Post post = postRepository.findById(id);
+        Post post = postRepository.findById(postId);
         if (post == null) {
             return new BooleanResponse("Post not found", null);
         }
@@ -412,11 +410,11 @@ public class UserController {
             return new BooleanResponse("You can only pin your own posts", null);
 
         boolean result;
-        if (user.getPinnedPost() != null && user.getPinnedPost().equals(id)) {
+        if (user.getPinnedPost() != null && user.getPinnedPost().equals(postId)) {
             user.setPinnedPost(null); //toggle
             result = false;
         } else {
-            user.setPinnedPost(id);
+            user.setPinnedPost(postId);
             result = true;
         }
 

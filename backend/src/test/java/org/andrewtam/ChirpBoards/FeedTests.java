@@ -6,12 +6,11 @@ import java.util.Collections;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
-import org.andrewtam.ChirpBoards.MongoDBModels.Post;
-import org.andrewtam.ChirpBoards.MongoDBModels.User;
+import org.andrewtam.ChirpBoards.SQLModels.Post;
+import org.andrewtam.ChirpBoards.SQLModels.User;
 import org.andrewtam.ChirpBoards.repositories.PostRepository;
 import org.andrewtam.ChirpBoards.repositories.UserRepository;
-import org.bson.types.ObjectId;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.graphql.tester.AutoConfigureGraphQlTester;
@@ -83,10 +82,10 @@ public class FeedTests {
         String user1 = payload[0].toLowerCase();
         String sessionToken1 = payload[1];
 
-        List<ObjectId> postIds = new ArrayList<>();
+        List<String> postIds = new ArrayList<>();
 
         for (int i = 0; i < 20; i++) {
-            postIds.add(new ObjectId(createPost(i + "", user1, sessionToken1)));
+            postIds.add(createPost(i + "", user1, sessionToken1));
         }
 
 
@@ -125,13 +124,13 @@ public class FeedTests {
         String user1 = payload[0].toLowerCase();
         String sessionToken1 = payload[1];
 
-        List<ObjectId> postIds = new ArrayList<>();
+        List<String> postIds = new ArrayList<>();
 
         for (int i = 0; i < 20; i++) {
-            postIds.add(new ObjectId(createPost(i + "", user1, sessionToken1)));
+            postIds.add(new String(createPost(i + "", user1, sessionToken1)));
         }
 
-        List<ObjectId> upvotes = new ArrayList<>();
+        List<String> upvotes = new ArrayList<>();
         upvotes.add(postIds.get(4));
         upvotes.add(postIds.get(1));
         upvotes.add(postIds.get(6));
@@ -266,11 +265,27 @@ public class FeedTests {
         .variable("sessionToken", sessionToken2)
         .operationName("deletePost")
         .execute(); //also deletes rechirp
+
+
+        //unfollow
+        graphQlTester.documentName("account")
+        .variable("userToFollow", user2)
+        .variable("username", user1)
+        .variable("sessionToken", sessionToken1)
+        .operationName("toggleFollow")
+        .execute();
+
+        graphQlTester.documentName("account")
+        .variable("userToFollow", user3)
+        .variable("username", user1)
+        .variable("sessionToken", sessionToken1)
+        .operationName("toggleFollow")
+        .execute();
     
 
-        List<ObjectId> postIds = new ArrayList<>();
-        postIds.add(new ObjectId(user2Post2));
-        postIds.add(new ObjectId(user3Post1));
+        List<String> postIds = new ArrayList<>();
+        postIds.add(user2Post2);
+        postIds.add(user3Post1);
 
         List<Post> posts = postRepository.findAllById(postIds);
         postRepository.deleteAll(posts);
