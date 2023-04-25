@@ -211,9 +211,12 @@ public class PostController {
 
     @BatchMapping
     public Map<Post, User> author(List<Post> posts) {
-        List<String> authorIds = posts.stream().map(post -> post.getAuthor()).collect(Collectors.toList());
-
+        List<String> authorIds = posts.stream() //map posts to author ids
+                                        .map(post -> post.getAuthor())
+                                        .collect(Collectors.toList());
         List<User> authors = userRepository.findAllById(authorIds);
+
+        //map each id to the User object
         HashMap<String, User> idToAuthor = new HashMap<>();
         for (User author : authors) {
             idToAuthor.put(author.getId(), author);
@@ -229,15 +232,18 @@ public class PostController {
 
     @BatchMapping
     public Map<Post, Post> parentPost(List<Post> posts) {
-        List<String> parentIds = posts.stream().map(post -> post.getParentPost()).collect(Collectors.toList());
-
+        List<String> parentIds = posts.stream() //map posts to their parent ids
+                                        .map(post -> post.getParentPost())
+                                        .collect(Collectors.toList());
         List<Post> parents = postRepository.findAllById(parentIds);
+
+        // map each id to the Post object
         HashMap<String, Post> idToParent = new HashMap<>();
-        
         for (Post parent : parents) {
             idToParent.put(parent.getId(), parent);
         }
 
+        // map each post to its parent
         Map<Post, Post> map = new HashMap<>();
         for (Post post : posts) {
             //some may be null, so can't use streams
@@ -250,15 +256,18 @@ public class PostController {
 
     @BatchMapping
     public Map<Post, Post> rootPost(List<Post> posts) {
-        List<String> rootIds = posts.stream().map(post -> post.getRootPost()).collect(Collectors.toList());
-
+        List<String> rootIds = posts.stream() //map posts to their root ids
+                                    .map(post -> post.getRootPost())
+                                    .collect(Collectors.toList());
         List<Post> roots = postRepository.findAllById(rootIds);
+
+        // map each of the root posts' id to the Post object
         HashMap<String, Post> idToRoot = new HashMap<>();
-        
         for (Post root : roots) {
             idToRoot.put(root.getId(), root);
         }
 
+        // map each post to its root post
         Map<Post, Post> map = new HashMap<>();
         for (Post post : posts) {
             //some may be null, so can't use streams
@@ -279,13 +288,17 @@ public class PostController {
             return null;
         }
 
-        List<String> postIds = posts.stream().map(post -> post.getId()).collect(Collectors.toList());
+        //map posts to their ids
+        List<String> postIds = posts.stream()
+                                    .map(post -> post.getId())
+                                    .collect(Collectors.toList());
 
+        //get the posts the user has upvoted and downvoted
         Set<Post> upvoted = postRepository.filterUpvoted(user.getId(), postIds);
         Set<Post> downvoted = postRepository.filterDownvoted(user.getId(), postIds);       
 
+        // map each post to its vote status
         Map<Post, Integer> statuses = new HashMap<>();
-
         for (Post post : posts) {
 
             if (upvoted.contains(post))
@@ -310,10 +323,15 @@ public class PostController {
             return null;
         }
 
-
+        //get all the posts the user has rechirped
         Set<Post> rechirps = postRepository.findUsersRechirps(user.getId());
-        Set<String> originalChirps = rechirps.stream().map(post -> post.getParentPost()).collect(Collectors.toSet());
 
+        //get the original chirps (parent posts)
+        Set<String> originalChirps = rechirps.stream()
+                                        .map(post -> post.getParentPost())
+                                        .collect(Collectors.toSet());
+
+        //map each rechrip to irs original chirp
         return posts.stream().collect(Collectors.toMap(
             post -> post,
             post -> originalChirps.contains(post.getId())
@@ -369,15 +387,18 @@ public class PostController {
         String imageURL = "";
         if (base64Image.length() > 0) {
             try {
+                //decode image from base64
                 byte[] imageBytes = Base64.getDecoder().decode(base64Image);
                 if (imageBytes.length > 5000000) {
                     return new PostResponse("Image must be less than 5MB", null);
                 }
 
+                // connect to azure storage
                 CloudStorageAccount storageAccount = CloudStorageAccount.parse(azureConnectionString);
                 CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
                 CloudBlobContainer container = blobClient.getContainerReference("images");
 
+                //upload image to azure storage with unique name
                 String filename = username + "_" + UUID.randomUUID().toString() + ".jpg";
                 CloudBlockBlob blob = container.getBlockBlobReference(filename);
                 blob.uploadFromByteArray(imageBytes, 0, imageBytes.length);
@@ -417,7 +438,8 @@ public class PostController {
         Post parentPost = postRepository.findById(parentPostId);
         if (parentPost == null)
             return new PostResponse("Post not found", null);
-            
+        
+        //create post as comment
         Post created = new Post(text, "", user.getId());
         created.declareComment(parentPost);
         created = postRepository.save(created);
@@ -428,6 +450,7 @@ public class PostController {
         postRepository.save(parentPost);
 
         if (!parentPost.getAuthor().equals(user.getId())) {
+            // send a notification to the parent post's author if not the same user
             User author = userRepository.findById(parentPost.getAuthor());
             author.notifyReply(user.getId(), created.getId(), notificationRepository, userRepository);
         }
@@ -464,6 +487,7 @@ public class PostController {
         if (post.getAuthor().equals(user.getId()))
             return new BooleanResponse("Can not rechirp own posts", null);
 
+        //create post as rechirp
         Post rechirp = new Post("This is a rechirp of " + postId, "", user.getId());
         rechirp.declareRechirp(post);
         rechirp = postRepository.save(rechirp);
@@ -675,14 +699,17 @@ public class PostController {
 
         if (post.isComment()) {
             Post parentPost = postRepository.findById(post.getParentPost());
+
+            //decrement comment count
             if (parentPost != null) {
                 parentPost.adjustCommentCount(-1);
                 postRepository.save(parentPost);
-            } //else main post was deleted
-        } else {
+            }
+        } else { //a post
             User author = userRepository.findById(post.getAuthor());
             author.setPostCount(author.getPostCount() - 1);
 
+            //if pinned remove pin
             String pinned = author.getPinnedPost();
             if (pinned != null && pinned.equals(post.getId()))
                 author.setPinnedPost(null);
@@ -692,6 +719,7 @@ public class PostController {
 
         if (post.getImageURL().length() > 0) {
             try {
+                //delete image from azure
                 CloudStorageAccount storageAccount = CloudStorageAccount.parse(azureConnectionString);
                 CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
                 CloudBlobContainer container = blobClient.getContainerReference("images");
@@ -747,29 +775,23 @@ public class PostController {
         List<User> users = userRepository.findAllByUsername(usernames);
         List<Notification> pings = new ArrayList<Notification>();
         
-        for (User user: users) {
-            if (user.getId().equals(pinger)) {
+        for (User user : users) {
+            if (user.getId().equals(pinger)) { //only ping if not the author
                 users.remove(user);
 
-                if (users.size() == 0)
+                if (users.size() == 0) //if all users are the author, then no users to ping
                     return;
                 else
                     continue;
             }
             
+            //add a ping
             pings.add(new Notification("ping", user.getId(), pinger, postId));
-        }
-        pings = notificationRepository.saveAll(pings);
-        
-        
-        HashMap<String, Notification> usersToNotif = new HashMap<>();
-        for (Notification ping : pings) {
-            usersToNotif.put(ping.getPinged(), ping);
-        }
 
-        for (User user : users) {
             user.incrementUnreadNotifications();
         }
+        
+        pings = notificationRepository.saveAll(pings);
         userRepository.saveAll(users);
     }
 }

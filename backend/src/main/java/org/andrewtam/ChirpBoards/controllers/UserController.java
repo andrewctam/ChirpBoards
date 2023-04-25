@@ -83,12 +83,11 @@ public class UserController {
     @QueryMapping
     public List<User> popularUsers(@Argument int num) {
         PageRequest paging = PageRequest.of(0, num, Sort.by("followerCount", "id").descending());
-
         Page<User> page = userRepository.findAll(paging);
 
         List<User> users = new ArrayList<>(num);
-
         for (User user : page) {
+            //convert to list and filter 0 follower users
             if (user.getFollowerCount() > 0)
                 users.add(user);
         }
@@ -410,11 +409,11 @@ public class UserController {
             return new BooleanResponse("You can only pin your own posts", null);
 
         boolean result;
-        if (user.getPinnedPost() != null && user.getPinnedPost().equals(postId)) {
-            user.setPinnedPost(null); //toggle
+        if (user.getPinnedPost() != null && user.getPinnedPost().equals(postId)) { //remove pin
+            user.setPinnedPost(null); 
             result = false;
         } else {
-            user.setPinnedPost(postId);
+            user.setPinnedPost(postId); //set pin
             result = true;
         }
 
@@ -473,6 +472,5 @@ public class UserController {
         userRepository.save(user);
         return new BooleanResponse("Successfully changed profile picture", true);
     }
-    
 
 }

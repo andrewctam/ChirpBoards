@@ -59,7 +59,6 @@ public class NotificationController {
             return null;
 
         PageRequest pageRequest = PageRequest.of(pageNum, size, Sort.by("date", "id").descending());
-
         Page<Notification> page = notificationRepository.findByUser(user.getId(), pageRequest);
         
         int unread = user.getUnreadNotifications();
@@ -76,16 +75,17 @@ public class NotificationController {
 
     @BatchMapping
     public Map<Notification, User> pinger(List<Notification> notifications) {
-        List<String> pingerIds = notifications.stream().map(notif -> notif.getPinger()).collect(Collectors.toList());
-
-        
+        List<String> pingerIds = notifications.stream() //map notifcations to their pinger ids
+                                                .map(notif -> notif.getPinger())
+                                                .collect(Collectors.toList());
         List<User> users = userRepository.findAllById(pingerIds);
-        Map<String, User> idToUser = new HashMap<>();
 
+        //map user ids to their user objects
+        Map<String, User> idToUser = new HashMap<>();
         for (User user : users) 
             idToUser.put(user.getId(), user);
         
-        
+        //map notifications to users
         return notifications.stream()
                 .collect(Collectors.toMap(
                     notif -> notif,
@@ -95,15 +95,17 @@ public class NotificationController {
 
     @BatchMapping
     public Map<Notification, Post> post(List<Notification> notifications) {
-        List<String> postIds = notifications.stream().map(notif -> notif.getPost()).collect(Collectors.toList());
-        
+        List<String> postIds = notifications.stream() //map notifcations to their post ids
+                                            .map(notif -> notif.getPost())
+                                            .collect(Collectors.toList());
         List<Post> posts = postRepository.findAllById(postIds);
 
+        //map post ids to their post objects
         Map<String, Post> idToPost = new HashMap<>();
-
         for (Post post : posts) 
             idToPost.put(post.getId(), post);
 
+        //map each notification to its post
         Map<Notification, Post> notifToPost = new HashMap<>();
         for (Notification notif : notifications) {
             Post post = idToPost.get(notif.getPost());
