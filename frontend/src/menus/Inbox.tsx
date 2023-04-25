@@ -124,9 +124,7 @@ function Inbox () {
                 : null}
 
                 {doneFetching && notificationsFeed.length === 0 ?
-                    <div className = "text-center bg-black/20 p-8">
-                        <h1 className = "text-xl text-white">No New Notifications</h1>
-                    </div>
+                    <h1 className = "text-lg text-white text-center mt-8">No Notifications</h1>
                 : null}
                        
                 <div className="mx-auto w-5/6 lg:w-3/5 pt-2 pb-12">
@@ -134,19 +132,7 @@ function Inbox () {
                         {notificationsFeed}
                             
                         {!doneFetching ? 
-                            <>
-                                <ul className = "w-[95%] mx-auto mt-6"> 
-                                    <li className = "p-1 text-white bg-black/20 rounded my-3 relative shadow-md" >
-                                        <SpinningCircle />
-                                    </li>
-                                    <li className = "p-1 text-white bg-black/20 rounded my-3 relative shadow-md" >
-                                        <SpinningCircle />
-                                    </li>
-                                    <li className = "p-1 text-white bg-black/20 rounded my-3 relative shadow-md" >
-                                        <SpinningCircle />
-                                    </li>
-                                </ul>
-                            </>
+                            <SpinningCircle />
                         : null}
                     </ul>
                 </div>

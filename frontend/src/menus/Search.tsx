@@ -69,25 +69,22 @@ function Search () {
         if (regex === "*") {
             regex = "[a-zA-Z0-9]"
         } else if (! (/^[a-zA-Z0-9]*$/.test(regex))) {
-            setDoneFetching(true)
             return;
         }
 
         if (feedSelected === SearchFeed.Users) {
-            setDoneFetching(false);
             await searchUsers(regex);
         } else if (feedSelected === SearchFeed.Chirps) {
-            setDoneFetching(false);
             await searchChirps(regex);
         }
     }            
 
     const searchChirps = async (regex: string) => {
         if (regex === "" || !chirpHasNextPage) {
-            setDoneFetching(true)
             return;
         }
 
+        setDoneFetching(false);
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
@@ -151,7 +148,6 @@ function Search () {
 
     const searchUsers = async (regex: string) => {
         if (regex === "" || !userHasNextPage) {
-            setDoneFetching(true)
             return;
         }
             
@@ -209,7 +205,6 @@ function Search () {
         setChirpResults([]);
         setChirpPageNum(0);
         setChirpHasNextPage(true);
-        setDoneFetching(false);
     })
 
     let placeholder = null;

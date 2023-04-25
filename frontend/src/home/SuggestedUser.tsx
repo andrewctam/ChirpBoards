@@ -15,7 +15,16 @@ const SuggestedUser = (props: SuggestedUserProps) => {
         e.preventDefault();
         if (!userInfo.state.username) {
             return;
-        }         
+        }
+
+        if (isFollowing) {
+            setIsFollowing(false);
+            props.changeFollowingCount(-1);
+        } else {
+            setIsFollowing(true);
+            props.changeFollowingCount(1);
+        }
+
         const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
 
         const query =
@@ -34,13 +43,7 @@ const SuggestedUser = (props: SuggestedUserProps) => {
 
         console.log(response)
 
-        if (isFollowing) {
-            setIsFollowing(false);
-            props.changeFollowingCount(-1);
-        } else {
-            setIsFollowing(true);
-            props.changeFollowingCount(1);
-        }
+       
     }
 
     let relation = "";

@@ -25,7 +25,7 @@ function Settings() {
 
     useEffect(() => {
         if (!userInfo.state.username)
-        navigate(`/signin?return=${window.location.pathname}`)
+            navigate(`/signin`)
     }, [])
     
     const updateDisplayName = async () => {

@@ -2,7 +2,7 @@ import Layout from "../Layout";
 import React, { useContext, useState } from "react";
 import FormInput from "./FormInput";
 import { UserContext } from "../App";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
     const [usernameInput, setUsernameInput] = useState("");
@@ -13,7 +13,6 @@ function Register() {
     const userInfo = useContext(UserContext);
 
     const navigate = useNavigate()
-    const [searchParams] = useSearchParams();
 
     
     const register = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
@@ -98,7 +97,7 @@ function Register() {
         localStorage.setItem("sessionToken", sessionToken);
 
         
-        navigate(searchParams.get("redirect") ?? "/")
+        navigate("/");
     }
 
 

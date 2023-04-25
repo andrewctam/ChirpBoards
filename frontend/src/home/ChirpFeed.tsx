@@ -34,8 +34,7 @@ const ChirpFeed = () => {
 
     const switchFeeds = (feed: Feed) => {
         setFeedSelected(feed);
-        setDoneFetching(false)
-        setSearchParams({ feed: feed === Feed.All ? "all" : feed === Feed.Trending ? "trending" : "following" })
+        setSearchParams({ feed: feed === Feed.All ? "all" : feed === Feed.Trending ? "trending" : "following" });
     }
 
     useEffect(() => {
@@ -77,14 +76,13 @@ const ChirpFeed = () => {
     const getChirps = async () => {
         let type = "";
         let pageNum = 0
-        setDoneFetching(false);
+
         if (feedSelected === Feed.Following) {
             if (userInfo.state.username === "") {
-                navigate(`/signin?return=${window.location.pathname}`)
+                navigate(`/signin`)
                 return;
             }
             if (!followingHasNextPage) {
-                setDoneFetching(true);
                 return;
             }
 
@@ -92,7 +90,6 @@ const ChirpFeed = () => {
             pageNum = followingPageNum;
         } else if (feedSelected === Feed.Trending) {
             if (!trendingHasNextPage) {
-                setDoneFetching(true);
                 return;
             }
 
@@ -100,7 +97,6 @@ const ChirpFeed = () => {
             pageNum = trendingPageNum;
         } else if (feedSelected === Feed.All) {
             if (!allHasNextPage) {
-                setDoneFetching(true);
                 return;
             }
 
@@ -120,7 +116,7 @@ const ChirpFeed = () => {
         if (feedSelected === Feed.All || feedSelected === Feed.Following)
             sortField = `, sortMethod: "${sortMethod}", sortDirection: "${sortDirection}"`;
 
-
+        setDoneFetching(false);
         const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const query =
@@ -174,11 +170,11 @@ const ChirpFeed = () => {
             },
             body: JSON.stringify({ query })
         }).then(res => res.json())
-        console.log(response)
+        console.log(response);
 
+        setDoneFetching(true);
 
         const info: {hasNext: boolean, posts: PostPayload[]} = response.data[`${type}Posts`];
-        setDoneFetching(true);
 
         if (feedSelected === Feed.Following) {
             if (!info)
@@ -276,7 +272,7 @@ const ChirpFeed = () => {
 
 
     useScrollBottom(async () => {
-        await getChirps()
+        await getChirps();
     })
 
     
@@ -297,7 +293,7 @@ const ChirpFeed = () => {
             
                 <div className="grid grid-cols-3 mb-6">
                     <FeedButton
-                        name={"Trending (24H)"}
+                        name={"Trending"}
                         onClick={() => switchFeeds(Feed.Trending)}
                         isActive={feedSelected === Feed.Trending} />
                     <FeedButton

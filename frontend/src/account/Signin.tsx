@@ -2,7 +2,7 @@ import Layout from "../Layout";
 import React, { useContext, useState } from "react";
 import FormInput from "./FormInput";
 import { UserContext } from "../App";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Signin() {
     const [usernameInput, setUsernameInput] = useState("");
@@ -11,7 +11,6 @@ function Signin() {
 
     const userInfo = useContext(UserContext);
     const navigate = useNavigate()
-    const [searchParams] = useSearchParams();
 
 
     const signin = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
@@ -61,9 +60,7 @@ function Signin() {
         localStorage.setItem("username", usernameInput.toLowerCase());
         localStorage.setItem("sessionToken", sessionToken);
 
-        navigate(searchParams.get("return") ?? "/");
-
-
+        navigate("/");
     }
 
     return (

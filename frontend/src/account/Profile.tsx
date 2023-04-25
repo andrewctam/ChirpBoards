@@ -54,6 +54,8 @@ function Profile() {
 
     const [showSetting, setShowSetting] = useState(false);
 
+    const [currentSending, setCurrentSending] = useState(false);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -83,7 +85,6 @@ function Profile() {
 
     useEffect(() => {
         if (username && postCount > 0) {
-            setDoneFetching(false)
             getChirps(); // separate getting chirps to speed up initial load
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,7 +92,6 @@ function Profile() {
 
     useEffect(() => {
         if (viewSelected !== View.Chirps) {
-            setDoneFetching(false)
             getFollowerIng();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -177,10 +177,10 @@ function Profile() {
 
     const getChirps = async () => {
         if (!chirpsHasNextPage) {
-            setDoneFetching(true);
             return;
         }
 
+        setDoneFetching(false);
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
@@ -294,7 +294,6 @@ function Profile() {
         switch (viewSelected) {
             case View.Followers:
                 if (!followersHasNextPage) {
-                    setDoneFetching(true);
                     return;
                 }
                 type = "followers";
@@ -302,17 +301,15 @@ function Profile() {
                 break;
             case View.Following:
                 if (!followingHasNextPage) {
-                    setDoneFetching(true);
                     return;
                 }
                 type = "following";
                 pageNum = followingPageNum
                 break;
             default:
-                setDoneFetching(true)
                 return;
         }
-
+        setDoneFetching(false);
         const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
             `query {
@@ -370,7 +367,7 @@ function Profile() {
 
     const toggleFollow = async () => {
         if (!userInfo.state.username) {
-            navigate(`/signin?return=${window.location.pathname}`)
+            navigate(`/signin`)
         }
 
         const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
@@ -383,16 +380,27 @@ function Profile() {
             }
         }`
 
+        //optimistic update
+        if (currentSending) {
+            return;
+        } else if (isFollowing) {
+            setFollowerCount(followerCount - 1);
+            setIsFollowing(false);
+        } else {
+            setFollowerCount(followerCount + 1);
+            setIsFollowing(true);
+        }
+
+            
+        setCurrentSending(true);
         const response = await fetch(url ?? '', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ query })
         }).then(res => res.json())
+        setCurrentSending(false);
 
         console.log(response)
-
-        setFollowerCount(response.data.toggleFollow.msg)
-        setIsFollowing(!isFollowing)
     }
 
 
@@ -419,15 +427,12 @@ function Profile() {
 
 
     const [sortMethod, sortDirection, sortBubble] = useSort(doneFetching, getChirps, () => {
-        setChirps([])
-        setChirpsPageNum(0)
+        setChirps([]);
+        setChirpsPageNum(0);
         setChirpsHasNextPage(true);
-        setDoneFetching(false)
     })
 
     useScrollBottom(async () => {
-        setDoneFetching(false)
-
         switch (viewSelected) {
             case View.Followers:
             case View.Following:
@@ -436,7 +441,7 @@ function Profile() {
 
             case View.Chirps:
             default:
-                await getChirps()
+                await getChirps();
                 break;
         }
     })
@@ -446,18 +451,18 @@ function Profile() {
     let emptyMsg: string = "";
     switch (viewSelected) {
         case View.Chirps:
-            feed = chirps
-            emptyMsg = `${username} has not made any chirps`
+            feed = chirps;
+            emptyMsg = `${username} has not made any chirps`;
             break;
 
         case View.Followers:
-            feed = followers
-            emptyMsg = `${username} has no followers. Why not be the first one?`
+            feed = followers;
+            emptyMsg = `${username} has no followers. Why not be the first one?`;
             break;
 
         case View.Following:
-            feed = following
-            emptyMsg = `${username} is not following any users`
+            feed = following;
+            emptyMsg = `${username} is not following any users`;
             break;
 
         default:
@@ -475,7 +480,7 @@ function Profile() {
                 <ChirpPlaceholder />
                 <ChirpPlaceholder />
             </>
-        )
+        );
     } else {
         placeholder = (
             <>
@@ -490,14 +495,14 @@ function Profile() {
     if (!doneFetching && username === null) { //first load
         return (<Layout>
            <ProfilePlaceholder />
-        </Layout>)
+        </Layout>);
 
     } else if (doneFetching && username === null) { //first load done, but user not found
         return (<Layout>
             <div className="text-center bg-red-200 py-8 shadow-md">
                 <h1>{`User ${params.username} not Found`}</h1>
             </div>
-        </Layout>)
+        </Layout>);
     }
 
 
@@ -531,17 +536,20 @@ function Profile() {
                 </div>
 
                 <div className="h-[70px] text-sm w-fit my-auto border border-white/10 text-black bg-slate-200/50 px-4 py-1 rounded-xl">
-                    <div className={`w-fit mx-auto cursor-pointer select-none ${viewSelected === View.Chirps ? "text-[#b22222]" : "text-black"}`} onClick={() => setViewSelected(View.Chirps)}>
-                        {`${postCount} chirp${postCount !== 1 ? "s" : ""}`}
-                    </div>
+                    <StatisticSwapper viewSelected={viewSelected} setViewSelected={setViewSelected}
+                        type={View.Chirps}
+                        text={`${postCount} chirp${postCount !== 1 ? "s" : ""}`}
+                    />
 
-                    <div className={`w-fit mx-auto cursor-pointer select-none ${viewSelected === View.Followers ? "text-[#b22222]" : "text-black"}`} onClick={() => setViewSelected(View.Followers)}>
-                        {`${followerCount} follower${followerCount !== 1 ? "s" : ""}`}
-                    </div>
+                    <StatisticSwapper viewSelected={viewSelected} setViewSelected={setViewSelected}
+                        type={View.Followers}
+                        text={`${followerCount} follower${followerCount !== 1 ? "s" : ""}`}
+                    />
 
-                    <div className={`w-fit mx-auto cursor-pointer select-none ${viewSelected === View.Following ? "text-[#b22222]" : "text-black"}`} onClick={() => setViewSelected(View.Following)}>
-                        {`${followingCount} following`}
-                    </div>
+                    <StatisticSwapper viewSelected={viewSelected} setViewSelected={setViewSelected}
+                        type={View.Following}
+                        text={`${followingCount} following`}
+                    />
                 </div>
 
             </div>
@@ -550,7 +558,7 @@ function Profile() {
                 <button onClick={toggleFollow} className={`inline text-black border border-black/25 px-4 py-2 mt-2 w-fit h-fit my-auto text-sm rounded-lg ${isFollowing ? "bg-rose-200/75" : "bg-green-100/75"}`}>
                     {isFollowing ? "Unfollow" : "Follow"}
                 </button>
-                : null}
+            : null}
         </div>
 
         {userInfo.state.username === username && viewSelected === View.Chirps ?
@@ -559,18 +567,21 @@ function Profile() {
                     <PostComposer />
                 </div>
             </div>
-            : <div />}
+        : <div />}
 
         <div className="mt-4 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
             <ul className="mt-4">
                 {doneFetching && feed.length === 0 ? 
                     <div className="text-center text-white text-lg">
                         {emptyMsg}
-                </div> : null}
+                    </div> 
+                : null}
                 
                 {feed}
 
-                {!doneFetching ? placeholder : null}
+                {!doneFetching ? 
+                    placeholder 
+                : null}
             </ul>
         </div>
 
@@ -586,10 +597,29 @@ function Profile() {
                     Save Changes
                 </button>
 
-            </div> : null}
+            </div> 
+        : null}
 
     </Layout>)
 
+}
+
+
+interface StatisticSwapperProps {
+    viewSelected: View,
+    setViewSelected: (view: View) => void,
+    type: View,
+    text: string,
+}
+
+const StatisticSwapper = (props: StatisticSwapperProps) => {
+    return (
+        <div className={`w-fit mx-auto cursor-pointer select-none ${props.viewSelected === props.type ? "underline text-sky-800" : "text-black"}`} 
+            onClick={() => props.setViewSelected(props.type)}>
+
+            {props.text}
+        </div>
+    )
 }
 
 export default Profile

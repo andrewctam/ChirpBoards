@@ -70,7 +70,7 @@ function PostComposer() {
         e.preventDefault()
 
         if (!userInfo.state.username) {
-            navigate(`/signin?return=${window.location.pathname}`)
+            navigate(`/signin`)
             return;
         }
 

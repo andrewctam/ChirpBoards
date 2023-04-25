@@ -23,6 +23,7 @@ interface ChirpProps extends PostInfo {
 function Chirp(props: ChirpProps) {
     const userInfo = useContext(UserContext);
     const [dots, editor] = useOptions(props.id, props.text, userInfo.state.username === props.authorUsername, props.pinned, false, props.rechirpStatus)
+    
     return (
     <li className={`w-full relative mb-8`}>
         <div className="block bg-black/20 text-white rounded-bl-xl rounded-tr-xl truncate">

@@ -24,28 +24,28 @@ function UserSearchResult(props: UserSearchResultProps)  {
     
     return (
         <a href = {`/profile/${props.username}`}>
-        <li className = "border border-black p-4 text-white bg-black/20 rounded my-3" style = {{
-            backgroundColor: props.userColor,
-            color: textColor(),
-            opacity: 0.95
-        }}>
-            <div className = "block">
-            <UserPhoto
-                url = {props.pictureURL}
-                userColor = {props.userColor}
-                size = {40}
-            />
-            </div>
+            <li className = "border border-black p-4 text-white bg-black/20 rounded my-3" style = {{
+                backgroundColor: props.userColor,
+                color: textColor(),
+                opacity: 0.95
+            }}>
+                <div className = "block">
+                    <UserPhoto
+                        url = {props.pictureURL}
+                        userColor = {props.userColor}
+                        size = {40}
+                    />
+                </div>
 
-            <div className = "inline text-xl">{props.displayName}</div>
-            <div className = "inline text-sm">{` • @${props.username}`}</div>
+                <div className = "inline text-xl">{props.displayName}</div>
+                <div className = "inline text-sm">{` • @${props.username}`}</div>
 
-            <div className = "mt-3">
-                <div className = "text-sm">{`${props.followerCount} followers`}</div>
-                <div className = "text-sm">{`${props.followingCount} following`}</div>
-                <div className = "text-sm">{`${props.postCount} chirps`}</div>
-            </div>
-        </li>
+                <div className = "mt-3">
+                    <div className = "text-sm">{`${props.followerCount} followers`}</div>
+                    <div className = "text-sm">{`${props.followingCount} following`}</div>
+                    <div className = "text-sm">{`${props.postCount} chirps`}</div>
+                </div>
+            </li>
         </a>
 
     )

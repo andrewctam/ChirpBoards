@@ -21,7 +21,7 @@ function ReplyBox(props: ReplyBoxProps) {
     useEffect(() => {
         //if user is not logged in when opened, redirect to signin page
         if (!userInfo.state.username) {
-            navigate(`/signin?return=${window.location.pathname}`)
+            navigate(`/signin`)
             return;
         }
     }, [])
