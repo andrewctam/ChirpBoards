@@ -2,7 +2,7 @@ import { useContext } from "react";
 import Layout from "../Layout";
 import { UserContext } from "../App";
 import PostComposer from "./PostComposer";
-import ChirpFeed from "./ChirpFeed";
+import HomeFeed from "./HomeFeed";
 import SideInfo from "./SideInfo";
 
 export enum Feed { None, Trending, All, Following }
@@ -20,7 +20,7 @@ function Home() {
         : null}
         
         <div className="mx-auto grid md:grid-cols-2">
-            <ChirpFeed />
+            <HomeFeed />
             <SideInfo />
         </div>
     </Layout>)

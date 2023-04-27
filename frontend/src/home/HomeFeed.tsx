@@ -10,7 +10,7 @@ import ChirpPlaceholder from "../placeholders/ChirpPlaceholder";
 
 export enum Feed { None, Trending, All, Following }
 
-const ChirpFeed = () => {
+const HomeFeed = () => {
     const [feedSelected, setFeedSelected] = useState<Feed>(Feed.None)
 
     const [allFeed, setAllFeed] = useState<JSX.Element[]>([]);
@@ -330,4 +330,4 @@ const ChirpFeed = () => {
     )
 }
 
-export default ChirpFeed;
+export default HomeFeed;

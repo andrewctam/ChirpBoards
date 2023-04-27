@@ -83,12 +83,7 @@ function Vote(props: VoteProps) {
     return (
         <div className="absolute right-0 top-0 bottom-0 h-fit text-white bg-transparent px-[3px] py-1 text-center text-sm">
             <div style={{ color: voteStatus === 1 ? "rgb(119 209 136)" : "white" }} onClick={() => { vote("upvote") }} className = "cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M12 5l0 14"></path>
-                    <path d="M18 11l-6 -6"></path>
-                    <path d="M6 11l6 -6"></path>
-                </svg>
+                <UpArrow />
             </div>
 
             <div className = "select-none" style={{ color: 
@@ -100,12 +95,7 @@ function Vote(props: VoteProps) {
             </div>
 
             <div style={{ color: voteStatus === -1 ? "rgb(218 133 133)" : "white" }} onClick={() => { vote("downvote") }} className = "cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M12 5l0 14"></path>
-                    <path d="M18 13l-6 6"></path>
-                    <path d="M6 13l6 6"></path>
-                </svg>
+                <DownArrow />
             </div>
         </div>
     )
@@ -121,5 +111,28 @@ const formatScore = (num: number): string => {
         return Math.floor(num / 1000000) + "m";
     else
         return ":)"
+}
+
+const UpArrow = () => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M12 5l0 14"></path>
+            <path d="M18 11l-6 -6"></path>
+            <path d="M6 11l6 -6"></path>
+        </svg>
+    )
+}
+
+const DownArrow = () => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M12 5l0 14"></path>
+            <path d="M18 13l-6 6"></path>
+            <path d="M6 13l6 6"></path>
+        </svg>
+    )
+
 }
 export default Vote

@@ -1,6 +1,6 @@
 import { createContext, useReducer } from "react";
 import { BrowserRouter, Route, Routes} from "react-router-dom";
-import Profile from "./account/Profile";
+import Profile from "./profile/Profile";
 import Register from "./account/Register";
 import Settings from "./account/Settings";
 import Signin from "./account/Signin";
