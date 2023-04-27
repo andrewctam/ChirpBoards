@@ -5,10 +5,13 @@ import { UserToFollow } from "./SideInfo";
 
 interface SuggestedUserProps extends UserToFollow {
     changeFollowingCount: (change: number) => void;
+    refreshFollowing: () => void;
 }
 
 const SuggestedUser = (props: SuggestedUserProps) => {
     const [isFollowing, setIsFollowing] = useState(props.isFollowing ?? false)
+
+    const [currentlySending, setCurrentlySending] = useState(false);
 
     const userInfo = useContext(UserContext)
     const toggleFollow = async (e: React.MouseEvent<HTMLButtonElement> ) => {
@@ -17,7 +20,10 @@ const SuggestedUser = (props: SuggestedUserProps) => {
             return;
         }
 
-        if (isFollowing) {
+        // optimistic update
+        if (currentlySending) {
+            return;
+        } else if (isFollowing) {
             setIsFollowing(false);
             props.changeFollowingCount(-1);
         } else {
@@ -25,6 +31,7 @@ const SuggestedUser = (props: SuggestedUserProps) => {
             props.changeFollowingCount(1);
         }
 
+        setCurrentlySending(true);
         const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
 
         const query =
@@ -40,10 +47,9 @@ const SuggestedUser = (props: SuggestedUserProps) => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({query})
         }).then(res => res.json())
-
+        props.refreshFollowing();
+        setCurrentlySending(false);
         console.log(response)
-
-       
     }
 
     let relation = "";

@@ -10,7 +10,12 @@ import ChirpPlaceholder from "../placeholders/ChirpPlaceholder";
 
 export enum Feed { None, Trending, All, Following }
 
-const HomeFeed = () => {
+interface HomeFeedProps {
+    refreshFollowing: boolean;
+    setRefreshFollowing: (refresh: boolean) => void;
+} 
+
+const HomeFeed = (props: HomeFeedProps) => {
     const [feedSelected, setFeedSelected] = useState<Feed>(Feed.None)
 
     const [allFeed, setAllFeed] = useState<JSX.Element[]>([]);
@@ -44,14 +49,18 @@ const HomeFeed = () => {
         if (feedSelected === Feed.None) 
             return;
 
-        if ((feedSelected === Feed.All && allFeed.length === 0)  ||
-            (feedSelected === Feed.Trending && trendingFeed.length === 0)  ||
-            (feedSelected === Feed.Following && followingFeed !== null && followingFeed.length === 0)) {
-                getChirps();
+        if ((feedSelected === Feed.All && allFeed.length === 0) ||
+            (feedSelected === Feed.Trending && trendingFeed.length === 0)) {
+                getChirps(true);
+        } else if (feedSelected === Feed.Following && (followingFeed.length === 0 || props.refreshFollowing)) {
+            if (props.refreshFollowing)
+                    props.setRefreshFollowing(false);
+
+                getChirps(true);
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [feedSelected])
+    }, [feedSelected, props.refreshFollowing])
 
     useEffect(() => {
         //initial page load
@@ -73,7 +82,7 @@ const HomeFeed = () => {
     }, [])
 
 
-    const getChirps = async () => {
+    const getChirps = async (reset = false) => {
         let type = "";
         let pageNum = 0
 
@@ -82,28 +91,33 @@ const HomeFeed = () => {
                 navigate(`/signin`)
                 return;
             }
-            if (!followingHasNextPage) {
+            if (!followingHasNextPage && !reset) {
                 return;
             }
 
-            type = "following";
+            type = "followingPosts";
             pageNum = followingPageNum;
+
         } else if (feedSelected === Feed.Trending) {
-            if (!trendingHasNextPage) {
+            if (!trendingHasNextPage && !reset) {
                 return;
             }
 
-            type = "trending";
+            type = "trendingPosts";
             pageNum = trendingPageNum;
         } else if (feedSelected === Feed.All) {
-            if (!allHasNextPage) {
+            if (!allHasNextPage && !reset) {
                 return;
             }
 
-            type = "all";
+            type = "allPosts";
             pageNum = allPageNum;
         } else {
             return;
+        }
+
+        if (reset) {
+            pageNum = 0;
         }
 
         let usernameField = "";
@@ -121,7 +135,7 @@ const HomeFeed = () => {
         const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
         const query =
             `query {
-                ${type}Posts(pageNum: ${pageNum}, size: 10${usernameField}${sortField}) {
+                ${type}(pageNum: ${pageNum}, size: 10${usernameField}${sortField}) {
                     hasNext
                     posts {
                         id
@@ -174,19 +188,20 @@ const HomeFeed = () => {
 
         setDoneFetching(true);
 
-        const info: {hasNext: boolean, posts: PostPayload[]} = response.data[`${type}Posts`];
+        const info: {hasNext: boolean, posts: PostPayload[]} = response.data[type];
 
+        
         if (feedSelected === Feed.Following) {
-            if (!info)
+            if (!info) {
                 setFollowingFeed([]);
-            else
+                return;
+            } else
                 setFollowingOthers(true);
         }
 
         if (!info) {
            return;
         }
-
 
         const newChirps: JSX.Element[] = info.posts.map((post: PostPayload) => {
             let rechirper: Rechirper | undefined = undefined
@@ -228,16 +243,33 @@ const HomeFeed = () => {
         .filter((chirp: JSX.Element | null) => chirp !== null) as JSX.Element[];
 
         if (feedSelected === Feed.All) {
-            setAllFeed(allFeed.concat(newChirps));
-            setAllPageNum(allPageNum + 1);
+            if (reset) {
+                setAllFeed(newChirps);
+                setAllPageNum(1);
+            } else {
+                setAllFeed(allFeed.concat(newChirps));
+                setAllPageNum(allPageNum + 1);
+            }
             setAllHasNextPage(info.hasNext);
         } else if (feedSelected === Feed.Trending) {
-            setTrendingFeed(trendingFeed.concat(newChirps));
-            setTrendingPageNum(trendingPageNum + 1);
+            if (reset) {
+                setTrendingFeed(newChirps);
+                setTrendingPageNum(1);
+            } else {
+                setTrendingFeed(trendingFeed.concat(newChirps));
+                setTrendingPageNum(trendingPageNum + 1);
+            }
+
             setTrendingHasNextPage(info.hasNext);
-        } else if (feedSelected === Feed.Following && followingFeed !== null) {
-            setFollowingFeed(followingFeed.concat(newChirps));
-            setFollowingPageNum(followingPageNum + 1);
+        } else if (feedSelected === Feed.Following) {
+            if (reset) {
+                setFollowingFeed(newChirps);
+                setFollowingPageNum(1);
+            } else {
+                setFollowingFeed(followingFeed.concat(newChirps));
+                setFollowingPageNum(followingPageNum + 1);
+            }
+
             setFollowingHasNextPage(info.hasNext);
         }
     }
@@ -249,21 +281,21 @@ const HomeFeed = () => {
     switch (feedSelected) {
         case Feed.All:
             feed = allFeed;
-            emptyMsg = "No chirps yet...";
+            emptyMsg = "No Chirps";
 
             break;
         case Feed.Trending:
             feed = trendingFeed;
-            emptyMsg = "No chirps in the past 24 hours";
+            emptyMsg = "No Chirps in the Past 24 Hours";
 
             break;
         case Feed.Following:
             feed = followingFeed;
 
             if (followingOthers)
-                emptyMsg = "No chirps from followed users";
+                emptyMsg = "No Chirps From Followed Users";
             else
-                emptyMsg = "You are not following any users";
+                emptyMsg = "You Are Not Following Any Users";
 
             break;
         default:

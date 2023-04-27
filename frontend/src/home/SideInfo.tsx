@@ -23,14 +23,18 @@ interface CurrentUser {
     followingCount: number;
     postCount: number;
 }
+interface SideInfoProps {
+    setRefreshFollowing: (bool: boolean) => void;
+}
 
-const SideInfo = () => {
+const SideInfo = (props: SideInfoProps) => {
     const userInfo = useContext(UserContext);
     const [popularUsers, setPopularUsers] = useState<UserToFollow[]>([]);
     const [followersUsers, setFollowersUsers] = useState<UserToFollow[]>([]);
     const [distantFollowingUsers, setDistantFollowingUsers] = useState<UserToFollow[]>([]);
     const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
     const [doneLoading, setDoneLoading] = useState(false);
+
     useEffect(() => {
         if (userInfo.state.username) {
             getSuggested();
@@ -289,8 +293,10 @@ const SideInfo = () => {
                                 changeFollowingCount = {(i: number) => {
                                     if (!currentUser) 
                                         return;
+                                        
                                     setCurrentUser({ ...currentUser, followingCount: currentUser.followingCount + i})
                                 }}
+                                refreshFollowing = {() => props.setRefreshFollowing(true)}
                             />
                 })}
                 </div>
