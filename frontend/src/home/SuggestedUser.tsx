@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { UserContext } from "../App";
 import UserPhoto from "../UserPhoto";
-import { UserToFollow } from "./SideInfo";
+import { Relation, UserToFollow } from "./SideInfo";
 
 interface SuggestedUserProps extends UserToFollow {
     changeFollowingCount: (change: number) => void;
@@ -9,11 +9,11 @@ interface SuggestedUserProps extends UserToFollow {
 }
 
 const SuggestedUser = (props: SuggestedUserProps) => {
-    const [isFollowing, setIsFollowing] = useState(props.isFollowing ?? false)
+    const userInfo = useContext(UserContext)
 
+    const [isFollowing, setIsFollowing] = useState(props.isFollowing ?? false)
     const [currentlySending, setCurrentlySending] = useState(false);
 
-    const userInfo = useContext(UserContext)
     const toggleFollow = async (e: React.MouseEvent<HTMLButtonElement> ) => {
         e.preventDefault();
         if (!userInfo.state.username) {
@@ -54,13 +54,13 @@ const SuggestedUser = (props: SuggestedUserProps) => {
 
     let relation = "";
     switch (props.relation) {
-        case "popular":
+        case Relation.Popular:
             relation = "Popular user"
             break;
-        case "follower":
+        case Relation.Follower:
             relation = "Follows you"
             break;
-        case "distant following":
+        case Relation.DistantFollowing:
             relation = `Followed by ${props.distant}`
             break;
         default:
@@ -74,7 +74,7 @@ const SuggestedUser = (props: SuggestedUserProps) => {
                             className = {`py-1 px-2 shadow-md rounded absolute text-sm top-2 right-2 z-20 ${isFollowing ? "hover:bg-red-800/70 bg-red-500/10 " : "hover:bg-green-800/70 bg-green-500/10 " }`}>
                             {isFollowing ? "Unfollow" : "Follow"}
                         </button> 
-                    : null}
+                    : null }
 
                     <UserPhoto
                         url = {props.pictureURL}

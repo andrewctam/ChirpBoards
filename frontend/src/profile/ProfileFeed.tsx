@@ -7,14 +7,11 @@ import useSort from "../hooks/useSort";
 import UserSearchResult from "../menus/UserSearchResult";
 import ChirpPlaceholder from "../placeholders/ChirpPlaceholder";
 import SpinningCircle from "../SpinningCircle";
-import { SelectedFeed } from "./Profile";
+import { Feed } from "./Profile";
 
 interface ProfileFeedProps {
     username: string
-    postCount: number
-    selectedFeed: SelectedFeed
-    userColor: string
-    editingColor: boolean
+    selectedFeed: Feed
 }
 
 function ProfileFeed(props: ProfileFeedProps) {
@@ -39,22 +36,21 @@ function ProfileFeed(props: ProfileFeedProps) {
 
 
     useEffect(() => {
-        if (props.username && props.postCount > 0) {
-            getChirps(); // separate getting chirps to speed up initial load
-        }
+        getChirps();
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
-        if (props.selectedFeed !== SelectedFeed.Chirps) {
-            getFollow();
+        if (props.selectedFeed !== Feed.Chirps) {
+            getFollow(props.selectedFeed);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.selectedFeed])
 
 
     const getChirps = async () => {
-        if (!chirpsHasNextPage) {
+        if (!chirpsHasNextPage || props.username === "") {
             return;
         }
 
@@ -206,34 +202,35 @@ function ProfileFeed(props: ProfileFeedProps) {
     }
 
     //gets followers or following
-    const getFollow = async () => {
-        let type = "";
-        let pageNum = 0
+    const getFollow = async (type: Feed) => {
+        let pageNum = 0;
 
-        switch (props.selectedFeed) {
-            case SelectedFeed.Followers:
-                if (!followersHasNextPage) {
+        let queryType = "";
+        switch (type) {
+            case Feed.Followers:
+                queryType = "followers"
+                if (!followersHasNextPage)
                     return;
-                }
-                type = "followers";
+
                 pageNum = followersPageNum
                 break;
-            case SelectedFeed.Following:
-                if (!followingHasNextPage) {
+            case Feed.Following:
+                queryType = "following"
+                if (!followingHasNextPage)
                     return;
-                }
-                type = "following";
+
                 pageNum = followingPageNum
                 break;
             default:
                 return;
         }
+
         setDoneFetching(false);
         const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
         const query =
             `query {
                 user(username: "${props.username}") {
-                    ${type}(pageNum: ${pageNum}, size: 10) {
+                    ${queryType}(pageNum: ${pageNum}, size: 10) {
                         users {
                             username
                             displayName
@@ -242,6 +239,7 @@ function ProfileFeed(props: ProfileFeedProps) {
                             postCount
                             followerCount
                             followingCount
+                            ${userInfo.state.username ? `isFollowing(followerUsername: "${userInfo.state.username}")` : ""}
                         }
                         hasNext
                     }
@@ -259,24 +257,26 @@ function ProfileFeed(props: ProfileFeedProps) {
         setDoneFetching(true)
         console.log(response)
 
-        const info: {hasNext: boolean, users: UserPayload[]} = response.data.user[type];
+        const info: {hasNext: boolean, users: UserPayload[]} = response.data.user[queryType];
         const fetchedUsers = info.users.map((user: UserPayload) => {
             return <UserSearchResult
-                username={user.username}
-                displayName={user.displayName}
-                userColor={user.userColor}
-                pictureURL={user.pictureURL}
-                postCount={user.postCount}
-                followerCount={user.followerCount}
-                followingCount={user.followingCount}
-                key={type + user.username} />
+                        username={user.username}
+                        displayName={user.displayName}
+                        userColor={user.userColor}
+                        pictureURL={user.pictureURL}
+                        postCount={user.postCount}
+                        followerCount={user.followerCount}
+                        followingCount={user.followingCount}
+                        isFollowing={userInfo.state.username ? user.isFollowing : false}
+                        key={type + user.username}
+                    />
         })
 
-        if (type === "followers") {
+        if (type === Feed.Followers) {
             setFollowersHasNextPage(info.hasNext)
             setFollowersPageNum(followersPageNum + 1)
             setFollowers(followers.concat(fetchedUsers))
-        } else if (type === "following") {
+        } else if (type === Feed.Following) {
             setFollowingHasNextPage(info.hasNext)
             setFollowingPageNum(followingPageNum + 1)
             setFollowing(following.concat(fetchedUsers))
@@ -293,12 +293,12 @@ function ProfileFeed(props: ProfileFeedProps) {
 
     useScrollBottom(async () => {
         switch (props.selectedFeed) {
-            case SelectedFeed.Followers:
-            case SelectedFeed.Following:
-                await getFollow();
+            case Feed.Followers:
+            case Feed.Following:
+                await getFollow(props.selectedFeed);
                 break;
 
-            case SelectedFeed.Chirps:
+            case Feed.Chirps:
             default:
                 await getChirps();
                 break;
@@ -307,19 +307,19 @@ function ProfileFeed(props: ProfileFeedProps) {
 
 
     let feed: JSX.Element[] = []
-    let emptyMsg: string = "";
+    let emptyMsg = "";
     switch (props.selectedFeed) {
-        case SelectedFeed.Chirps:
+        case Feed.Chirps:
             feed = chirps;
             emptyMsg = `${props.username} has not made any chirps`;
             break;
 
-        case SelectedFeed.Followers:
+        case Feed.Followers:
             feed = followers;
             emptyMsg = `${props.username} has no followers. Why not be the first one?`;
             break;
 
-        case SelectedFeed.Following:
+        case Feed.Following:
             feed = following;
             emptyMsg = `${props.username} is not following any users`;
             break;
@@ -329,8 +329,8 @@ function ProfileFeed(props: ProfileFeedProps) {
     }
 
 
-    let placeholder;
-    if (props.selectedFeed === SelectedFeed.Chirps) {
+    let placeholder: JSX.Element;
+    if (props.selectedFeed === Feed.Chirps) {
         placeholder = (
             <>
                 <ChirpPlaceholder />
@@ -348,12 +348,13 @@ function ProfileFeed(props: ProfileFeedProps) {
                 <div className = "p-4 bg-black/10 rounded my-3"> <SpinningCircle /> </div>
             </>
         );
-    
     }
 
+
+    
     return (
         <div className="mt-4 mx-auto w-11/12 md:w-3/4 lg:w-3/5">
-            {props.selectedFeed === SelectedFeed.Chirps && !props.editingColor ? sortBubble : null}
+            {props.selectedFeed === Feed.Chirps ? sortBubble : null}
             <ul className="mt-4">
                 {doneFetching && feed.length === 0 ? 
                     <div className="text-center text-white text-lg">

@@ -4,14 +4,15 @@ import SuggestedUser from "./SuggestedUser";
 import SpinningCircle from "../SpinningCircle"
 import UserPhoto from "../UserPhoto";
 
+export enum Relation { None, Follower, DistantFollowing, Popular };
 export type UserToFollow = {
     username: string;
     displayName: string;
     userColor: string;
     pictureURL: string;
-    relation: "no display" | "popular" | "follower" | "distant following";
+    relation: Relation;
     distant?: string;
-    isFollowing?: boolean;
+    isFollowing: boolean;
 } 
 
 interface CurrentUser {
@@ -26,6 +27,7 @@ interface CurrentUser {
 interface SideInfoProps {
     setRefreshFollowing: (bool: boolean) => void;
 }
+
 
 const SideInfo = (props: SideInfoProps) => {
     const userInfo = useContext(UserContext);
@@ -104,7 +106,7 @@ const SideInfo = (props: SideInfoProps) => {
                 displayName: u.displayName,
                 userColor: u.userColor,
                 pictureURL: u.pictureURL,
-                relation: "follower",
+                relation: Relation.Follower,
                 isFollowing: u.isFollowing,
             }
         }))
@@ -116,7 +118,7 @@ const SideInfo = (props: SideInfoProps) => {
                 displayName: u.displayName,
                 userColor: u.userColor,
                 pictureURL: u.pictureURL,
-                relation: "popular",
+                relation: Relation.Popular,
                 isFollowing: u.isFollowing,
 
             }
@@ -124,14 +126,16 @@ const SideInfo = (props: SideInfoProps) => {
 
       
 
+        //users that are followed by people you follow
         const following: UserPayload[] = response.data.user.following.users;
         const distantFollowing: UserToFollow[] = [];
         for (let i = 0; i < following.length; i++) {
+
+            // if this user is not following anyone, skip
             if (following[i].following.users.length === 0)
                 continue;
 
-            const user = following[i];
-            
+            const user = following[i]; 
             for (let j = 0; j < user.following.users.length; j++) {
                 const distant = user.following.users[j];
                 distantFollowing.push({
@@ -139,7 +143,7 @@ const SideInfo = (props: SideInfoProps) => {
                     displayName: distant.displayName,
                     userColor: distant.userColor,
                     pictureURL: distant.pictureURL,
-                    relation: "distant following",
+                    relation: Relation.DistantFollowing,
                     distant: user.username,
                     isFollowing: distant.isFollowing,
                 })
@@ -179,7 +183,8 @@ const SideInfo = (props: SideInfoProps) => {
                 displayName: user.displayName,
                 pictureURL: user.pictureURL,
                 userColor: user.userColor,
-                relation: "no display", //all popular, so no display
+                isFollowing: false,
+                relation: Relation.None, //all popular, so display none
             }
         }))
 
@@ -289,7 +294,7 @@ const SideInfo = (props: SideInfoProps) => {
                                 pictureURL = {u.pictureURL}
                                 relation={u.relation}
                                 distant={u.distant}
-                                isFollowing={u.isFollowing}
+                                isFollowing={u.isFollowing ?? false}
                                 changeFollowingCount = {(i: number) => {
                                     if (!currentUser) 
                                         return;

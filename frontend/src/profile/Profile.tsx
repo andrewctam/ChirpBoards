@@ -9,13 +9,14 @@ import UserPhoto from "../UserPhoto";
 import ProfileFeed from "./ProfileFeed";
 import StatisticSwapper from "./StatisticSwapper";
 
-export enum SelectedFeed {
+export enum Feed {
     Chirps, Followers, Following
 }
 
 function Profile() {
     const userInfo = useContext(UserContext);
     const params = useParams();
+
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [doneFetching, setDoneFetching] = useState(false);
@@ -32,12 +33,12 @@ function Profile() {
     const [editingColor, setEditingColor] = useState(false);
 
     const [isFollowing, setIsFollowing] = useState(false);
+    const [currentlySending, setCurrentlySending] = useState(false);
 
-    const [selectedFeed, setSelectedFeed] = useState<SelectedFeed>(SelectedFeed.Chirps);
+    const [selectedFeed, setSelectedFeed] = useState<Feed>(Feed.Chirps);
 
-    const [showSetting, setShowSetting] = useState(false);
+    const [showSettingsCog, setShowSettingsCog] = useState(false);
 
-    const [currentSending, setCurrentSending] = useState(false);
 
     const navigate = useNavigate();
 
@@ -51,28 +52,36 @@ function Profile() {
             setSearchParams("")
         }
 
-        switch (searchParams.get("view")) {
+        switch (searchParams.get("feed")) {
             case "followers":
-                setSelectedFeed(SelectedFeed.Followers);
+                setSelectedFeed(Feed.Followers);
                 break;
             case "following":
-                setSelectedFeed(SelectedFeed.Following);
+                setSelectedFeed(Feed.Following);
                 break;
             default:
-                setSelectedFeed(SelectedFeed.Chirps);
+                setSelectedFeed(Feed.Chirps);
                 break;
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    const switchFeeds = (feed: Feed) => {
+        setSelectedFeed(feed);
+        setSearchParams({ feed: 
+            feed === Feed.Followers ? "followers" :
+            feed === Feed.Following ? "following" :
+                                      "chirps"
+        });
+    }
+
 
     const getUserInfo = async (username: string) => {
         const url = import.meta.env.DEV ? import.meta.env.VITE_DEV_URL : import.meta.env.VITE_PROD_URL
-        const timezone = (-(new Date().getTimezoneOffset() / 60)).toString()
 
         const query =
             `query {    
-            user(username: "${username}"${userInfo.state.username ? `, relatedUsername: "${userInfo.state.username}"` : ""}) {
+            user(username: "${username}") {
                 username
                 displayName
                 pictureURL
@@ -126,7 +135,7 @@ function Profile() {
         }`
 
         //optimistic update
-        if (currentSending) {
+        if (currentlySending) {
             return;
         } else if (isFollowing) {
             setFollowerCount(followerCount - 1);
@@ -137,13 +146,13 @@ function Profile() {
         }
 
             
-        setCurrentSending(true);
+        setCurrentlySending(true);
         const response = await fetch(url ?? '', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ query })
         }).then(res => res.json())
-        setCurrentSending(false);
+        setCurrentlySending(false);
 
         console.log(response)
     }
@@ -182,15 +191,26 @@ function Profile() {
                 <h1>{`User ${params.username} not Found`}</h1>
             </div>
         </Layout>);
-    }
-
-
+}
     return (<Layout>
         <div className="text-center p-4 shadow-md relative" style={{ backgroundColor: userColor }} 
-            onMouseEnter = {() => {setShowSetting(true)}}
-            onMouseLeave = {() => {setShowSetting(false)}}>
+            onMouseEnter = {() => {setShowSettingsCog(true)}}
+            onMouseLeave = {() => {setShowSettingsCog(false)}}>
 
-            {showSetting && userInfo.state.username === username ? 
+            {editingColor ?
+                <div className="absolute top-1 left-1 w-fit text-center border border-black/30 bg-black/80 shadow-md rounded-xl px-4 py-2">
+                    <p className="text-white">Click below to select a new color</p>
+                    <input type="color" className="bg-transparent block mx-auto w-16 h-16" value={userColor} onChange={(e) => setUserColor(e.target.value)} />
+                    <button onClick={() => { navigate("/settings") }} className="text-sm text-white px-4 py-2 mx-auto my-2 mr-2 bg-rose-700/30 rounded-xl border border-black/50">
+                        Cancel
+                    </button>
+                    <button onClick={updateUserColor} className="text-sm text-white px-4 py-2 mx-auto my-2 bg-white/10 rounded-xl border border-black/50">
+                        Save Changes
+                    </button>
+                </div> 
+            : null}
+
+            {showSettingsCog && userInfo.state.username === username ? 
                 <a href="/settings" className="absolute right-1 top-1">
                     <SettingsCog />
                 </a>
@@ -209,22 +229,21 @@ function Profile() {
                 </div>
 
                 <div className="h-[70px] text-sm w-fit my-auto border border-white/10 text-black bg-slate-200/50 px-4 py-1 rounded-xl">
-                    <StatisticSwapper viewSelected={selectedFeed} setViewSelected={setSelectedFeed}
-                        type={SelectedFeed.Chirps}
+                    <StatisticSwapper selectedFeed={selectedFeed} switchFeeds={switchFeeds}
+                        type={Feed.Chirps}
                         text={`${postCount} chirp${postCount !== 1 ? "s" : ""}`}
                     />
 
-                    <StatisticSwapper viewSelected={selectedFeed} setViewSelected={setSelectedFeed}
-                        type={SelectedFeed.Followers}
+                    <StatisticSwapper selectedFeed={selectedFeed} switchFeeds={switchFeeds}
+                        type={Feed.Followers}
                         text={`${followerCount} follower${followerCount !== 1 ? "s" : ""}`}
                     />
 
-                    <StatisticSwapper viewSelected={selectedFeed} setViewSelected={setSelectedFeed}
-                        type={SelectedFeed.Following}
+                    <StatisticSwapper selectedFeed={selectedFeed} switchFeeds={switchFeeds}
+                        type={Feed.Following}
                         text={`${followingCount} following`}
                     />
                 </div>
-
             </div>
 
             {userInfo.state.username !== username ?
@@ -234,7 +253,7 @@ function Profile() {
             : null}
         </div>
 
-        {userInfo.state.username === username && selectedFeed === SelectedFeed.Chirps ?
+        {userInfo.state.username === username && selectedFeed === Feed.Chirps ?
             <div className="w-full bg-black/30 shadow-md pt-8 pb-1">
                 <div className="mx-auto w-11/12 md:w-3/4 lg:w-3/5">
                     <PostComposer />
@@ -242,31 +261,12 @@ function Profile() {
             </div>
         : <div />}
 
-      
         <ProfileFeed
-            selectedFeed={selectedFeed}
-            postCount={postCount}
             username={username ?? ""}
-            userColor={userColor}
-            editingColor={editingColor}
+            selectedFeed={selectedFeed}
         />
     
-
-        {editingColor ?
-            <div className="fixed bottom-2 right-2 w-fit text-center border border-black/30 bg-black/60 shadow-md rounded-xl p-4">
-                <p className="text-white">Click below to select a new color</p>
-                <input type="color" className="bg-transparent block mx-auto w-16 h-16" value={userColor} onChange={(e) => setUserColor(e.target.value)} />
-                <button onClick={() => { navigate("/settings") }} className="text-sm text-white px-4 py-2 mx-auto my-2 mr-2 bg-rose-700/30 rounded-xl border border-black/50">
-                    Cancel
-                </button>
-                <button onClick={updateUserColor} className="text-sm text-white px-4 py-2 mx-auto my-2 bg-white/10 rounded-xl border border-black/50">
-                    Save Changes
-                </button>
-
-            </div> 
-        : null}
-
-    </Layout>)
+    </Layout>);
 
 }
 

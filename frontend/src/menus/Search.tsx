@@ -19,7 +19,7 @@ export enum SearchFeed {
 function Search () {
     const [searchParams, setSearchParams] = useSearchParams();
     const [searchQuery, setSearchQuery] = useState("");
-    const [feedSelected, setFeedSelected] = useState(SearchFeed.None);
+    const [selectedFeed, setSelectedFeed] = useState(SearchFeed.None);
     const [doneFetching, setDoneFetching] = useState(false);
 
     const [chirpResults, setChirpResults] = useState<JSX.Element[]>([]);
@@ -38,13 +38,13 @@ function Search () {
         setSearchQuery(searchParams.get("query") ?? "");
         switch(searchParams.get("feed")) {
             case "users":
-                setFeedSelected(SearchFeed.Users);
+                setSelectedFeed(SearchFeed.Users);
                 break;
             case "chirps":
-                setFeedSelected(SearchFeed.Chirps);
+                setSelectedFeed(SearchFeed.Chirps);
                 break;
             default: 
-                setFeedSelected(SearchFeed.Chirps);
+                setSelectedFeed(SearchFeed.Chirps);
                 setSearchParams({query: searchQuery, feed: "chirps"})
                 break;
         }
@@ -53,16 +53,16 @@ function Search () {
 
 
     const switchFeeds = (feed: SearchFeed) => {
-        setFeedSelected(feed);
+        setSelectedFeed(feed);
         setSearchParams({query: searchQuery, feed: feed === SearchFeed.Users ? "users" : "chirps"})
     }
 
     useEffect(() => {
-        if ((feedSelected === SearchFeed.Chirps && chirpResults.length === 0 && chirpHasNextPage) ||
-            (feedSelected === SearchFeed.Users && userResults.length === 0 && userHasNextPage))
+        if ((selectedFeed === SearchFeed.Chirps && chirpResults.length === 0 && chirpHasNextPage) ||
+            (selectedFeed === SearchFeed.Users && userResults.length === 0 && userHasNextPage))
             search();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [feedSelected])
+    }, [selectedFeed])
 
     const search = async () => {
         let regex = searchQuery;
@@ -72,9 +72,9 @@ function Search () {
             return;
         }
 
-        if (feedSelected === SearchFeed.Users) {
+        if (selectedFeed === SearchFeed.Users) {
             await searchUsers(regex);
-        } else if (feedSelected === SearchFeed.Chirps) {
+        } else if (selectedFeed === SearchFeed.Chirps) {
             await searchChirps(regex);
         }
     }            
@@ -163,6 +163,7 @@ function Search () {
                     pictureURL
                     postCount
                     userColor
+                    ${userInfo.state.username ? `isFollowing(followerUsername: "${userInfo.state.username}")` : ""}
                 }
                 hasNext
             }
@@ -191,6 +192,7 @@ function Search () {
                 followingCount = {user.followingCount}
                 postCount = {user.postCount}
                 userColor={user.userColor}
+                isFollowing = {user.isFollowing}
                 key = {user.username} />
         })))
 
@@ -208,7 +210,7 @@ function Search () {
     })
 
     let placeholder = null;
-    if (feedSelected === SearchFeed.Users) {
+    if (selectedFeed === SearchFeed.Users) {
         placeholder = (
             <>
                 <div className = "p-4 bg-black/10 rounded my-3"> <SpinningCircle /> </div>
@@ -218,7 +220,7 @@ function Search () {
                 <div className = "p-4 bg-black/10 rounded my-3"> <SpinningCircle /> </div>
             </>
         )
-    } else if (feedSelected === SearchFeed.Chirps) {
+    } else if (selectedFeed === SearchFeed.Chirps) {
         placeholder = (
             <>
                 <ChirpPlaceholder />
@@ -231,9 +233,9 @@ function Search () {
     }
 
     let feed: JSX.Element[] | JSX.Element | null = null;
-    if (feedSelected === SearchFeed.Users && userResults.length > 0) {
+    if (selectedFeed === SearchFeed.Users && userResults.length > 0) {
         feed = userResults;
-    } else if (feedSelected === SearchFeed.Chirps && chirpResults.length > 0) {
+    } else if (selectedFeed === SearchFeed.Chirps && chirpResults.length > 0) {
         feed = chirpResults;
     } else if (doneFetching) {
         feed = <div className = "text-center text-white text-lg mt-4">
@@ -245,18 +247,18 @@ function Search () {
         <Layout>
             <div className="mt-2 mx-auto w-5/6 lg:w-3/5 py-2">                
 
-                {feedSelected === SearchFeed.Chirps ? sortBubble : null}
+                {selectedFeed === SearchFeed.Chirps ? sortBubble : null}
 
                 <div className = "grid grid-cols-2 mb-6">
                     <FeedButton
                         name = "Chirps"
-                        isActive = {feedSelected === SearchFeed.Chirps}
+                        isActive = {selectedFeed === SearchFeed.Chirps}
                         onClick = {() => switchFeeds(SearchFeed.Chirps)}
                     />
 
                     <FeedButton
                         name = "Users"
-                        isActive = {feedSelected === SearchFeed.Users}
+                        isActive = {selectedFeed === SearchFeed.Users}
                         onClick = {() => switchFeeds(SearchFeed.Users)}
                     />
                 </div>

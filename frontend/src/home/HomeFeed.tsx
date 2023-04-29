@@ -16,7 +16,7 @@ interface HomeFeedProps {
 } 
 
 const HomeFeed = (props: HomeFeedProps) => {
-    const [feedSelected, setFeedSelected] = useState<Feed>(Feed.None)
+    const [selectedFeed, setSelectedFeed] = useState<Feed>(Feed.None)
 
     const [allFeed, setAllFeed] = useState<JSX.Element[]>([]);
     const [trendingFeed, setTrendingFeed] = useState<JSX.Element[]>([]);
@@ -38,21 +38,25 @@ const HomeFeed = (props: HomeFeedProps) => {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const switchFeeds = (feed: Feed) => {
-        setFeedSelected(feed);
-        setSearchParams({ feed: feed === Feed.All ? "all" : feed === Feed.Trending ? "trending" : "following" });
+        setSelectedFeed(feed);
+        setSearchParams({feed: 
+            feed === Feed.All ?      "all" : 
+            feed === Feed.Trending ? "trending" :
+                                     "following" 
+        });
     }
 
     useEffect(() => {
         //get initial chirps when the selected feed changes
 
         //inital page load, set the feed in the hook below
-        if (feedSelected === Feed.None) 
+        if (selectedFeed === Feed.None) 
             return;
 
-        if ((feedSelected === Feed.All && allFeed.length === 0) ||
-            (feedSelected === Feed.Trending && trendingFeed.length === 0)) {
+        if ((selectedFeed === Feed.All && allFeed.length === 0) ||
+            (selectedFeed === Feed.Trending && trendingFeed.length === 0)) {
                 getChirps(true);
-        } else if (feedSelected === Feed.Following && (followingFeed.length === 0 || props.refreshFollowing)) {
+        } else if (selectedFeed === Feed.Following && (followingFeed.length === 0 || props.refreshFollowing)) {
             if (props.refreshFollowing)
                     props.setRefreshFollowing(false);
 
@@ -60,22 +64,22 @@ const HomeFeed = (props: HomeFeedProps) => {
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [feedSelected, props.refreshFollowing])
+    }, [selectedFeed, props.refreshFollowing])
 
     useEffect(() => {
         //initial page load
         switch (searchParams.get("feed")) {
             case "all":
-                setFeedSelected(Feed.All)
+                setSelectedFeed(Feed.All)
                 return;
             case "trending":
-                setFeedSelected(Feed.Trending)
+                setSelectedFeed(Feed.Trending)
                 return;
             case "following":
-                setFeedSelected(Feed.Following)
+                setSelectedFeed(Feed.Following)
                 return;
             default:
-                setFeedSelected(Feed.All);
+                setSelectedFeed(Feed.All);
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps 
@@ -86,7 +90,7 @@ const HomeFeed = (props: HomeFeedProps) => {
         let type = "";
         let pageNum = 0
 
-        if (feedSelected === Feed.Following) {
+        if (selectedFeed === Feed.Following) {
             if (userInfo.state.username === "") {
                 navigate(`/signin`)
                 return;
@@ -98,14 +102,14 @@ const HomeFeed = (props: HomeFeedProps) => {
             type = "followingPosts";
             pageNum = followingPageNum;
 
-        } else if (feedSelected === Feed.Trending) {
+        } else if (selectedFeed === Feed.Trending) {
             if (!trendingHasNextPage && !reset) {
                 return;
             }
 
             type = "trendingPosts";
             pageNum = trendingPageNum;
-        } else if (feedSelected === Feed.All) {
+        } else if (selectedFeed === Feed.All) {
             if (!allHasNextPage && !reset) {
                 return;
             }
@@ -121,13 +125,13 @@ const HomeFeed = (props: HomeFeedProps) => {
         }
 
         let usernameField = "";
-        if (feedSelected === Feed.Following) {
+        if (selectedFeed === Feed.Following) {
             usernameField = `, username: "${userInfo.state.username}"`
         } else if (userInfo.state.username)
             usernameField = `, relatedUsername: "${userInfo.state.username}"`
 
         let sortField = "";
-        if (feedSelected === Feed.All || feedSelected === Feed.Following)
+        if (selectedFeed === Feed.All || selectedFeed === Feed.Following)
             sortField = `, sortMethod: "${sortMethod}", sortDirection: "${sortDirection}"`;
 
         setDoneFetching(false);
@@ -153,7 +157,7 @@ const HomeFeed = (props: HomeFeedProps) => {
                         ${userInfo.state.username ? "voteStatus" : ""}
                         ${userInfo.state.username ? "rechirpStatus" : ""}
 
-                        ${feedSelected !== Feed.Following ? "" :
+                        ${selectedFeed !== Feed.Following ? "" :
                         `isRechirp
                         rootPost {
                             author {
@@ -191,7 +195,7 @@ const HomeFeed = (props: HomeFeedProps) => {
         const info: {hasNext: boolean, posts: PostPayload[]} = response.data[type];
 
         
-        if (feedSelected === Feed.Following) {
+        if (selectedFeed === Feed.Following) {
             if (!info) {
                 setFollowingFeed([]);
                 return;
@@ -206,7 +210,7 @@ const HomeFeed = (props: HomeFeedProps) => {
         const newChirps: JSX.Element[] = info.posts.map((post: PostPayload) => {
             let rechirper: Rechirper | undefined = undefined
 
-            if (feedSelected === Feed.Following && post.isRechirp) {
+            if (selectedFeed === Feed.Following && post.isRechirp) {
                 if (post.rootPost == null) { //original post was deleted
                     return null;
                 } else {
@@ -242,7 +246,7 @@ const HomeFeed = (props: HomeFeedProps) => {
         })
         .filter((chirp: JSX.Element | null) => chirp !== null) as JSX.Element[];
 
-        if (feedSelected === Feed.All) {
+        if (selectedFeed === Feed.All) {
             if (reset) {
                 setAllFeed(newChirps);
                 setAllPageNum(1);
@@ -251,7 +255,7 @@ const HomeFeed = (props: HomeFeedProps) => {
                 setAllPageNum(allPageNum + 1);
             }
             setAllHasNextPage(info.hasNext);
-        } else if (feedSelected === Feed.Trending) {
+        } else if (selectedFeed === Feed.Trending) {
             if (reset) {
                 setTrendingFeed(newChirps);
                 setTrendingPageNum(1);
@@ -261,7 +265,7 @@ const HomeFeed = (props: HomeFeedProps) => {
             }
 
             setTrendingHasNextPage(info.hasNext);
-        } else if (feedSelected === Feed.Following) {
+        } else if (selectedFeed === Feed.Following) {
             if (reset) {
                 setFollowingFeed(newChirps);
                 setFollowingPageNum(1);
@@ -278,7 +282,7 @@ const HomeFeed = (props: HomeFeedProps) => {
     
     let emptyMsg = "";
     let feed: JSX.Element[] = [];
-    switch (feedSelected) {
+    switch (selectedFeed) {
         case Feed.All:
             feed = allFeed;
             emptyMsg = "No Chirps";
@@ -321,21 +325,21 @@ const HomeFeed = (props: HomeFeedProps) => {
 
     return (
         <div className="p-4 bg-black/20 min-h-screen shadow-2xl">
-            {feedSelected !== Feed.Trending ? sortBubble : null}
+            {selectedFeed !== Feed.Trending ? sortBubble : null}
             
                 <div className="grid grid-cols-3 mb-6">
                     <FeedButton
                         name={"Trending"}
                         onClick={() => switchFeeds(Feed.Trending)}
-                        isActive={feedSelected === Feed.Trending} />
+                        isActive={selectedFeed === Feed.Trending} />
                     <FeedButton
                         name={"All"}
                         onClick={() => switchFeeds(Feed.All)}
-                        isActive={feedSelected === Feed.All} />
+                        isActive={selectedFeed === Feed.All} />
                     <FeedButton
                         name={"Following"}
                         onClick={() => switchFeeds(Feed.Following)}
-                        isActive={feedSelected === Feed.Following} />
+                        isActive={selectedFeed === Feed.Following} />
                 </div>
 
                 <ul className="mt-6 w-[95%] mx-auto">
