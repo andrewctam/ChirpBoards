@@ -21,7 +21,7 @@
 Clone this repository.
 
 ```
-git clone https://github.com/tamandrew/ChirdBoards.git
+git clone https://github.com/andrewctam/ChirdBoards.git
 ```
 
 In `/frontend`, rename `.env.template` to `.env`, and update the environmental variables.
